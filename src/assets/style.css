@@ -1,0 +1,1921 @@
+:root {
+  --kp-primary: #22c55e;
+  --kp-primary-black: #0a2414;
+  --kp-bg-soft: #f1f5f3;
+  --kp-black: #000000;
+}
+body {
+  background: var(--kp-bg-soft);
+  overflow-x: hidden;
+}
+
+/* =========================================
+   NAVBAR
+========================================= */
+
+.kp-navbar {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.kp-nav-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* =========================================
+   LOGO
+========================================= */
+
+.kp-logo {
+  font-family: "Orbitron", sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--kp-primary);
+  letter-spacing: 2px;
+}
+
+/* =========================================
+   DESKTOP NAV LINKS
+========================================= */
+
+.kp-nav-links {
+  display: flex;
+  gap: 32px;
+}
+
+.kp-nav-links a {
+  position: relative;
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--kp-primary-black);
+  transition: 0.3s;
+}
+
+.kp-nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0%;
+  height: 2px;
+  background: var(--kp-primary);
+  transition: 0.3s;
+}
+
+.kp-nav-links a:hover::after {
+  width: 100%;
+}
+
+/* =========================================
+   SCROLLED NAVBAR
+========================================= */
+
+.kp-navbar-scrolled {
+  background: var(--kp-primary-black);
+}
+
+.kp-navbar-scrolled .kp-logo {
+  color: white;
+}
+
+.kp-navbar-scrolled .kp-nav-links a {
+  color: white;
+}
+
+/* =========================================
+   HAMBURGER
+========================================= */
+
+.kp-hamburger {
+  width: 26px;
+  height: 20px;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.kp-hamburger span {
+  height: 3px;
+  width: 100%;
+  background: var(--kp-primary);
+  border-radius: 2px;
+  transition: 0.3s;
+}
+
+.kp-navbar-scrolled .kp-hamburger span {
+  background: white;
+}
+
+/* HAMBURGER ANIMATION */
+
+.kp-hamburger.open span:nth-child(1) {
+  transform: rotate(45deg) translateY(8px);
+}
+
+.kp-hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.kp-hamburger.open span:nth-child(3) {
+  transform: rotate(-45deg) translateY(-8px);
+}
+
+/* =========================================
+   MOBILE MENU
+========================================= */
+
+.kp-mobile-menu {
+  position: fixed;
+  inset: 0;
+  background: var(--kp-primary-black);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transform: translateY(-100%);
+  transition: 0.4s ease;
+  z-index: 999;
+}
+
+.kp-mobile-menu.active {
+  transform: translateY(0);
+}
+
+/* MOBILE LOGO */
+
+.kp-mobile-logo {
+  position: absolute;
+  top: 30px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 24px;
+  color: white;
+}
+
+/* MOBILE LINKS */
+
+.kp-mobile-menu ul {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  text-align: center;
+}
+
+.kp-mobile-menu a {
+  color: white;
+  font-size: 24px;
+  text-decoration: none;
+  position: relative;
+}
+
+.kp-mobile-menu a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 0%;
+  height: 2px;
+  background: var(--kp-primary);
+  transition: 0.3s;
+}
+
+.kp-mobile-menu a:hover::after {
+  width: 100%;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .kp-nav-links {
+    display: none;
+  }
+
+  .kp-hamburger {
+    display: flex;
+  }
+}
+/* =========================================
+   KICKPREDICT FOOTER STYLES
+========================================= */
+
+.kp-footer {
+  background: var(--kp-primary-black);
+  color: white;
+  padding-top: 70px;
+}
+
+/* =========================================
+   FOOTER CONTAINER
+========================================= */
+
+.kp-footer-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  gap: 50px;
+}
+
+/* =========================================
+   BRAND SECTION
+========================================= */
+
+.kp-footer-logo {
+  font-family: "Orbitron", sans-serif;
+  font-size: 26px;
+  margin-bottom: 15px;
+}
+
+.kp-footer-brand p {
+  line-height: 1.6;
+  opacity: 0.9;
+  max-width: 340px;
+}
+
+/* =========================================
+   SOCIAL ICONS
+========================================= */
+
+.kp-socials {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.kp-socials a {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+}
+
+.kp-socials svg {
+  color: white;
+}
+
+.kp-socials a:hover {
+  background: var(--kp-primary);
+}
+
+/* =========================================
+   LINKS
+========================================= */
+
+.kp-footer-links h4 {
+  margin-bottom: 16px;
+}
+
+.kp-footer-links a {
+  display: block;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: white;
+  opacity: 0.9;
+  transition: 0.3s;
+}
+
+.kp-footer-links a:hover {
+  color: var(--kp-primary);
+}
+
+/* =========================================
+   NEWSLETTER
+========================================= */
+
+.kp-footer-newsletter h4 {
+  margin-bottom: 12px;
+}
+
+.kp-footer-newsletter p {
+  opacity: 0.9;
+  margin-bottom: 20px;
+}
+
+/* NEWSLETTER FORM */
+
+.kp-newsletter-form {
+  display: flex;
+  background: white;
+  border-radius: 50px;
+  overflow: hidden;
+  max-width: 350px;
+}
+
+.kp-newsletter-form input {
+  flex: 1;
+  border: none;
+  padding: 12px 16px;
+  outline: none;
+}
+
+.kp-newsletter-form button {
+  background: var(--kp-primary);
+  border: none;
+  padding: 0 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+}
+
+.kp-newsletter-form button:hover {
+  background: #16a34a;
+}
+
+.kp-newsletter-form svg {
+  color: white;
+}
+
+/* =========================================
+   FOOTER BOTTOM
+========================================= */
+
+.kp-footer-bottom {
+  margin-top: 60px;
+  padding: 20px 0;
+  text-align: center;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .kp-footer-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .kp-footer-brand p {
+    max-width: 100%;
+  }
+}
+/* =========================================
+   KICKPREDICT HERO SECTION
+========================================= */
+
+.kp-hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.kp-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(34, 197, 94, 0.08);
+  z-index: 0;
+}
+
+/* =========================================
+   HERO GRID
+========================================= */
+
+.kp-hero-con {
+  margin: auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+.kp-hero-container {
+  padding-left: 110px;
+}
+
+/* =========================================
+   HERO CONTENT
+========================================= */
+
+.kp-hero-tag {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 30px;
+
+  font-size: 14px;
+  margin-bottom: 20px;
+
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--kp-primary-black);
+}
+
+.kp-hero-title {
+  font-size: 52px;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.kp-hero-title span {
+  color: var(--kp-primary);
+}
+
+.kp-hero-desc {
+  font-size: 17px;
+  color: #555;
+  margin-bottom: 28px;
+  max-width: 460px;
+}
+
+/* =========================================
+   CTA BUTTON
+========================================= */
+
+.kp-hero-btn {
+  padding: 14px 26px;
+  border: none;
+  border-radius: 30px;
+  background: var(--kp-primary-black);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.kp-hero-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================================
+   STATS CARD
+========================================= */
+
+.kp-hero-stats {
+  margin-top: 35px;
+  display: flex;
+  justify-content: space-between;
+  padding: 24px 28px;
+  border-radius: 14px;
+  background: var(--kp-primary);
+}
+
+.kp-stat {
+  text-align: center;
+}
+
+.kp-stat h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--kp-primary-black);
+}
+
+.kp-stat p {
+  font-size: 14px;
+  margin-top: 4px;
+  color: var(--kp-primary-black);
+}
+
+/* =========================================
+   HERO IMAGE
+========================================= */
+
+.kp-hero-image {
+  position: relative;
+  height: 100vh;
+}
+
+.kp-hero-image img {
+  position: absolute;
+  top: -120px;
+  right: 0;
+  width: 100%;
+  height: calc(100vh + 120px);
+  object-fit: cover;
+  /* border-radius: 20px; */
+}
+
+/* =========================================
+   FLOATING CARD
+========================================= */
+
+.kp-floating-card {
+  position: absolute;
+  bottom: 60px;
+  right: 40px;
+  background: white;
+  padding: 18px 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  width: 200px;
+}
+
+.kp-floating-card h4 {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.kp-floating-card p {
+  font-size: 14px;
+  color: #666;
+}
+
+.kp-floating-card span {
+  font-size: 13px;
+  color: var(--kp-primary);
+  font-weight: 600;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .kp-hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-top: 120px;
+  }
+  .kp-hero-container {
+    padding-left: 0;
+  }
+  .kp-hero-con {
+    grid-template-columns: 1fr;
+  }
+
+  .kp-hero-image {
+    height: 420px;
+  }
+
+  .kp-hero-image img {
+    position: relative;
+    top: 0;
+    height: 100%;
+  }
+}
+/* =========================================
+   KICKPREDICT PREDICTIONS 
+========================================= */
+
+.kp-predictions {
+  background: var(--kp-primary-black);
+  padding: 120px 24px;
+  min-height: 100vh;
+}
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.kp-predictions-container {
+  max-width: 1200px;
+  margin: auto;
+}
+/* =========================================
+   NO PREDICTIONS MESSAGE
+========================================= */
+
+.kp-no-predictions {
+  text-align: center;
+  margin-top: 40px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  opacity: 0.8;
+}
+/* =========================================
+   TITLE
+========================================= */
+
+.kp-predictions-title {
+  color: white;
+  text-align: center;
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 60px;
+}
+
+/* =========================================
+   GRID
+========================================= */
+
+.kp-predictions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.kp-prediction-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  transition: 0.3s;
+  position: relative;
+}
+
+/* 🔥 HOT BADGE */
+.kp-hot-badge {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  background: var(--kp-primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* NB NOTE */
+.kp-note {
+  margin-top: 40px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--kp-bg-soft);
+  text-align: center;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.kp-prediction-card:hover {
+  transform: translateY(-6px);
+}
+/* TELEGRAM CTA WRAPPER */
+.kp-telegram {
+  margin-top: 30px;
+  text-align: center;
+}
+
+/* BUTTON STYLE */
+.kp-telegram-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #0088cc, #22c55e);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s ease;
+}
+
+/* HOVER EFFECT */
+.kp-telegram-link:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* ICON */
+.kp-telegram-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+/* =========================================
+   CARD TOP
+========================================= */
+
+.kp-card-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.kp-league {
+  font-size: 13px;
+  color: #777;
+}
+
+/* =========================================
+   STATUS BADGES
+========================================= */
+
+.kp-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.kp-status.pending {
+  background: #facc15;
+  color: #78350f;
+}
+
+.kp-status.win {
+  background: #22c55e;
+  color: white;
+}
+
+.kp-status.lose {
+  background: #ef4444;
+  color: white;
+}
+
+/* =========================================
+   MATCH
+========================================= */
+
+.kp-match {
+  font-size: 20px;
+  margin-bottom: 12px;
+  color: #111;
+}
+
+/* =========================================
+   PREDICTION TEXT
+========================================= */
+
+.kp-prediction {
+  font-size: 15px;
+  margin-bottom: 18px;
+}
+
+/* =========================================
+   CONFIDENCE BAR
+========================================= */
+
+.kp-confidence-label {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.kp-progress {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.kp-progress-fill {
+  height: 100%;
+  background: var(--kp-primary);
+}
+
+/* =========================================
+   CARD BOTTOM
+========================================= */
+
+.kp-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  font-size: 13px;
+  color: #666;
+}
+/* =========================================
+   LIVE SOCCER SCORES WIDGET
+========================================= */
+
+/* .kp-live-scores {
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+} */
+/* =========================================
+   HISTORY LANDING PAGE COMPONENT
+========================================= */
+.kp-history {
+  min-height: 100vh;
+  padding: 120px 24px;
+  background: none;
+}
+
+/* CONTAINER */
+.kp-history-container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* TITLE */
+.kp-history-title {
+  text-align: center;
+  color: var(--kp-primary-black);
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 60px;
+}
+
+/* EMPTY MESSAGE */
+.kp-history-empty {
+  text-align: center;
+  color: #555;
+  font-size: 18px;
+}
+
+/* GRID */
+.kp-history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+/* CARD */
+.kp-history-card {
+  background: var(--kp-primary-black);
+  color: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transition: 0.3s;
+}
+
+.kp-history-card:hover {
+  transform: translateY(-6px);
+}
+
+/* CARD TOP */
+.kp-history-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.kp-history-league {
+  font-size: 13px;
+  color: #bbb;
+}
+
+/* STATUS */
+.kp-history-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.kp-history-status.win {
+  background: var(--kp-primary);
+  color: white;
+}
+
+.kp-history-status.lose {
+  background: #ef4444;
+  color: white;
+}
+
+.kp-history-status.pending {
+  background: #facc15;
+  color: #78350f;
+}
+
+/* MATCH */
+.kp-history-match {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+/* CONFIDENCE */
+.kp-history-label {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.kp-history-progress {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.kp-history-progress-fill {
+  height: 100%;
+  background: var(--kp-primary);
+}
+
+/* RESULT */
+.kp-history-result {
+  margin-top: 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+/* RECORD */
+.kp-history-record {
+  margin-top: 30px;
+  font-size: 16px;
+  text-align: center;
+  color: var(--kp-primary-black);
+}
+
+/* BUTTON */
+.kp-history-button-wrapper {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.kp-history-button {
+  background: linear-gradient(135deg, #0088cc, #22c55e);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.kp-history-button:hover {
+  background: #16a34a;
+}
+/* =========================================
+History Page Component
+========================================= */
+.history-heading {
+  font-size: 36px;
+  font-weight: bold;
+  color: var(--kp-primary-black);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.history-accuracy {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 60px;
+  text-align: center;
+}
+
+.history-page {
+  padding: 60px 24px;
+  background: var(--kp-bg-soft);
+  min-height: 100vh;
+}
+
+.history-container {
+  max-width: 900px;
+  margin: auto;
+}
+
+.empty {
+  text-align: center;
+  color: #555;
+}
+
+/* Date heading */
+.history-date {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--kp-primary-black);
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--kp-primary);
+  display: inline-block;
+  padding-bottom: 4px;
+}
+
+/* Fixtures list */
+.fixtures-list {
+  margin-bottom: 24px;
+}
+
+.fixture-item {
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+/* Tick/Cross/Pending */
+.fixture-status {
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.fixture-status.win {
+  color: var(--kp-primary);
+}
+
+.fixture-status.lose {
+  color: #ef4444;
+}
+
+.fixture-status.pending {
+  color: #facc15;
+}
+
+/* Pagination */
+.history-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.history-pagination button {
+  background: var(--kp-primary);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.history-pagination button:hover:not(:disabled) {
+  background: #16a34a;
+}
+
+.history-pagination button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+/* =========================================
+   ABOUT SECTION
+========================================= */
+
+.kp-about {
+  padding: 120px 24px;
+  background: var(--kp-bg-soft);
+}
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.kp-about-container {
+  max-width: 1200px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+/* =========================================
+   TEXT
+========================================= */
+
+.kp-about-title {
+  font-size: 36px;
+  margin-bottom: 20px;
+  color: var(--kp-black);
+  font-weight: bold;
+}
+
+.kp-about-title span {
+  color: var(--kp-primary);
+}
+
+.kp-about-paragraph {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #333;
+}
+
+/* =========================================
+   IMAGE
+========================================= */
+
+.kp-about-image img {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .kp-about-container {
+    grid-template-columns: 1fr;
+  }
+
+  .kp-about-title {
+    font-size: 32px;
+    text-align: center;
+  }
+
+  .kp-about-paragraph {
+    text-align: center;
+  }
+}
+/* =========================================
+   WHY CHOOSE US SECTION
+========================================= */
+
+.kp-why {
+  position: relative;
+  padding: 120px 24px;
+  background-size: cover;
+  background-position: center;
+  color: white;
+}
+
+/* =========================================
+   OVERLAY
+========================================= */
+
+.kp-why-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 36, 20, 0.85);
+}
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.kp-why-container {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+/* =========================================
+   TEXT
+========================================= */
+
+.kp-why-title {
+  font-size: 36px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.kp-why-title span {
+  color: var(--kp-primary);
+}
+
+.kp-why-paragraph {
+  line-height: 1.8;
+  opacity: 0.9;
+}
+.about-button-wrapper {
+  margin-top: 20px;
+  text-align: center;
+}
+.about-button {
+  background: linear-gradient(135deg, #0088cc, #22c55e);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* =========================================
+   CARDS GRID
+========================================= */
+
+.kp-why-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* =========================================
+   CARD DESIGN
+========================================= */
+
+.kp-why-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 24px;
+  clip-path: polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.kp-why-card:hover {
+  transform: translateY(-6px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ICON */
+.kp-why-card svg {
+  margin-bottom: 12px;
+  color: var(--kp-primary);
+}
+
+/* STAT */
+.kp-why-card h3 {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+/* TEXT */
+.kp-why-card p {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .kp-why-container {
+    grid-template-columns: 1fr;
+  }
+
+  .kp-why-text {
+    text-align: center;
+  }
+
+  .kp-why-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 678px) {
+  .kp-why-container {
+    grid-template-columns: 1fr;
+  }
+
+  .kp-why-text {
+    text-align: center;
+  }
+
+  .kp-why-cards {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================
+   TESTIMONIALS SECTION
+========================================= */
+
+.kp-testimonials {
+  padding: 120px 24px;
+  background: white;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.kp-testimonials-container {
+  /* max-width: 1200px; */
+  margin: auto;
+  text-align: center;
+}
+
+.kp-testimonials-title {
+  text-align: center;
+  color: var(--kp-primary-black);
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.kp-testimonials-sub {
+  color: #555;
+  margin-bottom: 60px;
+}
+
+/* =========================================
+   SCROLL ROW
+========================================= */
+
+.kp-scroll-row {
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.kp-scroll-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: scrollLeft 95s linear infinite;
+}
+
+.kp-scroll-row.slow .kp-scroll-track {
+  animation: scrollRight 95s linear infinite;
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.kp-testimonial-card {
+  min-width: 280px;
+  max-width: 280px;
+  background: var(--kp-bg-soft);
+  border: 1px solid var(--kp-primary);
+  padding: 20px;
+  border-radius: 16px;
+  text-align: left;
+  color: var(--kp-black);
+}
+
+/* =========================================
+   STARS
+========================================= */
+
+.kp-stars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.kp-stars svg {
+  color: gold;
+}
+
+/* =========================================
+   VERIFIED
+========================================= */
+
+.kp-verified {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.kp-verified svg {
+  color: var(--kp-primary);
+}
+
+/* =========================================
+   TEXT
+========================================= */
+
+.kp-review-text {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+/* =========================================
+   USER
+========================================= */
+
+.kp-user {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.kp-user span {
+  color: #666;
+}
+
+/* =========================================
+   ANIMATION
+========================================= */
+@keyframes scrollRight {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}
+@keyframes scrollLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+  .kp-testimonial-card {
+    min-width: 240px;
+  }
+}
+/* =========================================
+   FAQ SECTION
+========================================= */
+
+.kp-faq {
+  background: var(--kp-primary-black);
+  padding: 120px 24px;
+}
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.kp-faq-container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.kp-faq-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.kp-faq-header h2 {
+  color: var(--kp-bg-soft);
+  font-size: 36px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.kp-faq-header p {
+  color: #ccc;
+}
+
+/* =========================================
+   GRID
+========================================= */
+
+.kp-faq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+}
+
+/* =========================================
+   FAQ LIST
+========================================= */
+
+.kp-faq-item {
+  border: 1px solid var(--kp-bg-soft);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.kp-faq-item.open {
+  border-color: var(--kp-primary);
+}
+
+/* QUESTION */
+.kp-faq-question {
+  width: 100%;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--kp-bg-soft);
+  font-size: 15px;
+}
+
+/* ICON */
+.kp-faq-icon {
+  color: var(--kp-primary);
+  font-size: 20px;
+}
+
+/* ANSWER */
+.kp-faq-answer {
+  padding: 0 18px 18px;
+}
+
+.kp-faq-answer p {
+  color: #aaa;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   SUPPORT CARD
+========================================= */
+
+.kp-faq-support {
+  position: relative;
+}
+
+/* STICKY EFFECT */
+.kp-support-card {
+  position: sticky;
+  top: 120px;
+
+  background: var(--kp-primary-black);
+  border: 1px solid var(--kp-primary);
+
+  padding: 30px;
+  border-radius: 16px;
+
+  text-align: center;
+}
+
+/* ICON */
+.kp-support-icon {
+  color: var(--kp-primary);
+  margin-bottom: 15px;
+}
+
+/* TITLE */
+.kp-support-card h3 {
+  color: white;
+  margin-bottom: 10px;
+}
+
+/* TEXT */
+.kp-support-card p {
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+/* BUTTON */
+.kp-support-btn {
+  display: inline-block;
+  padding: 12px 20px;
+
+  background: var(--kp-primary);
+  color: #000;
+
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .kp-faq-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kp-support-card {
+    position: static;
+    margin-top: 40px;
+  }
+}
+.page-hero {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 100%;
+}
+
+/* Optional dark overlay for readability */
+.page-hero-overlay {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* Step heading */
+
+.page-hero-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+/* Each line */
+
+.page-hero-heading span {
+  display: inline-block;
+  background: var(--kp-bg-soft);
+  color: var(--text-primary);
+  padding: 0.4rem 1rem;
+  width: fit-content;
+}
+
+/* Step effect */
+.page-hero-heading span:nth-child(2) {
+  margin-left: 2rem;
+}
+
+.page-hero-heading span:nth-child(3) {
+  margin-left: 4rem;
+}
+/* =========================================
+   INSIGHTS SECTION
+========================================= */
+
+.kp-insights {
+  position: relative;
+  padding: 120px 24px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.kp-insights-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 36, 20, 0.88);
+}
+
+.kp-insights-container {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.kp-insights-header {
+  max-width: 760px;
+  margin: 0 auto 60px;
+  text-align: center;
+}
+
+.kp-insights-title {
+  font-size: 40px;
+  line-height: 1.2;
+  color: #fff;
+  margin-bottom: 14px;
+}
+
+.kp-insights-subtitle {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #d6ddd9;
+}
+
+/* =========================================
+   GRID
+========================================= */
+
+.kp-insights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.kp-insight-card {
+  background: var(--kp-primary-black);
+  border: 1px solid var(--kp-primary);
+  border-radius: 18px;
+  padding: 28px 24px;
+  transition: 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.kp-insight-card:hover {
+  transform: translateY(-6px);
+}
+
+.kp-insight-icon {
+  width: 54px;
+  height: 54px;
+  border: 1px solid var(--kp-primary);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  color: var(--kp-primary);
+  background: rgba(34, 197, 94, 0.06);
+}
+
+.kp-insight-card h3 {
+  font-size: 21px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.kp-insight-card p {
+  font-size: 15px;
+  line-height: 1.75;
+  color: #c8d0cc;
+}
+
+/* =========================================
+   CTA
+========================================= */
+
+.kp-insights-cta {
+  margin-top: 42px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.kp-insights-btn {
+  padding: 14px 22px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.kp-insights-btn.primary {
+  background: var(--kp-primary);
+  color: var(--kp-primary-black);
+}
+
+.kp-insights-btn.primary:hover {
+  transform: translateY(-3px);
+}
+
+.kp-insights-btn.secondary {
+  color: white;
+  background: linear-gradient(135deg, #0088cc, #22c55e);
+  border: 1px solid var(--kp-primary);
+}
+
+/* .kp-insights-btn.secondary:hover {
+  background: rgba(34, 197, 94, 0.08);
+  transform: translateY(-3px);
+} */
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 992px) {
+  .kp-insights-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .kp-insights-title {
+    font-size: 34px;
+  }
+}
+
+@media (max-width: 640px) {
+  .kp-insights {
+    padding: 100px 20px;
+  }
+
+  .kp-insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kp-insights-title {
+    font-size: 30px;
+  }
+
+  .kp-insights-subtitle {
+    font-size: 15px;
+  }
+
+  .kp-insight-card {
+    padding: 24px 20px;
+  }
+}
+/* =========================================
+   FOOTER CTA SECTION
+========================================= */
+
+.kp-footer-cta {
+  padding: 80px 24px;
+  background: var(--kp-primary-black);
+  margin-top: 120px;
+}
+
+.kp-footer-cta-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.kp-footer-cta-content {
+  text-align: center;
+  padding: 56px 32px;
+  border: 1px solid var(--kp-primary);
+  border-radius: 24px;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.08),
+    rgba(10, 36, 20, 0.95)
+  );
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.2);
+}
+
+.kp-footer-cta-tag {
+  display: inline-block;
+  margin-bottom: 16px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--kp-primary);
+  color: var(--kp-primary);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.kp-footer-cta-content h2 {
+  font-size: 40px;
+  line-height: 1.2;
+  color: #fff;
+  max-width: 760px;
+  margin: 0 auto 16px;
+}
+
+.kp-footer-cta-content p {
+  max-width: 680px;
+  margin: 0 auto;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #d3ddd7;
+}
+
+.kp-footer-cta-actions {
+  margin-top: 28px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.kp-footer-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 210px;
+  padding: 14px 22px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.kp-footer-cta-btn.primary {
+  background: var(--kp-primary);
+  color: var(--kp-primary-black);
+}
+
+.kp-footer-cta-btn.primary:hover {
+  transform: translateY(-3px);
+}
+
+.kp-footer-cta-btn.secondary {
+  border: 1px solid var(--kp-primary);
+  color: #fff;
+  background: linear-gradient(135deg, #0088cc, #22c55e);
+}
+
+.kp-footer-cta-btn.secondary:hover {
+  background: rgba(34, 197, 94, 0.08);
+  transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+  .kp-footer-cta {
+    padding: 70px 20px;
+  }
+
+  .kp-footer-cta-content {
+    padding: 42px 20px;
+  }
+
+  .kp-footer-cta-content h2 {
+    font-size: 30px;
+  }
+
+  .kp-footer-cta-content p {
+    font-size: 15px;
+  }
+
+  .kp-footer-cta-btn {
+    width: 100%;
+  }
+}
