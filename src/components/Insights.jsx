@@ -74,7 +74,10 @@ export default function Insights() {
             View Today’s Predictions
           </a>
 
-          <a href="#" className="kp-insights-btn secondary">
+          <a
+            href="https://t.me/kickprediction"
+            className="kp-insights-btn secondary"
+          >
             Join Our Telegram Channel
           </a>
         </div>

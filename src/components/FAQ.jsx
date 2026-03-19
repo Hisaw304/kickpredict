@@ -82,7 +82,7 @@ export default function Faq() {
                 predictions.
               </p>
 
-              <a href="#" className="kp-support-btn">
+              <a href="https://t.me/kickprediction" className="kp-support-btn">
                 Join Telegram
               </a>
             </div>

@@ -1,4 +1,5 @@
 import { Mail, Twitter, Instagram, Facebook, Send } from "lucide-react";
+import { FaTelegramPlane } from "react-icons/fa";
 
 export default function Footer() {
   return (
@@ -23,6 +24,9 @@ export default function Footer() {
             </a>
             <a href="#">
               <Facebook size={20} />
+            </a>
+            <a href="https://t.me/kickprediction">
+              <FaTelegramPlane size={20} />
             </a>
           </div>
         </div>

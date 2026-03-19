@@ -1,6 +1,6 @@
 import aboutImg from "../assets/about.jpg";
 import { useNavigate } from "react-router-dom";
-export default function About() {
+export default function AboutUs() {
   const navigate = useNavigate();
   return (
     <section className="kp-about">

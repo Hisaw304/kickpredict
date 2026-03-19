@@ -37,7 +37,7 @@ export default function Predictions() {
           </p>
         )}
 
-        <div className="kp-predictions-grid">
+        <div className="kp-predictions-grid" id="predictions">
           {predictions.map((item) => (
             <div key={item.id} className="kp-prediction-card">
               {/* 🔥 HOT BADGE */}
@@ -90,7 +90,7 @@ export default function Predictions() {
         {/* TELEGRAM CTA */}
         <div className="kp-telegram">
           <a
-            href="https://t.me/yourchannel"
+            href="https://t.me/kickprediction"
             target="_blank"
             rel="noopener noreferrer"
             className="kp-telegram-link"

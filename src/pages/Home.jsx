@@ -8,6 +8,7 @@ import WhyChooseUs from "../components/WhyChooseUs";
 import Testimonials from "../components/Testimonials";
 import Faq from "../components/FAQ";
 import FooterCta from "../components/FooterCta";
+import ContactCmp from "../components/ContactCmp";
 
 const Home = () => {
   return (
@@ -19,7 +20,9 @@ const Home = () => {
       <WhyChooseUs />
       <Testimonials />
       <Faq />
+      <ContactCmp />
       <FooterCta />
+
       {/* <HistoryPage /> */}
     </div>
   );

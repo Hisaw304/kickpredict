@@ -17,7 +17,10 @@ export default function FooterCta() {
               View Today’s Predictions
             </a>
 
-            <a href="#" className="kp-footer-cta-btn secondary">
+            <a
+              href="https://t.me/kickprediction"
+              className="kp-footer-cta-btn secondary"
+            >
               Join Telegram Channel
             </a>
           </div>
