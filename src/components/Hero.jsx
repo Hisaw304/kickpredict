@@ -49,8 +49,8 @@ export default function Hero() {
             {/* FLOATING CARD */}
             <div className="kp-floating-card">
               <h4>Today's Top Pick</h4>
-              <p>Villarreal vs Real Sociedad</p>
-              <p>Prediction: Both Teams To Score</p>
+              <p>International Freindly Games</p>
+              <p>Prediction: Over Goals</p>
               <p>Confidence 80%</p>
               <span>Overall Accuracy 87%</span>
             </div>
