@@ -1010,7 +1010,7 @@ History Page Component
 }
 
 /* Tick/Cross/Pending */
-.fixture-status {
+/* .fixture-status {
   font-weight: 700;
   margin-right: 8px;
 }
@@ -1025,8 +1025,32 @@ History Page Component
 
 .fixture-status.pending {
   color: #facc15;
+} */
+
+/* Tick/Cross/Pending */
+.fixture-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-right: 8px;
+  line-height: 1;
+  opacity: 1 !important;
+  filter: none !important;
+  -webkit-text-fill-color: currentColor;
 }
 
+.fixture-status.win {
+  color: var(--kp-primary) !important;
+}
+
+.fixture-status.lose {
+  color: #ef4444 !important;
+}
+
+.fixture-status.pending {
+  color: #facc15 !important;
+}
 /* Pagination */
 .history-pagination {
   display: flex;
