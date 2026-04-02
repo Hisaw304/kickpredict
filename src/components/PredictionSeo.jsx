@@ -23,7 +23,7 @@ export default function PredictionSeo() {
             tips, and data-driven betting insights across all major betting
             markets. From home and away wins to goals, BTTS, corners, and
             accumulators, our platform helps you stay ahead with smarter daily
-            picks.
+            picks
           </p>
 
           <p className="kp-pseo-text">
