@@ -95,9 +95,9 @@ export default function HistoryPage({ pageSize = 3 }) {
                         title={f.status}
                       >
                         {f.status === "win"
-                          ? "✔"
+                          ? "✅"
                           : f.status === "lose"
-                          ? "✖"
+                          ? "❌"
                           : "⏳"}
                       </span>{" "}
                       {f.match} | Prediction: {f.prediction} | Result:{" "}
