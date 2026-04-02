@@ -11,37 +11,34 @@ export default function PredictionSeo() {
         {/* LEFT */}
         <div className="kp-pseo-content">
           <span className="kp-pseo-tag">
-            Today’s Football Tips & League Picks
+            Today’s Football Predictions & League Picks
           </span>
 
           <h2 className="kp-pseo-title">
-            Accurate Football Predictions, Match Tips & Results
+            Today’s Football Predictions, Match Tips & Betting Insights
           </h2>
 
           <p className="kp-pseo-text">
-            KickPredict provides today’s football predictions and expert match
-            tips across multiple football betting markets including home win,
-            away win, over 1.5 goals, over 2.5 goals, both teams to score, draw
-            or over 2.5, home or over 2.5, away or over 2.5, home over 0.5, away
-            over 0.5, and corners predictions. Our goal is to deliver smarter,
-            data-driven football insights for users seeking reliable daily
-            football picks.
+            KickPredict delivers today’s football predictions, expert match
+            tips, and data-driven betting insights across all major betting
+            markets. From home and away wins to goals, BTTS, corners, and
+            accumulators, our platform helps you stay ahead with smarter daily
+            picks.
           </p>
 
           <p className="kp-pseo-text">
-            We cover a wide range of leagues including the Premier League, La
-            Liga, Bundesliga, Serie A, Ligue 1, Eredivisie, Denmark Superliga,
-            Portugal Liga, Romania Superliga, Switzerland Super League, and
-            other competitive football leagues across Europe. Every pick is
-            backed by form analysis, team performance trends, match patterns,
-            and key statistical indicators.
+            We cover top football leagues including the English Premier League,
+            La Liga, Bundesliga, Serie A, Ligue 1, and many other European
+            competitions. Every prediction is based on team form, head-to-head
+            records, match trends, and key statistical analysis to ensure
+            consistency and reliability.
           </p>
 
           <p className="kp-pseo-sub">
-            Track today’s football predictions and past results with full match
-            history, completed scores, and accuracy metrics. Click below to view
-            today’s picks or past outcomes.
+            Explore today’s football tips, track past results, and analyze
+            performance with full match history and accuracy insights.
           </p>
+
           <div className="kp-pseo-buttons">
             <a href="#predictions" className="kp-pseo-btn">
               View Today’s Predictions

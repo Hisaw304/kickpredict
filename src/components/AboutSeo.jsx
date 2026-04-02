@@ -10,7 +10,7 @@ export default function AboutSEO() {
       <div className="kp-pseo-container">
         <div className="kp-pseo-content">
           <span className="kp-pseo-tag">
-            About KickPredict – Trusted Football Insights
+            About KickPredict – Football Prediction Experts
           </span>
 
           <h2 className="kp-pseo-title">
@@ -18,27 +18,25 @@ export default function AboutSEO() {
           </h2>
 
           <p className="kp-pseo-text">
-            KickPredict is a leading football prediction platform delivering
-            accurate, data-driven match insights across top leagues worldwide.
-            We combine historical results, team performance trends, and key
-            statistical indicators to help football fans and analysts make
-            smarter match decisions every day.
+            KickPredict is a football prediction platform focused on delivering
+            accurate, data-driven match insights across the world’s top leagues.
+            Our goal is to help users make smarter decisions using reliable
+            analysis, real match data, and consistent performance tracking.
           </p>
 
           <p className="kp-pseo-text">
-            Our coverage spans the Premier League, La Liga, Bundesliga, Serie A,
-            Ligue 1, Eredivisie, Denmark Superliga, Romania Superliga, Portugal
-            Liga, and Switzerland Super League. Whether you follow home wins,
-            away wins, goals over/under, or corners predictions, KickPredict
-            ensures every tip is backed by thorough analysis and real match
-            data.
+            We analyze team form, historical results, and key statistical
+            indicators to generate predictions across multiple betting markets,
+            including match outcomes, goals, BTTS, corners, and more. Our
+            coverage includes major competitions such as the English Premier
+            League, La Liga, Bundesliga, Serie A, and other European leagues.
           </p>
 
           <p className="kp-pseo-sub">
-            Explore our expert insights, learn how our predictions are
-            generated, and see why thousands of users rely on KickPredict for
-            daily football analysis.
+            Discover how our predictions are generated and why thousands of
+            users rely on KickPredict for daily football insights and analysis.
           </p>
+
           <div className="kp-pseo-buttons">
             <a href="#about" className="kp-pseo-btn">
               Learn About Our Process
