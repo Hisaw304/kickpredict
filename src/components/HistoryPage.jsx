@@ -57,7 +57,7 @@ export default function HistoryPage({ pageSize = 3 }) {
   };
 
   return (
-    <section className="history-page">
+    <section id="history" className="history-page">
       <div className="history-container">
         {history.length === 0 ? (
           <p className="empty">No past fixtures available.</p>

@@ -9,6 +9,7 @@ import Testimonials from "../components/Testimonials";
 import Faq from "../components/FAQ";
 import FooterCta from "../components/FooterCta";
 import ContactCmp from "../components/ContactCmp";
+import SeoSection from "../components/SeoSection";
 
 const Home = () => {
   return (
@@ -20,6 +21,7 @@ const Home = () => {
       <WhyChooseUs />
       <Testimonials />
       <Faq />
+      <SeoSection />
       <ContactCmp />
       <FooterCta />
 

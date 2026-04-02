@@ -2145,3 +2145,279 @@ History Page Component
     font-size: 32px;
   }
 }
+/* =========================================
+   SEO SECTION
+========================================= */
+
+.kp-seo {
+  padding: 90px 24px;
+  background: var(--kp-bg-soft);
+}
+
+.kp-seo-container {
+  max-width: 950px;
+  margin: auto;
+  text-align: center;
+}
+
+.kp-seo-tag {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--kp-primary-black);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.kp-seo-title {
+  font-size: 36px;
+  line-height: 1.2;
+  color: var(--kp-primary-black);
+  margin-bottom: 22px;
+  font-weight: 700;
+}
+
+.kp-seo-text {
+  font-size: 16px;
+  line-height: 1.9;
+  color: #444;
+  margin-bottom: 18px;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.kp-pseo-buttons {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.kp-pseo-btn {
+  padding: 12px 28px;
+  border-radius: 10px;
+  border: 1px solid var(--kp-primary);
+  color: #fff;
+  background: linear-gradient(135deg, #0088cc, #22c55e);
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s;
+  display: inline-block;
+
+  cursor: pointer;
+}
+
+.kp-pseo-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.kp-pseo-btn-secondary {
+  background: var(--kp-primary-black);
+  color: var(--kp-primary);
+}
+
+.kp-pseo-btn-secondary:hover {
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .kp-seo {
+    padding: 70px 20px;
+  }
+
+  .kp-seo-title {
+    font-size: 28px;
+  }
+
+  .kp-seo-text {
+    font-size: 15px;
+    line-height: 1.8;
+  }
+}
+/* =========================================
+   PREDICTIONS SEO SECTION
+========================================= */
+
+.kp-pseo {
+  padding: 100px 24px;
+  background: white;
+}
+
+.kp-pseo-container {
+  max-width: 1250px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 60px;
+  align-items: center;
+}
+
+/* =========================================
+   LEFT CONTENT
+========================================= */
+
+.kp-pseo-tag {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--kp-primary-black);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.kp-pseo-title {
+  font-size: 42px;
+  line-height: 1.15;
+  color: var(--kp-primary-black);
+  margin-bottom: 22px;
+  font-weight: 700;
+  max-width: 650px;
+}
+
+.kp-pseo-text {
+  font-size: 16px;
+  line-height: 1.95;
+  color: #444;
+  margin-bottom: 18px;
+  max-width: 720px;
+}
+
+.kp-pseo-sub {
+  margin-top: 24px;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--kp-primary-black);
+  font-weight: 600;
+  max-width: 720px;
+}
+
+/* =========================================
+   RIGHT IMAGE GRID (X STYLE)
+========================================= */
+
+/* =========================================
+   RIGHT IMAGE GRID (4 EQUAL CARDS)
+========================================= */
+
+.kp-pseo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+/* CARD BASE */
+.kp-pseo-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.12);
+  transition: 0.35s ease;
+  cursor: pointer;
+  height: 200px;
+}
+
+.kp-pseo-card:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+.kp-pseo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Overlay */
+.kp-pseo-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 36, 20, 0.78),
+    rgba(10, 36, 20, 0.14)
+  );
+}
+
+/* League label */
+.kp-pseo-card span {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 2;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* REMOVE SPECIAL SIZING */
+.kp-pseo-card.large,
+.kp-pseo-card.small.top,
+.kp-pseo-card.small.bottom,
+.kp-pseo-card.tall {
+  transform: none;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+/* =========================================
+   RESPONSIVE GRID FIX FOR EQUAL CARDS
+========================================= */
+
+@media (max-width: 980px) {
+  .kp-pseo-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .kp-pseo-title {
+    font-size: 34px;
+  }
+
+  .kp-pseo-grid {
+    grid-template-columns: 1fr 1fr; /* 2 columns on tablets */
+    gap: 18px;
+  }
+
+  /* Remove any span-for-large-card behavior */
+  .kp-pseo-card {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .kp-pseo {
+    padding: 80px 20px;
+  }
+
+  .kp-pseo-title {
+    font-size: 28px;
+  }
+
+  .kp-pseo-text,
+  .kp-pseo-sub {
+    font-size: 15px;
+    line-height: 1.85;
+  }
+
+  .kp-pseo-grid {
+    display: none;
+  }
+
+  .kp-pseo-card span {
+    font-size: 13px;
+  }
+}
+.kp-about-seo {
+  padding: 120px 24px;
+  background: var(--kp-bg-soft);
+}
