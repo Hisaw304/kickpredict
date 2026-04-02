@@ -35,8 +35,8 @@ export default function Footer() {
         <div className="kp-footer-links">
           <h4>Quick Links</h4>
           <a href="/">Home</a>
-          <a href="/about">About</a>
           <a href="/predictions">Predictions</a>
+          <a href="/about">About</a>
           <a href="/contact">Contact</a>
         </div>
 

@@ -16,7 +16,7 @@ const About = () => {
         line3="Kick Predict"
       />
       <AboutSEO />
-      <section className="kp-about">
+      <section id="about" className="kp-about">
         <div className="kp-about-container">
           {/* LEFT CONTENT */}
           <div className="kp-about-text">

@@ -40,10 +40,10 @@ export default function AboutSEO() {
             daily football analysis.
           </p>
           <div className="kp-pseo-buttons">
-            <a href="#predictions" className="kp-pseo-btn">
+            <a href="#about" className="kp-pseo-btn">
               Learn About Our Process
             </a>
-            <a href="#history" className="kp-pseo-btn kp-pseo-btn-secondary">
+            <a href="/contact" className="kp-pseo-btn kp-pseo-btn-secondary">
               Get In Touch
             </a>
           </div>

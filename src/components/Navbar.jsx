@@ -34,10 +34,10 @@ export default function Navbar() {
               <a href="/">Home</a>
             </li>
             <li>
-              <a href="/about">About</a>
+              <a href="/predictions">Predictions</a>
             </li>
             <li>
-              <a href="/predictions">Predictions</a>
+              <a href="/about">About</a>
             </li>
             <li>
               <a href="/contact">Contact</a>
@@ -66,13 +66,13 @@ export default function Navbar() {
             </a>
           </li>
           <li>
-            <a onClick={toggleMenu} href="/about">
-              About
+            <a onClick={toggleMenu} href="/predictions">
+              Predictions
             </a>
           </li>
           <li>
-            <a onClick={toggleMenu} href="/predictions">
-              Predictions
+            <a onClick={toggleMenu} href="/about">
+              About
             </a>
           </li>
           <li>
