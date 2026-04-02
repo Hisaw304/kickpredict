@@ -12,12 +12,11 @@ export default function AboutUs() {
           </h2>
 
           <p className="kp-about-paragraph">
-            Founded in Germany, KickPredict has grown into a trusted destination
-            for football enthusiasts seeking reliable and data-driven match
-            predictions. For over three years, we have dedicated ourselves to
-            analyzing games with precision, combining statistical insights, team
-            performance trends, and expert knowledge to deliver consistent
-            results.
+            KickPredict has grown into a trusted destination for football
+            enthusiasts seeking reliable and data-driven match predictions. For
+            over three years, we have dedicated ourselves to analyzing games
+            with precision, combining statistical insights, team performance
+            trends, and expert knowledge to deliver consistent results.
             <br />
             <br />
             Our journey began with a simple mission — to bring transparency and
