@@ -1,7 +1,51 @@
+import React, { useState } from "react";
+import { supabase } from "../lib/supabase";
 import { Mail, Twitter, Instagram, Facebook, Send } from "lucide-react";
 import { FaTelegramPlane } from "react-icons/fa";
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleNewsletterSubmit = async () => {
+    if (!email.trim()) {
+      setMessage("Please enter your email.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      setMessage("Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const { error } = await supabase
+        .from("newsletter_subscribers")
+        .insert([{ email: email.trim().toLowerCase() }]);
+
+      if (error) {
+        if (error.message.toLowerCase().includes("duplicate")) {
+          setMessage("This email is already subscribed.");
+        } else {
+          setMessage("Something went wrong. Please try again.");
+        }
+        return;
+      }
+
+      setMessage("Subscribed successfully 🎉");
+      setEmail("");
+    } catch (err) {
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <footer className="kp-footer">
       <div className="kp-footer-container">
@@ -43,14 +87,27 @@ export default function Footer() {
         {/* NEWSLETTER */}
         <div className="kp-footer-newsletter">
           <h4>Newsletter</h4>
-          <p>Get free weekly predictions and football insights.</p>
+          <h3 className="mb-3">Stay Updated</h3>
+          <p>
+            Get daily football prediction and results straight to your inbox
+          </p>
 
           <div className="kp-newsletter-form">
-            <input type="email" placeholder="Enter your email" />
-            <button>
-              <Send size={18} />
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleNewsletterSubmit();
+              }}
+            />
+            <button onClick={handleNewsletterSubmit} disabled={loading}>
+              {loading ? "..." : <Send size={18} />}
             </button>
           </div>
+
+          {message && <p className="kp-newsletter-message">{message}</p>}
         </div>
       </div>
 
