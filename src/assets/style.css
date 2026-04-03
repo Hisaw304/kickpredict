@@ -348,8 +348,15 @@ body {
 .kp-newsletter-message {
   margin-top: 10px;
   font-size: 0.92rem;
-  color: #fff;
-  opacity: 0.9;
+  font-weight: 500;
+}
+
+.kp-newsletter-message.success {
+  color: #22c55e;
+}
+
+.kp-newsletter-message.error {
+  color: #ef4444;
 }
 /* =========================================
    FOOTER BOTTOM

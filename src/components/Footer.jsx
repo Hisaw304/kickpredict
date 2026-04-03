@@ -7,10 +7,12 @@ export default function Footer() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
 
   const handleNewsletterSubmit = async () => {
     if (!email.trim()) {
       setMessage("Please enter your email.");
+      setMessageType("error");
       return;
     }
 
@@ -18,30 +20,39 @@ export default function Footer() {
 
     if (!emailRegex.test(email)) {
       setMessage("Please enter a valid email address.");
+      setMessageType("error");
       return;
     }
 
     try {
       setLoading(true);
       setMessage("");
+      setMessageType("");
 
       const { error } = await supabase
         .from("newsletter_subscribers")
         .insert([{ email: email.trim().toLowerCase() }]);
 
       if (error) {
-        if (error.message.toLowerCase().includes("duplicate")) {
+        if (
+          error.message.toLowerCase().includes("duplicate") ||
+          error.message.toLowerCase().includes("unique")
+        ) {
           setMessage("This email is already subscribed.");
+          setMessageType("error");
         } else {
           setMessage("Something went wrong. Please try again.");
+          setMessageType("error");
         }
         return;
       }
 
       setMessage("Subscribed successfully 🎉");
+      setMessageType("success");
       setEmail("");
     } catch (err) {
       setMessage("Something went wrong. Please try again.");
+      setMessageType("error");
     } finally {
       setLoading(false);
     }
@@ -107,7 +118,9 @@ export default function Footer() {
             </button>
           </div>
 
-          {message && <p className="kp-newsletter-message">{message}</p>}
+          {message && (
+            <p className={`kp-newsletter-message ${messageType}`}>{message}</p>
+          )}
         </div>
       </div>
 
