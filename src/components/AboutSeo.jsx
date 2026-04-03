@@ -34,7 +34,7 @@ export default function AboutSEO() {
 
           <p className="kp-pseo-sub">
             Discover how our predictions are generated and why thousands of
-            users rely on KickPredict for daily football insights and analysis.
+            users rely on KickPredict for daily football insights and analysis
           </p>
 
           <div className="kp-pseo-buttons">
