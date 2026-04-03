@@ -258,7 +258,6 @@ body {
 .kp-socials a {
   width: 38px;
   height: 38px;
-
   display: flex;
   align-items: center;
   justify-content: center;
@@ -358,6 +357,28 @@ body {
 .kp-newsletter-message.error {
   color: #ef4444;
 }
+.kp-footer-policy {
+  width: 100%;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+}
+
+.kp-footer-policy-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 12px;
+}
+
+.kp-footer-policy-text {
+  max-width: 950px;
+  margin: 0 auto;
+  font-size: 14px;
+  line-height: 1.9;
+  color: rgba(255, 255, 255, 0.78);
+}
 /* =========================================
    FOOTER BOTTOM
 ========================================= */
@@ -366,9 +387,7 @@ body {
   margin-top: 60px;
   padding: 20px 0;
   text-align: center;
-
   border-top: 1px solid rgba(255, 255, 255, 0.15);
-
   font-size: 14px;
   opacity: 0.8;
 }

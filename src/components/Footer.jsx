@@ -123,6 +123,19 @@ export default function Footer() {
           )}
         </div>
       </div>
+      <div className="kp-footer-policy">
+        <h4 className="kp-footer-policy-title">
+          Prediction Policy & Disclaimer
+        </h4>
+
+        <p className="kp-footer-policy-text">
+          All predictions, match tips, and football insights on KickPredict are
+          provided for informational purposes only. While our analysis is based
+          on data, trends, team form, and match research, no prediction is ever
+          guaranteed. Users are encouraged to use all insights responsibly and
+          make independent decisions at all times.
+        </p>
+      </div>
 
       {/* BOTTOM */}
       <div className="kp-footer-bottom">
