@@ -1,6 +1,34 @@
 import heroImg from "../assets/hero3.png";
+import { supabase } from "../lib/supabase";
+import React, { useEffect, useState } from "react";
 
 export default function Hero() {
+  const [overallAccuracy, setOverallAccuracy] = useState(0);
+  useEffect(() => {
+    fetchOverallAccuracy();
+  }, []);
+
+  async function fetchOverallAccuracy() {
+    const today = new Date().toISOString().split("T")[0];
+
+    const { data, error } = await supabase
+      .from("predictions")
+      .select("status")
+      .lt("match_date", today);
+
+    if (error) {
+      console.error("Error fetching accuracy:", error);
+      return;
+    }
+
+    const wins = data.filter((f) => f.status === "win").length;
+    const losses = data.filter((f) => f.status === "lose").length;
+    const total = wins + losses;
+
+    const accuracy = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+
+    setOverallAccuracy(accuracy);
+  }
   return (
     <section className="kp-hero">
       <div className="kp-hero-con">
@@ -30,7 +58,7 @@ export default function Hero() {
               </div>
 
               <div className="kp-stat">
-                <h3>87%</h3>
+                <h3>{overallAccuracy}%</h3>
                 <p>Accuracy</p>
               </div>
 
@@ -47,14 +75,28 @@ export default function Hero() {
             <img src={heroImg} alt="football analytics" />
 
             {/* FLOATING CARD */}
+            {/* FLOATING CARD */}
             <div className="kp-floating-card">
+              <div className="kp-floating-badge">Top Pick</div>
+
               <h4>Today's Top Pick</h4>
-              {/* <p>No Games Available</p> */}
-              <p>England Championship</p>
-              <p>Oxford United vs Hull City</p>
-              <p>Prediction: Both Teams To Score</p>
-              <p>Confidence 79%</p>
-              <span>Overall Prediction Accuracy 87%</span>
+
+              <div className="kp-floating-info">
+                <p>
+                  <strong>League:</strong> France Ligue 1
+                </p>
+                <p>
+                  <strong>Team:</strong> Monaco vs Marseille
+                </p>
+                <p>
+                  <strong>Prediction:</strong> Both Teams To Score
+                </p>
+                <p>
+                  <strong>Confidence:</strong> 75%
+                </p>
+              </div>
+
+              <span>Overall Prediction Accuracy {overallAccuracy}%</span>
             </div>
           </div>
         </div>

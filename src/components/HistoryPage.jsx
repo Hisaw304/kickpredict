@@ -5,18 +5,23 @@ export default function HistoryPage({ pageSize = 3 }) {
   const [history, setHistory] = useState([]);
   const [page, setPage] = useState(1);
   const [totalDates, setTotalDates] = useState(0);
+  const [overallStats, setOverallStats] = useState({
+    wins: 0,
+    losses: 0,
+    accuracy: 0,
+  });
 
   useEffect(() => {
     fetchHistory();
   }, [page]);
 
   async function fetchHistory() {
-    const today = new Date().toISOString().split("T")[0]; // Exclude today
+    const today = new Date().toISOString().split("T")[0];
 
     const { data, error } = await supabase
       .from("predictions")
       .select("*")
-      .lt("match_date", today) // Only past games
+      .lt("match_date", today)
       .order("match_date", { ascending: false })
       .order("created_at", { ascending: true });
 
@@ -24,6 +29,17 @@ export default function HistoryPage({ pageSize = 3 }) {
       console.error(error);
       return;
     }
+
+    const wins = data.filter((f) => f.status === "win").length;
+    const losses = data.filter((f) => f.status === "lose").length;
+    const total = wins + losses;
+    const accuracy = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+
+    setOverallStats({
+      wins,
+      losses,
+      accuracy,
+    });
 
     // Group by date
     const grouped = data.reduce((acc, item) => {
@@ -68,19 +84,8 @@ export default function HistoryPage({ pageSize = 3 }) {
 
             {/* Accuracy paragraph */}
             <p className="history-accuracy">
-              {(() => {
-                const allFixtures = history.flatMap((day) => day.fixtures);
-                const wins = allFixtures.filter(
-                  (f) => f.status === "win"
-                ).length;
-                const losses = allFixtures.filter(
-                  (f) => f.status === "lose"
-                ).length;
-                const total = wins + losses;
-                const accuracy =
-                  total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
-                return `Record: ${wins} Wins / ${losses} Losses | Accuracy: ${accuracy}%`;
-              })()}
+              Record: {overallStats.wins} Wins / {overallStats.losses} Losses |
+              Accuracy: {overallStats.accuracy}%
             </p>
 
             {/* Fixtures grouped by date */}
