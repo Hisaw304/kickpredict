@@ -1379,23 +1379,27 @@ History Page Component
     grid-template-columns: 1fr;
   }
 }
-/* =========================================
-   TESTIMONIALS SECTION
-========================================= */
-
+/* ===== TESTIMONIALS SECTION ===== */
 .kp-testimonials {
-  padding: 120px 24px;
-  background: white;
+  padding: 110px 24px;
+  background: var(--kp-bg-soft);
+  overflow: hidden;
+  position: relative;
 }
 
-/* =========================================
-   HEADER
-========================================= */
-
 .kp-testimonials-container {
-  /* max-width: 1200px; */
-  margin: auto;
+  max-width: 1200px;
+  margin: 0 auto;
   text-align: center;
+}
+
+/* ===== HEADING ===== */
+.kp-testimonials-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--kp-primary);
+  font-weight: 700;
 }
 
 .kp-testimonials-title {
@@ -1407,126 +1411,255 @@ History Page Component
 }
 
 .kp-testimonials-sub {
-  color: #555;
-  margin-bottom: 60px;
+  margin: 18px auto 0;
+  max-width: 700px;
+  font-size: 16px;
+  line-height: 1.85;
+  color: rgba(10, 36, 20, 0.72);
 }
 
-/* =========================================
-   SCROLL ROW
-========================================= */
-
-.kp-scroll-row {
-  overflow: hidden;
-  margin-bottom: 30px;
-}
-
-.kp-scroll-track {
+/* ===== SLIDER AREA ===== */
+.kp-testimonials-slider {
+  position: relative;
+  height: 620px;
   display: flex;
-  gap: 20px;
-  width: max-content;
-  animation: scrollLeft 95s linear infinite;
+  justify-content: center;
+  align-items: center;
+  perspective: 1200px;
+  margin-top: 40px;
 }
 
-.kp-scroll-row.slow .kp-scroll-track {
-  animation: scrollRight 95s linear infinite;
-}
-
-/* =========================================
-   CARD
-========================================= */
-
+/* ===== CARD BASE ===== */
 .kp-testimonial-card {
-  min-width: 280px;
-  max-width: 280px;
-  background: var(--kp-bg-soft);
-  border: 1px solid var(--kp-primary);
-  padding: 20px;
-  border-radius: 16px;
+  position: absolute;
+  width: 100%;
+  max-width: 430px;
+  min-height: 380px;
+  border-radius: 28px;
+  padding: 38px 32px;
   text-align: left;
-  color: var(--kp-black);
+  transition: all 0.7s ease;
+  opacity: 0;
+  transform: scale(0.8) translateX(0);
+  pointer-events: none;
+  overflow: hidden;
+  border: 1px solid transparent;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.18);
+  background: var(--kp-primary-black);
+  color: white;
 }
 
-/* =========================================
-   STARS
-========================================= */
+/* ===== ACTIVE CARD ===== */
+.kp-testimonial-card.active {
+  opacity: 1;
+  transform: translateX(0) translateY(-45px) scale(1);
+  z-index: 6;
+  pointer-events: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
 
+/* ===== SIDE CARDS ===== */
+.kp-testimonial-card.prev,
+.kp-testimonial-card.next,
+.kp-testimonial-card.prev-far,
+.kp-testimonial-card.next-far {
+  background: rgba(10, 36, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  filter: blur(0.15px);
+}
+
+/* ===== LEFT / RIGHT POSITIONS ===== */
+.kp-testimonial-card.prev {
+  transform: translateX(-300px) translateY(40px) scale(0.9) rotate(-4deg);
+  z-index: 4;
+  opacity: 0.55;
+}
+
+.kp-testimonial-card.next {
+  transform: translateX(300px) translateY(40px) scale(0.9) rotate(4deg);
+  z-index: 4;
+  opacity: 0.55;
+}
+
+.kp-testimonial-card.prev-far {
+  transform: translateX(-520px) translateY(70px) scale(0.84) rotate(-6deg);
+  z-index: 2;
+  opacity: 0.24;
+}
+
+.kp-testimonial-card.next-far {
+  transform: translateX(520px) translateY(70px) scale(0.84) rotate(6deg);
+  z-index: 2;
+  opacity: 0.24;
+}
+
+.hidden-card {
+  opacity: 0;
+  transform: scale(0.7);
+  z-index: 0;
+}
+
+/* ===== STARS ===== */
 .kp-stars {
   display: flex;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.kp-stars svg {
-  color: gold;
-}
-
-/* =========================================
-   VERIFIED
-========================================= */
-
-.kp-verified {
-  display: flex;
-  align-items: center;
   gap: 6px;
-  font-size: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 18px;
+  color: #facc15; /* gold */
 }
 
-.kp-verified svg {
-  color: var(--kp-primary);
+/* ===== VERIFIED ===== */
+.kp-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 24px;
 }
 
-/* =========================================
-   TEXT
-========================================= */
-
+/* ===== REVIEW TEXT ===== */
 .kp-review-text {
-  font-size: 14px;
-  line-height: 1.6;
-  margin-bottom: 15px;
+  font-size: 18px;
+  line-height: 1.9;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 94%;
+  position: relative;
+  z-index: 2;
 }
 
-/* =========================================
-   USER
-========================================= */
-
+/* ===== USER ===== */
 .kp-user {
   display: flex;
-  flex-direction: column;
-  font-size: 13px;
+  align-items: center;
+  gap: 14px;
+  margin-top: 36px;
+  position: relative;
+  z-index: 2;
+}
+
+.kp-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.kp-user strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
 }
 
 .kp-user span {
-  color: #666;
+  display: block;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 4px;
 }
 
-/* =========================================
-   ANIMATION
-========================================= */
-@keyframes scrollRight {
-  from {
-    transform: translateX(-50%);
-  }
-  to {
-    transform: translateX(0%);
-  }
-}
-@keyframes scrollLeft {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+/* ===== QUOTE ===== */
+.kp-quote-mark {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  font-size: 120px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.08);
+  font-family: serif;
+  z-index: 1;
 }
 
-/* =========================================
-   RESPONSIVE
-========================================= */
+/* ===== CONTROLS ===== */
+.kp-testimonial-controls {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 24px;
+}
 
+.kp-testimonial-controls button {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  border: 1px solid rgba(10, 36, 20, 0.08);
+  background: white;
+  color: var(--kp-primary-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.kp-testimonial-controls button:hover {
+  background: var(--kp-primary-black);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* ===== MOBILE ===== */
 @media (max-width: 768px) {
+  .kp-testimonials {
+    padding: 90px 18px;
+  }
+
+  .kp-testimonials-slider {
+    height: 520px;
+    margin-top: 30px;
+  }
+
   .kp-testimonial-card {
-    min-width: 240px;
+    max-width: 90%;
+    min-height: 330px;
+    padding: 28px 22px;
+    border-radius: 22px;
+  }
+
+  .kp-review-text {
+    font-size: 16px;
+    line-height: 1.8;
+    max-width: 100%;
+  }
+
+  .kp-quote-mark {
+    font-size: 88px;
+    top: 10px;
+    right: 18px;
+  }
+
+  .kp-testimonial-card.active {
+    transform: translateX(0) translateY(-22px) scale(1);
+  }
+
+  .kp-testimonial-card.prev {
+    transform: translateX(-24px) translateY(20px) scale(0.95) rotate(-3deg);
+    opacity: 0.22;
+  }
+
+  .kp-testimonial-card.next {
+    transform: translateX(24px) translateY(20px) scale(0.95) rotate(3deg);
+    opacity: 0.22;
+  }
+
+  .kp-testimonial-card.prev-far,
+  .kp-testimonial-card.next-far {
+    opacity: 0;
+    transform: scale(0.85);
   }
 }
 /* =========================================
