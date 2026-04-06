@@ -75,7 +75,6 @@ export default function Hero() {
             <img src={heroImg} alt="football analytics" />
 
             {/* FLOATING CARD */}
-            {/* FLOATING CARD */}
             <div className="kp-floating-card">
               <div className="kp-floating-badge">Top Pick</div>
 
@@ -83,10 +82,10 @@ export default function Hero() {
 
               <div className="kp-floating-info">
                 <p>
-                  <strong>League:</strong> France Ligue 1
+                  <strong>League:</strong> England Championship
                 </p>
                 <p>
-                  <strong>Team:</strong> Monaco vs Marseille
+                  <strong>Team:</strong> Hull City vs Coventry City
                 </p>
                 <p>
                   <strong>Prediction:</strong> Both Teams To Score
