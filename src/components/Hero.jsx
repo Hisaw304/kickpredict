@@ -82,16 +82,16 @@ export default function Hero() {
 
               <div className="kp-floating-info">
                 <p>
-                  <strong>League:</strong> England Championship
+                  <strong>League:</strong> Uefa Champions League
                 </p>
                 <p>
-                  <strong>Team:</strong> Hull City vs Coventry City
+                  <strong>Team:</strong> Real Madrid vs Bayern Munich
                 </p>
                 <p>
                   <strong>Prediction:</strong> Both Teams To Score
                 </p>
                 <p>
-                  <strong>Confidence:</strong> 75%
+                  <strong>Confidence:</strong> 83%
                 </p>
               </div>
 
