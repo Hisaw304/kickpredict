@@ -85,13 +85,13 @@ export default function Hero() {
                   <strong>League:</strong> Uefa Champions League
                 </p>
                 <p>
-                  <strong>Team:</strong> Real Madrid vs Bayern Munich
+                  <strong>Team:</strong> Barcelona vs Atletico Madrid
                 </p>
                 <p>
                   <strong>Prediction:</strong> Both Teams To Score
                 </p>
                 <p>
-                  <strong>Confidence:</strong> 83%
+                  <strong>Confidence:</strong> 85%
                 </p>
               </div>
 
