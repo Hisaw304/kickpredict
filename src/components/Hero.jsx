@@ -1,4 +1,4 @@
-import heroImg from "../assets/hero3.png";
+import heroImg from "../assets/hero1.jpg";
 import { supabase } from "../lib/supabase";
 import React, { useEffect, useState } from "react";
 

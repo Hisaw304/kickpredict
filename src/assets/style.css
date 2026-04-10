@@ -555,7 +555,7 @@ body {
   position: absolute;
   bottom: 60px;
   right: 40px;
-  width: 260px;
+  width: 300px;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
