@@ -82,10 +82,10 @@ export default function Hero() {
 
               <div className="kp-floating-info">
                 <p>
-                  <strong>League:</strong> Australia Victoria Premier League
+                  <strong>League:</strong> International World Cup
                 </p>
                 <p>
-                  <strong>Team:</strong> Melbourne Victory vs Melbourne Knights
+                  <strong>Team:</strong> Brazil vs Morocco
                 </p>
                 <p>
                   <strong>Prediction:</strong> Both Teams To Score
