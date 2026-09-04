@@ -845,11 +845,8 @@ body {
 @media (max-width: 900px) {
   .kp-hero {
     min-height: 100vh;
-
     display: flex;
-
     align-items: center;
-
     padding-top: 120px;
   }
 
@@ -863,22 +860,27 @@ body {
 
   .kp-hero-image {
     height: 420px;
+    position: relative;
   }
 
   .kp-hero-image img {
     position: relative;
-
     top: 0;
-
+    right: auto;
+    width: 100%;
     height: 100%;
+    object-fit: cover;
   }
 
   .kp-floating-cards {
     position: absolute;
 
-    bottom: -12px;
+    bottom: 20px;
+    right: 20px;
 
-    right: 10px;
+    width: 300px;
+
+    z-index: 10;
   }
 }
 
@@ -888,18 +890,19 @@ body {
 
 @media (max-width: 768px) {
   .kp-floating-cards {
-    bottom: 25px;
+    position: absolute;
 
+    bottom: 20px;
     right: 20px;
 
     width: calc(100% - 40px);
-
     max-width: 300px;
+
+    z-index: 10;
   }
 
   .kp-floating-card {
     padding: 18px 17px;
-
     border-radius: 17px;
   }
 }
@@ -910,25 +913,42 @@ body {
 
 @media (max-width: 480px) {
   .kp-floating-cards {
-    position: relative;
+    position: absolute;
 
-    bottom: auto;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
 
-    right: auto;
-
-    width: 100%;
-
+    width: auto;
     max-width: none;
 
-    margin-top: 20px;
+    margin: 0;
 
-    padding: 0 15px;
-
-    box-sizing: border-box;
+    z-index: 10;
   }
 
   .kp-floating-card {
-    padding: 18px 16px;
+    padding: 17px 16px;
+    border-radius: 17px;
+  }
+
+  .kp-floating-info {
+    gap: 8px;
+    margin-bottom: 13px;
+  }
+
+  .kp-floating-info p {
+    font-size: 13px;
+  }
+
+  .kp-floating-card h4 {
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+
+  .kp-floating-accuracy {
+    font-size: 12px;
+    padding: 7px 10px;
   }
 }
 
