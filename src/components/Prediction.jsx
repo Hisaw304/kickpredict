@@ -26,79 +26,90 @@ export default function Predictions() {
   }
 
   return (
-    <section className="kp-predictions">
-      <div className="kp-predictions-container">
-        <h2 className="kp-predictions-title">Today's Football Predictions</h2>
+    <section className="football-pred-section">
+      <div className="football-pred-container">
+        <h2 className="football-pred-heading">Today's Football Predictions</h2>
 
-        {/* SHOW MESSAGE IF NO PREDICTIONS */}
+        {/* NO PREDICTIONS */}
         {predictions.length === 0 && (
-          <p className="kp-no-predictions">
+          <p className="football-pred-empty">
             No predictions available for today.
           </p>
         )}
 
-        <div className="kp-predictions-grid" id="predictions">
+        {/* PREDICTION GRID */}
+        <div className="football-pred-grid" id="predictions">
           {predictions.map((item) => (
-            <div key={item.id} className="kp-prediction-card">
-              {/* 🔥 HOT BADGE */}
-              <div className="kp-hot-badge">🔥 Hot</div>
+            <div key={item.id} className="football-pred-card">
+              {/* HOT BADGE */}
+              <div className="football-pred-hot">🔥 Hot</div>
 
-              <div className="kp-card-top">
-                <span className="kp-league">{item.league}</span>
-                <span className={`kp-status ${item.status}`}>
+              {/* CARD TOP */}
+              <div className="football-pred-card-top">
+                <span className="football-pred-league">{item.league}</span>
+
+                <span className={`football-pred-status ${item.status}`}>
                   {item.status}
                 </span>
               </div>
 
-              <h3 className="kp-match">{item.match}</h3>
+              {/* MATCH */}
+              <h3 className="football-pred-match">{item.match}</h3>
 
-              <p className="kp-prediction">
+              {/* PREDICTION */}
+              <p className="football-pred-pick">
                 Prediction: <strong>{item.prediction}</strong>
               </p>
 
-              <div className="kp-confidence">
-                <div className="kp-confidence-label">
+              {/* CONFIDENCE */}
+              <div className="football-pred-confidence">
+                <div className="football-pred-confidence-label">
                   Confidence {item.confidence}%
                 </div>
 
-                <div className="kp-progress">
+                <div className="football-pred-progress">
                   <div
-                    className="kp-progress-fill"
-                    style={{ width: `${item.confidence}%` }}
-                  ></div>
+                    className="football-pred-progress-fill"
+                    style={{
+                      width: `${item.confidence}%`,
+                    }}
+                  />
                 </div>
               </div>
 
-              <div className="kp-card-bottom">
-                <span className="kp-date">{item.match_date}</span>
+              {/* CARD BOTTOM */}
+              <div className="football-pred-card-bottom">
+                <span className="football-pred-date">{item.match_date}</span>
 
                 {item.result && (
-                  <span className="kp-result">{item.result}</span>
+                  <span className="football-pred-result">{item.result}</span>
                 )}
               </div>
             </div>
           ))}
         </div>
 
-        {/* ✅ NB NOTE */}
-        <p className="kp-note">
+        {/* DISCLAIMER */}
+        <p className="football-pred-note">
           <strong>NB:</strong> These predictions are based on statistical
           analysis, team form, and historical data. While we aim for high
           accuracy, no prediction is guaranteed. Please gamble responsibly and
           use this information as guidance only.
         </p>
+
         {/* TELEGRAM CTA */}
-        <div className="kp-telegram">
+        <div className="football-pred-telegram">
           <a
             href="https://t.me/kickprediction"
             target="_blank"
             rel="noopener noreferrer"
-            className="kp-telegram-link"
+            className="football-pred-telegram-link"
           >
-            <span className="kp-telegram-icon">
+            <span className="football-pred-telegram-icon">
               <FaTelegramPlane />
             </span>
-            join our Telegram channel
+
+            <span>Join our Telegram channel</span>
           </a>
         </div>
       </div>
