@@ -3543,11 +3543,22 @@ History Page Component
   text-transform: uppercase;
 }
 
-.kp-prediction-status.pending,
-.kp-prediction-status.win,
+.kp-prediction-status.pending {
+  background: rgba(250, 204, 21, 0.12);
+  color: #ca8a04;
+  border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.kp-prediction-status.win {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
 .kp-prediction-status.lose {
-  background: var(--kp-primary);
-  color: var(--kp-primary-black);
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* ================================
