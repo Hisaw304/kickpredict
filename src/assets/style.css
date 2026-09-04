@@ -4036,40 +4036,62 @@ History Page Component
 
 /* =========================================
    MOBILE
+   Hide the welcome/branding section
+   Show only admin login
 ========================================= */
 
 @media (max-width: 600px) {
   .kp-login {
-    padding: 30px 16px;
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 25px 16px;
   }
 
+  /* Hide the top/left welcome section */
+  .kp-login-content {
+    display: none;
+  }
+
+  /* Login card becomes the only visible content */
   .kp-login-container {
-    gap: 35px;
-  }
+    display: block;
 
-  .kp-login-copy h1 {
-    font-size: 43px;
-    letter-spacing: -1.8px;
-  }
+    width: 100%;
+    max-width: 440px;
 
-  .kp-login-copy p {
-    font-size: 14px;
-    line-height: 1.7;
-  }
-
-  .kp-login-highlight {
-    margin-top: 30px;
-    padding: 15px;
+    margin: 0 auto;
   }
 
   .kp-login-card {
-    padding: 28px 21px;
+    width: 100%;
+
+    padding: 30px 22px;
 
     border-radius: 21px;
   }
 
   .kp-login-card-header h2 {
     font-size: 28px;
+  }
+
+  .kp-login-card-header p {
+    font-size: 13px;
+  }
+
+  .kp-login-form {
+    margin-top: 27px;
+  }
+
+  .kp-login-input {
+    height: 52px;
+  }
+
+  .kp-login-btn {
+    height: 53px;
   }
 }
 
@@ -4078,16 +4100,28 @@ History Page Component
 ========================================= */
 
 @media (max-width: 380px) {
-  .kp-login-copy h1 {
-    font-size: 36px;
+  .kp-login {
+    padding: 20px 12px;
   }
 
   .kp-login-card {
-    padding: 24px 17px;
+    padding: 26px 18px;
+
+    border-radius: 19px;
+  }
+
+  .kp-login-card-header h2 {
+    font-size: 26px;
+  }
+
+  .kp-login-card-header p {
+    font-size: 12px;
   }
 
   .kp-login-register {
     flex-direction: column;
     align-items: center;
+
+    gap: 6px;
   }
 }

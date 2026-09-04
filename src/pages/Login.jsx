@@ -195,7 +195,7 @@ const Login = () => {
               <div className="kp-login-password-label">
                 <label htmlFor="password">Password</label>
 
-                <Link to="/forgot-password">Forgot password?</Link>
+                {/* <Link to="/forgot-password">Forgot password?</Link> */}
               </div>
 
               <div className="kp-login-input">
@@ -249,7 +249,7 @@ const Login = () => {
           </form>
 
           {/* REGISTER */}
-          <div className="kp-login-register">
+          {/* <div className="kp-login-register">
             <span>Don't have an account?</span>
 
             <Link to="/register">Create an account</Link>
@@ -259,7 +259,7 @@ const Login = () => {
             <Lock size={14} />
 
             <span>Your information is securely protected.</span>
-          </div>
+          </div> */}
         </div>
       </div>
     </main>
