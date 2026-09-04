@@ -3517,3 +3517,577 @@ History Page Component
     justify-content: flex-end;
   }
 }
+/* =========================================
+   LOGIN PAGE
+========================================= */
+
+.kp-login {
+  min-height: 100vh;
+  background: var(--kp-bg-soft);
+  color: var(--kp-primary-black);
+
+  display: flex;
+  align-items: center;
+
+  padding: 50px 24px;
+}
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.kp-login-container {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: 1fr 500px;
+  gap: 80px;
+
+  align-items: center;
+}
+
+/* =========================================
+   LEFT CONTENT
+========================================= */
+
+.kp-login-content {
+  max-width: 600px;
+}
+
+/* =========================================
+   BRAND
+========================================= */
+
+.kp-login-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  font-size: 21px;
+  font-weight: 800;
+
+  margin-bottom: 80px;
+}
+
+.kp-login-brand-mark {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--kp-primary);
+  color: var(--kp-primary-black);
+
+  border-radius: 11px;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+/* =========================================
+   LOGIN COPY
+========================================= */
+
+.kp-login-tag {
+  display: inline-block;
+
+  color: var(--kp-primary);
+
+  font-size: 12px;
+  font-weight: 800;
+
+  letter-spacing: 2px;
+  text-transform: uppercase;
+
+  margin-bottom: 18px;
+}
+
+.kp-login-copy h1 {
+  margin: 0;
+
+  font-size: clamp(44px, 5vw, 72px);
+  line-height: 1.02;
+
+  letter-spacing: -2.5px;
+  font-weight: 900;
+}
+
+.kp-login-copy h1 span {
+  color: var(--kp-primary);
+}
+
+.kp-login-copy p {
+  max-width: 570px;
+
+  margin-top: 25px;
+
+  color: #557064;
+
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+/* =========================================
+   HIGHLIGHT
+========================================= */
+
+.kp-login-highlight {
+  margin-top: 42px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  max-width: 500px;
+
+  padding: 18px 20px;
+
+  background: rgba(255, 255, 255, 0.7);
+
+  border: 1px solid rgba(10, 36, 20, 0.08);
+
+  border-radius: 15px;
+}
+
+.kp-login-highlight-dot {
+  width: 9px;
+  height: 9px;
+
+  flex-shrink: 0;
+
+  margin-top: 6px;
+
+  background: var(--kp-primary);
+
+  border-radius: 50%;
+
+  box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.12);
+}
+
+.kp-login-highlight div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.kp-login-highlight strong {
+  font-size: 14px;
+  color: var(--kp-primary-black);
+}
+
+.kp-login-highlight span {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #617268;
+}
+
+/* =========================================
+   LOGIN CARD
+========================================= */
+
+.kp-login-card {
+  background: white;
+
+  border: 1px solid rgba(10, 36, 20, 0.09);
+
+  border-radius: 26px;
+
+  padding: 42px;
+
+  box-shadow: 0 25px 70px rgba(10, 36, 20, 0.08),
+    0 5px 20px rgba(10, 36, 20, 0.03);
+}
+
+/* =========================================
+   CARD HEADER
+========================================= */
+
+.kp-login-small-label {
+  color: var(--kp-primary);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.8px;
+}
+
+.kp-login-card-header h2 {
+  margin: 9px 0 8px;
+
+  font-size: 32px;
+  line-height: 1.2;
+
+  letter-spacing: -1px;
+  font-weight: 800;
+
+  color: var(--kp-primary-black);
+}
+
+.kp-login-card-header p {
+  margin: 0;
+
+  color: #718078;
+
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* =========================================
+   FORM
+========================================= */
+
+.kp-login-form {
+  margin-top: 30px;
+}
+
+/* =========================================
+   FIELD
+========================================= */
+
+.kp-login-field {
+  margin-bottom: 21px;
+}
+
+.kp-login-field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--kp-primary-black);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* =========================================
+   PASSWORD LABEL
+========================================= */
+
+.kp-login-password-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 8px;
+}
+
+.kp-login-password-label label {
+  margin: 0;
+}
+
+.kp-login-password-label a {
+  color: var(--kp-primary);
+
+  font-size: 12px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition: 0.25s ease;
+}
+
+.kp-login-password-label a:hover {
+  opacity: 0.7;
+}
+
+/* =========================================
+   INPUT
+========================================= */
+
+.kp-login-input {
+  height: 54px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 0 15px;
+
+  background: #f7faf8;
+
+  border: 1px solid #dce5df;
+
+  border-radius: 12px;
+
+  transition: border-color 0.25s ease, box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.kp-login-input svg {
+  flex-shrink: 0;
+  color: #819088;
+}
+
+.kp-login-input input {
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: var(--kp-primary-black);
+
+  font-size: 14px;
+}
+
+.kp-login-input input::placeholder {
+  color: #9aa69f;
+}
+
+.kp-login-input:focus-within {
+  background: white;
+
+  border-color: var(--kp-primary);
+
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+}
+
+/* =========================================
+   PASSWORD TOGGLE
+========================================= */
+
+.kp-password-toggle {
+  border: none;
+  background: transparent;
+
+  padding: 4px;
+
+  display: flex;
+  align-items: center;
+
+  color: #819088;
+
+  cursor: pointer;
+}
+
+.kp-password-toggle:hover {
+  color: var(--kp-primary-black);
+}
+
+/* =========================================
+   REMEMBER
+========================================= */
+
+.kp-login-remember {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin: 4px 0 25px;
+
+  color: #637169;
+
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+.kp-login-remember input {
+  width: 15px;
+  height: 15px;
+
+  accent-color: var(--kp-primary);
+
+  cursor: pointer;
+}
+
+/* =========================================
+   LOGIN BUTTON
+========================================= */
+
+.kp-login-btn {
+  width: 100%;
+  height: 54px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: var(--kp-primary-black);
+  color: white;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.kp-login-btn:hover {
+  background: #123d20;
+
+  transform: translateY(-2px);
+
+  box-shadow: 0 12px 25px rgba(10, 36, 20, 0.16);
+}
+
+.kp-login-btn svg {
+  transition: transform 0.25s ease;
+}
+
+.kp-login-btn:hover svg {
+  transform: translateX(4px);
+}
+
+/* =========================================
+   REGISTER
+========================================= */
+
+.kp-login-register {
+  margin-top: 25px;
+
+  padding-top: 23px;
+
+  border-top: 1px solid #e8eeea;
+
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+
+  font-size: 13px;
+
+  color: #758178;
+}
+
+.kp-login-register a {
+  color: var(--kp-primary-black);
+
+  font-weight: 800;
+
+  text-decoration: none;
+}
+
+.kp-login-register a:hover {
+  color: var(--kp-primary);
+}
+
+/* =========================================
+   SECURITY
+========================================= */
+
+.kp-login-security {
+  margin-top: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  color: #98a39d;
+
+  font-size: 11px;
+}
+
+.kp-login-security svg {
+  color: var(--kp-primary);
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 950px) {
+  .kp-login-container {
+    grid-template-columns: 1fr;
+
+    max-width: 560px;
+
+    gap: 50px;
+  }
+
+  .kp-login-content {
+    max-width: 100%;
+
+    text-align: center;
+  }
+
+  .kp-login-brand {
+    justify-content: center;
+
+    margin-bottom: 45px;
+  }
+
+  .kp-login-copy p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .kp-login-highlight {
+    margin-left: auto;
+    margin-right: auto;
+
+    text-align: left;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .kp-login {
+    padding: 30px 16px;
+  }
+
+  .kp-login-container {
+    gap: 35px;
+  }
+
+  .kp-login-copy h1 {
+    font-size: 43px;
+    letter-spacing: -1.8px;
+  }
+
+  .kp-login-copy p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .kp-login-highlight {
+    margin-top: 30px;
+    padding: 15px;
+  }
+
+  .kp-login-card {
+    padding: 28px 21px;
+
+    border-radius: 21px;
+  }
+
+  .kp-login-card-header h2 {
+    font-size: 28px;
+  }
+}
+
+/* =========================================
+   SMALL PHONES
+========================================= */
+
+@media (max-width: 380px) {
+  .kp-login-copy h1 {
+    font-size: 36px;
+  }
+
+  .kp-login-card {
+    padding: 24px 17px;
+  }
+
+  .kp-login-register {
+    flex-direction: column;
+    align-items: center;
+  }
+}
