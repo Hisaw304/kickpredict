@@ -4348,7 +4348,7 @@ History Page Component
 
   color: var(--kp-primary-black);
 
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -4371,7 +4371,7 @@ History Page Component
 .kp-login-password-label a {
   color: var(--kp-primary);
 
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 700;
 
   text-decoration: none;
@@ -4422,7 +4422,7 @@ History Page Component
 
   color: var(--kp-primary-black);
 
-  font-size: 14px;
+  font-size: 18px;
 }
 
 .kp-login-input input::placeholder {
