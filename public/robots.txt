@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kickpredict.xyz/sitemap.xml
+Sitemap: https://www.kickpredict.xyz/sitemap.xml
