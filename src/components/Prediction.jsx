@@ -30,64 +30,84 @@ export default function Predictions() {
       <div className="football-pred-container">
         <h2 className="football-pred-heading">Today's Football Predictions</h2>
 
-        {/* NO PREDICTIONS */}
-        {predictions.length === 0 && (
+        {predictions.length === 0 ? (
           <p className="football-pred-empty">
             No predictions available for today.
           </p>
-        )}
-
-        {/* PREDICTION GRID */}
-        <div className="football-pred-grid" id="predictions">
-          {predictions.map((item) => (
-            <div key={item.id} className="football-pred-card">
-              {/* HOT BADGE */}
-              <div className="football-pred-hot">🔥 Hot</div>
-
-              {/* CARD TOP */}
-              <div className="football-pred-card-top">
-                <span className="football-pred-league">{item.league}</span>
-
-                <span className={`football-pred-status ${item.status}`}>
-                  {item.status}
+        ) : (
+          <div className="football-pred-panel">
+            {/* PANEL HEADER */}
+            <div className="football-pred-panel-header">
+              <div className="football-pred-panel-date">
+                <span className="football-pred-panel-label">
+                  Prediction Date
                 </span>
+
+                <strong>
+                  {new Date(
+                    `${predictions[0].match_date}T00:00:00`
+                  ).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </strong>
               </div>
 
-              {/* MATCH */}
-              <h3 className="football-pred-match">{item.match}</h3>
-
-              {/* PREDICTION */}
-              <p className="football-pred-pick">
-                Prediction: <strong>{item.prediction}</strong>
-              </p>
-
-              {/* CONFIDENCE */}
-              <div className="football-pred-confidence">
-                <div className="football-pred-confidence-label">
-                  Confidence {item.confidence}%
-                </div>
-
-                <div className="football-pred-progress">
-                  <div
-                    className="football-pred-progress-fill"
-                    style={{
-                      width: `${item.confidence}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* CARD BOTTOM */}
-              <div className="football-pred-card-bottom">
-                <span className="football-pred-date">{item.match_date}</span>
-
-                {item.result && (
-                  <span className="football-pred-result">{item.result}</span>
-                )}
-              </div>
+              <div className="football-pred-hot">🔥 Hot Predictions</div>
             </div>
-          ))}
-        </div>
+
+            {/* PREDICTION LIST */}
+            <div className="football-pred-list">
+              {/* DESKTOP COLUMN HEADER */}
+              <div className="football-pred-list-head">
+                <span>League</span>
+                <span>Match</span>
+                <span>Prediction</span>
+                <span>Confidence</span>
+                <span>Status</span>
+              </div>
+
+              {predictions.map((item) => (
+                <div className="football-pred-row" key={item.id}>
+                  {/* LEAGUE */}
+                  <span className="football-pred-league">{item.league}</span>
+
+                  {/* MATCH */}
+                  <h3 className="football-pred-match">{item.match}</h3>
+
+                  {/* PREDICTION */}
+                  <p className="football-pred-pick">
+                    <span>Prediction</span>
+                    <strong>{item.prediction}</strong>
+                  </p>
+
+                  {/* CONFIDENCE */}
+                  <div className="football-pred-confidence">
+                    <div className="football-pred-confidence-label">
+                      {item.confidence}%
+                    </div>
+
+                    <div className="football-pred-progress">
+                      <div
+                        className="football-pred-progress-fill"
+                        style={{
+                          width: `${item.confidence}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* STATUS */}
+                  <span className={`football-pred-status ${item.status}`}>
+                    {item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* DISCLAIMER */}
         <p className="football-pred-note">
