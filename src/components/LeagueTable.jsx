@@ -44,14 +44,7 @@ const LeagueTable = () => {
     setError(null);
 
     try {
-      console.log("Fetching league table:", league);
-
       const res = await footballApi.get(`/football?league=${league}`);
-
-      console.log("FULL API RESPONSE:", res);
-      console.log("API RESPONSE DATA:", res?.data);
-      console.log("API RESPONSE KEYS:", Object.keys(res?.data || {}));
-      console.log("STANDINGS:", res?.data?.standings);
 
       if (!res?.data) {
         throw new Error("The football API returned no response data.");
@@ -72,12 +65,7 @@ const LeagueTable = () => {
       setCompetition(res.data.competition || null);
       setTable(res.data.standings[0].table || []);
     } catch (err) {
-      console.error("FULL LEAGUE TABLE ERROR:", err);
-      console.error("Error message:", err.message);
-      console.error("Error code:", err.code);
-      console.error("Error response:", err.response);
-      console.error("Error response data:", err.response?.data);
-      console.error("Error response status:", err.response?.status);
+      console.error("Failed to load league table:", err);
 
       setCompetition(null);
       setTable([]);
