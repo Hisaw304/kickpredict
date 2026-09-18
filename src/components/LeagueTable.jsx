@@ -40,52 +40,51 @@ const LeagueTable = () => {
   }, [league]);
 
   const getTable = async () => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError("");
-      setTable([]);
-      setCompetition(null);
+      console.log("Fetching league table:", league);
 
       const res = await footballApi.get(`/football?league=${league}`);
 
-      if (!res.data) {
-        throw new Error("The football API returned an empty response.");
+      console.log("FULL API RESPONSE:", res);
+      console.log("API RESPONSE DATA:", res?.data);
+      console.log("API RESPONSE KEYS:", Object.keys(res?.data || {}));
+      console.log("STANDINGS:", res?.data?.standings);
+
+      if (!res?.data) {
+        throw new Error("The football API returned no response data.");
       }
 
-      if (res.data.competition) {
-        setCompetition(res.data.competition);
+      if (!Array.isArray(res.data.standings)) {
+        console.error("Unexpected API structure:", res.data);
+
+        throw new Error("Standings were not returned by the football API.");
       }
 
-      if (
-        !Array.isArray(res.data.standings) ||
-        res.data.standings.length === 0
-      ) {
-        console.error("Unexpected standings response:", res.data);
+      if (!res.data.standings[0]?.table) {
+        console.error("Standings exist, but table is missing:", res.data);
 
-        throw new Error(
-          res.data.message || "Standings were not returned by the football API."
-        );
+        throw new Error("The football API returned standings without a table.");
       }
 
-      const leagueTable = res.data.standings[0]?.table;
-
-      if (!Array.isArray(leagueTable)) {
-        throw new Error(
-          "The football API returned standings, but no table was found."
-        );
-      }
-
-      setTable(leagueTable);
+      setCompetition(res.data.competition || null);
+      setTable(res.data.standings[0].table || []);
     } catch (err) {
-      console.error("Error loading league table:", err);
-
-      console.error("API response:", err.response?.data);
+      console.error("FULL LEAGUE TABLE ERROR:", err);
+      console.error("Error message:", err.message);
+      console.error("Error code:", err.code);
+      console.error("Error response:", err.response);
+      console.error("Error response data:", err.response?.data);
+      console.error("Error response status:", err.response?.status);
 
       setCompetition(null);
       setTable([]);
 
       setError(
-        err.response?.data?.message ||
+        err.response?.data?.error ||
+          err.response?.data?.message ||
           err.message ||
           "Unable to load the league standings right now."
       );
