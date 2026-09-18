@@ -46,18 +46,16 @@ const LeagueTable = () => {
       setTable([]);
       setCompetition(null);
 
-      const res = await footballApi.get(`/football?league=${selectedLeague}`);
+      const res = await footballApi.get(`/football?league=${league}`);
 
       if (!res.data) {
         throw new Error("The football API returned an empty response.");
       }
 
-      // Football-Data API normally returns competition here
       if (res.data.competition) {
         setCompetition(res.data.competition);
       }
 
-      // Make sure standings actually exist
       if (
         !Array.isArray(res.data.standings) ||
         res.data.standings.length === 0
@@ -207,9 +205,7 @@ const LeagueTable = () => {
                   <thead>
                     <tr>
                       <th className="kp-position-head">#</th>
-
                       <th>Club</th>
-
                       <th>P</th>
                       <th>W</th>
                       <th>D</th>
@@ -217,7 +213,6 @@ const LeagueTable = () => {
                       <th>GF</th>
                       <th>GA</th>
                       <th>GD</th>
-
                       <th className="kp-points-head">Pts</th>
                     </tr>
                   </thead>
@@ -253,15 +248,10 @@ const LeagueTable = () => {
                           </td>
 
                           <td>{club.playedGames ?? 0}</td>
-
                           <td>{club.won ?? 0}</td>
-
                           <td>{club.draw ?? 0}</td>
-
                           <td>{club.lost ?? 0}</td>
-
                           <td>{club.goalsFor ?? 0}</td>
-
                           <td>{club.goalsAgainst ?? 0}</td>
 
                           <td>
