@@ -10,6 +10,7 @@ import Faq from "../components/FAQ";
 import FooterCta from "../components/FooterCta";
 import ContactCmp from "../components/ContactCmp";
 import SeoSection from "../components/SeoSection";
+import LeagueTable from "../components/LeagueTable";
 
 const Home = () => {
   return (
@@ -17,6 +18,7 @@ const Home = () => {
       <Hero />
       <Predictions />
       <History />
+      <LeagueTable />
       <AboutUs />
       <WhyChooseUs />
       <Testimonials />

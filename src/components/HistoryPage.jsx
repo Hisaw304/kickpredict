@@ -30,8 +30,8 @@ export default function HistoryPage({ pageSize = 3 }) {
       return;
     }
 
-    const wins = data.filter((f) => f.status === "win").length;
-    const losses = data.filter((f) => f.status === "lose").length;
+    const wins = data.filter((item) => item.status === "win").length;
+    const losses = data.filter((item) => item.status === "lose").length;
     const total = wins + losses;
     const accuracy = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
 
@@ -41,19 +41,23 @@ export default function HistoryPage({ pageSize = 3 }) {
       accuracy,
     });
 
-    // Group by date
     const grouped = data.reduce((acc, item) => {
-      if (!acc[item.match_date]) acc[item.match_date] = [];
+      if (!acc[item.match_date]) {
+        acc[item.match_date] = [];
+      }
+
       acc[item.match_date].push(item);
+
       return acc;
     }, {});
 
     const dates = Object.keys(grouped).sort((a, b) => (a < b ? 1 : -1));
+
     setTotalDates(dates.length);
 
-    // Pagination: slice dates
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
+
     const paginatedDates = dates.slice(start, end);
 
     const paginatedHistory = paginatedDates.map((date) => ({
@@ -65,64 +69,161 @@ export default function HistoryPage({ pageSize = 3 }) {
   }
 
   const nextPage = () => {
-    if (page * pageSize < totalDates) setPage(page + 1);
+    if (page * pageSize < totalDates) {
+      setPage((current) => current + 1);
+    }
   };
 
   const prevPage = () => {
-    if (page > 1) setPage(page - 1);
+    if (page > 1) {
+      setPage((current) => current - 1);
+    }
+  };
+
+  const formatDate = (date) => {
+    return new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const getStatusLabel = (status) => {
+    if (status === "win") return "Won";
+    if (status === "lose") return "Lost";
+    return "Pending";
   };
 
   return (
     <section id="history" className="history-page">
       <div className="history-container">
         {history.length === 0 ? (
-          <p className="empty">No past fixtures available.</p>
+          <div className="history-empty">
+            <p>No past fixtures available.</p>
+          </div>
         ) : (
           <>
-            {/* Heading */}
-            <h2 className="history-heading">Past Fixtures History</h2>
+            <div className="history-intro">
+              <div>
+                <span className="history-eyebrow">Prediction Archive</span>
 
-            {/* Accuracy paragraph */}
-            <p className="history-accuracy">
-              Record: {overallStats.wins} Wins / {overallStats.losses} Losses |
-              Accuracy: {overallStats.accuracy}%
-            </p>
+                <h2 className="history-heading">Past Fixtures History</h2>
 
-            {/* Fixtures grouped by date */}
-            {history.map((day) => (
-              <div key={day.date} className="history-day">
-                <h3 className="history-date">{day.date}</h3>
-                <div className="fixtures-list">
-                  {day.fixtures.map((f) => (
-                    <div key={f.id} className="fixture-item">
-                      <span
-                        className={`fixture-status ${f.status}`}
-                        title={f.status}
-                      >
-                        {f.status === "win"
-                          ? "✅"
-                          : f.status === "lose"
-                          ? "❌"
-                          : "⏳"}
-                      </span>{" "}
-                      {f.match} | Prediction: {f.prediction} | Result:{" "}
-                      {f.result || "-"}
-                    </div>
-                  ))}
+                <p className="history-subheading">
+                  Review previous predictions, results, and overall performance
+                  across completed fixtures.
+                </p>
+              </div>
+
+              <div className="history-overview">
+                <div className="history-overview-item">
+                  <span>Record</span>
+                  <strong>
+                    {overallStats.wins}W / {overallStats.losses}L
+                  </strong>
+                </div>
+
+                <div className="history-overview-divider" />
+
+                <div className="history-overview-item">
+                  <span>Accuracy</span>
+                  <strong>{overallStats.accuracy}%</strong>
                 </div>
               </div>
-            ))}
+            </div>
 
-            {/* Pagination */}
+            <div className="history-days">
+              {history.map((day) => (
+                <article key={day.date} className="history-day">
+                  <div className="history-day-header">
+                    <div className="history-date-wrap">
+                      <span className="history-date-label">Matchday</span>
+
+                      <h3 className="history-date">{formatDate(day.date)}</h3>
+                    </div>
+
+                    <span className="history-fixture-count">
+                      {day.fixtures.length}{" "}
+                      {day.fixtures.length === 1 ? "Fixture" : "Fixtures"}
+                    </span>
+                  </div>
+
+                  <div className="history-fixtures">
+                    <div className="history-fixtures-head">
+                      <span>League</span>
+                      <span>Match</span>
+                      <span>Prediction</span>
+                      <span>Confidence</span>
+                      <span>Result</span>
+                    </div>
+
+                    {day.fixtures.map((fixture) => (
+                      <div key={fixture.id} className="history-fixture">
+                        <div className="history-league">
+                          <span>{fixture.league}</span>
+                        </div>
+
+                        <div className="history-match">
+                          <h4>{fixture.match}</h4>
+                        </div>
+
+                        <div className="history-prediction">
+                          <span className="history-mobile-label">
+                            Prediction
+                          </span>
+
+                          <strong>{fixture.prediction}</strong>
+                        </div>
+
+                        <div className="history-confidence">
+                          <div className="history-confidence-top">
+                            <span>Confidence</span>
+                            <strong>{fixture.confidence}%</strong>
+                          </div>
+
+                          <div className="history-progress">
+                            <span
+                              style={{
+                                width: `${fixture.confidence}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="history-result">
+                          <span className={`history-status ${fixture.status}`}>
+                            {getStatusLabel(fixture.status)}
+                          </span>
+
+                          {fixture.result && (
+                            <span className="history-score">
+                              {fixture.result}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+
             {totalDates > pageSize && (
               <div className="history-pagination">
-                <button onClick={prevPage} disabled={page === 1}>
+                <button type="button" onClick={prevPage} disabled={page === 1}>
                   Previous
                 </button>
-                <span>
-                  Page {page} of {Math.ceil(totalDates / pageSize)}
-                </span>
+
+                <div className="history-page-info">
+                  <span>Page</span>
+                  <strong>{page}</strong>
+                  <span>of</span>
+                  <strong>{Math.ceil(totalDates / pageSize)}</strong>
+                </div>
+
                 <button
+                  type="button"
                   onClick={nextPage}
                   disabled={page * pageSize >= totalDates}
                 >
