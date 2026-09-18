@@ -46,7 +46,7 @@ const LeagueTable = () => {
       setTable([]);
       setCompetition(null);
 
-      const res = await footballApi.get(`/competitions/${league}/standings`);
+      const res = await footballApi.get(`/football?league=${selectedLeague}`);
 
       if (!res.data) {
         throw new Error("The football API returned an empty response.");
