@@ -644,21 +644,63 @@ const Dashboard = () => {
                   required
                 />
               </div>
-
               {/* LEAGUE + DATE */}
 
               <div className="kp-form-row">
                 <div className="kp-form-group">
                   <label>League</label>
 
-                  <input
-                    type="text"
+                  <select
                     name="league"
-                    placeholder="Serie B"
                     value={formData.league}
                     onChange={handleChange}
                     required
-                  />
+                  >
+                    <option value="">Select league</option>
+
+                    <option value="Premier League">Premier League</option>
+                    <option value="La Liga">La Liga</option>
+                    <option value="Serie A">Serie A</option>
+                    <option value="Serie B">Serie B</option>
+
+                    <option value="Bundesliga">Bundesliga</option>
+                    <option value="2. Bundesliga">2. Bundesliga</option>
+
+                    <option value="Belgian Pro League">
+                      Belgian Pro League
+                    </option>
+                    <option value="Ligue 1">Ligue 1</option>
+                    <option value="Ligue 2">Ligue 2</option>
+
+                    <option value="Romanian SuperLiga">
+                      Romanian SuperLiga
+                    </option>
+                    <option value="Switzerland SuperLeague">
+                      Switzerland Super League
+                    </option>
+                    <option value="Denmark Superliga">Denmark Superliga</option>
+
+                    <option value="Champions League">Champions League</option>
+                    <option value="Europa League">Europa League</option>
+                    <option value="Conference League">Conference League</option>
+
+                    <option value="Eredivisie">Eredivisie</option>
+                    <option value="Primeira Liga">Primeira Liga</option>
+                    <option value="Championship">Championship</option>
+
+                    <option value="Other">Other</option>
+                  </select>
+
+                  {formData.league === "Other" && (
+                    <input
+                      type="text"
+                      name="custom_league"
+                      placeholder="Enter league name"
+                      value={formData.custom_league || ""}
+                      onChange={handleChange}
+                      required
+                    />
+                  )}
                 </div>
 
                 <div className="kp-form-group">
@@ -679,14 +721,59 @@ const Dashboard = () => {
               <div className="kp-form-group">
                 <label>Prediction</label>
 
-                <input
-                  type="text"
+                <select
                   name="prediction"
-                  placeholder="Over 1.5 Goals"
                   value={formData.prediction}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Select prediction</option>
+
+                  <option value="Home or Over 2.5 Goals">
+                    Home or Over 2.5 Goals
+                  </option>
+                  <option value="Away or Over 2.5 Goals">
+                    Away or Over 2.5 Goals
+                  </option>
+                  <option value="Draw or Over 2.5 Goals">
+                    Draw or Over 2.5 Goals
+                  </option>
+                  <option value="Over 1.5 Goals">Over 1.5 Goals</option>
+                  <option value="Over 2.5 Goals">Over 2.5 Goals</option>
+                  <option value="Over 6.5 Corners">Over 6.5 Corners</option>
+                  <option value="Over 7.5 Corners">Over 7.5 Corners</option>
+                  <option value="Over 8.5 Corners">Over 8.5 Corners</option>
+
+                  <option value="Away 1up Goals">Away 2up Goals</option>
+                  <option value="Home 1up Goals">Home 1up Goals</option>
+                  <option value="Away 2up Goals">Away 2up Goals</option>
+                  <option value="Home 2up Goals">Home 2up Goals</option>
+
+                  <option value="Both Teams To Score">
+                    Both Teams To Score
+                  </option>
+
+                  <option value="Home Win">Home Win</option>
+                  <option value="Draw">Draw</option>
+                  <option value="Away Win">Away Win</option>
+
+                  <option value="Home or Draw">Home or Draw</option>
+                  <option value="Home or Away">Home or Away</option>
+                  <option value="Draw or Away">Draw or Away</option>
+
+                  <option value="Other">Other</option>
+                </select>
+
+                {formData.prediction === "Other" && (
+                  <input
+                    type="text"
+                    name="custom_prediction"
+                    placeholder="Enter prediction"
+                    value={formData.custom_prediction || ""}
+                    onChange={handleChange}
+                    required
+                  />
+                )}
               </div>
 
               {/* CONFIDENCE + STATUS */}
