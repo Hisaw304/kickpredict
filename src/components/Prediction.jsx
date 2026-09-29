@@ -31,9 +31,63 @@ export default function Predictions() {
         <h2 className="football-pred-heading">Today's Football Predictions</h2>
 
         {predictions.length === 0 ? (
-          <p className="football-pred-empty">
-            No predictions available for today.
-          </p>
+          <div className="football-pred-empty-state">
+            <div className="football-pred-empty-intro">
+              <span className="football-pred-empty-label">
+                <span className="football-pred-empty-pointer">↓</span>
+                Predictions appear here when available
+                <span className="football-pred-empty-pointer">↓</span>
+              </span>
+
+              <h3>We don't publish predictions just to fill the board.</h3>
+
+              <p>
+                We take time to analyze fixtures, team form, trends, and match
+                data before selecting the strongest opportunities. The goal is
+                to keep every prediction selective, data-driven, and meaningful.
+              </p>
+            </div>
+
+            <div className="football-pred-process">
+              <div className="football-pred-process-item">
+                <span>01</span>
+
+                <div>
+                  <h4>We Analyze</h4>
+                  <p>Team form, recent results, trends, and key match data.</p>
+                </div>
+              </div>
+
+              <div className="football-pred-process-item">
+                <span>02</span>
+
+                <div>
+                  <h4>We Filter</h4>
+                  <p>
+                    We focus on fixtures with stronger statistical signals and
+                    higher-confidence setups.
+                  </p>
+                </div>
+              </div>
+
+              <div className="football-pred-process-item">
+                <span>03</span>
+
+                <div>
+                  <h4>We Publish</h4>
+                  <p>
+                    Only selected predictions make it onto KickPredict when the
+                    analysis meets our standards.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="football-pred-empty-footer">
+              <strong>Next predictions are coming soon.</strong>
+              <span>Follow KickPredict on Telegram for the latest picks.</span>
+            </div>
+          </div>
         ) : (
           <div className="football-pred-panel">
             {/* PANEL HEADER */}

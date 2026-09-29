@@ -1869,24 +1869,335 @@ body {
 }
 
 /* =========================================
-   NO PREDICTIONS
+   NO PREDICTIONS — PREMIUM EMPTY STATE
 ========================================= */
 
-.football-pred-empty {
-  max-width: 500px;
+.football-pred-empty-state {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 58px 56px 50px;
+  box-sizing: border-box;
 
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+
+  background: rgba(255, 255, 255, 0.025);
+  text-align: center;
+}
+
+/* =========================================
+   INTRO
+========================================= */
+
+.football-pred-empty-intro {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.football-pred-empty-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  margin-bottom: 18px;
+
+  color: var(--kp-primary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.football-pred-empty-pointer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 24px;
+  height: 24px;
+
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 50%;
+
+  color: var(--kp-primary);
+  font-size: 13px;
+  line-height: 1;
+
+  animation: footballPredPointer 1.8s ease-in-out infinite;
+}
+
+@keyframes footballPredPointer {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+.football-pred-empty-intro h3 {
+  max-width: 650px;
   margin: 0 auto;
 
-  padding: 25px;
+  color: #ffffff;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
 
-  color: white;
+.football-pred-empty-intro p {
+  max-width: 650px;
+  margin: 20px auto 0;
 
-  text-align: center;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 14px;
+  line-height: 1.8;
+}
 
-  font-size: 16px;
-  font-weight: 600;
+/* =========================================
+   PROCESS
+========================================= */
 
-  opacity: 0.8;
+.football-pred-process {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  max-width: 900px;
+  margin: 52px auto 0;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.football-pred-process-item {
+  position: relative;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+
+  padding: 30px 28px;
+
+  text-align: left;
+}
+
+.football-pred-process-item:not(:last-child)::after {
+  content: "";
+
+  position: absolute;
+  top: 26px;
+  right: 0;
+
+  width: 1px;
+  height: calc(100% - 52px);
+
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.football-pred-process-item > span {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 50%;
+
+  color: var(--kp-primary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.football-pred-process-item h4 {
+  margin: 1px 0 8px;
+
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.football-pred-process-item p {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* =========================================
+   FOOTER MESSAGE
+========================================= */
+
+.football-pred-empty-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  margin-top: 38px;
+}
+
+.football-pred-empty-footer strong {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.football-pred-empty-footer span {
+  margin-top: 7px;
+
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 900px) {
+  .football-pred-empty-state {
+    padding: 48px 35px 42px;
+  }
+
+  .football-pred-process {
+    margin-top: 44px;
+  }
+
+  .football-pred-process-item {
+    padding: 27px 20px;
+    gap: 13px;
+  }
+
+  .football-pred-process-item p {
+    font-size: 11px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 700px) {
+  .football-pred-empty-state {
+    padding: 42px 24px 36px;
+    border-radius: 20px;
+  }
+
+  .football-pred-empty-label {
+    margin-bottom: 15px;
+    font-size: 10px;
+  }
+
+  .football-pred-empty-intro h3 {
+    font-size: clamp(25px, 7vw, 32px);
+    line-height: 1.15;
+  }
+
+  .football-pred-empty-intro p {
+    margin-top: 17px;
+    font-size: 13px;
+    line-height: 1.75;
+  }
+
+  .football-pred-process {
+    display: flex;
+    flex-direction: column;
+
+    margin-top: 38px;
+  }
+
+  .football-pred-process-item {
+    padding: 22px 0;
+  }
+
+  .football-pred-process-item:not(:last-child)::after {
+    display: none;
+  }
+
+  .football-pred-process-item:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .football-pred-process-item > span {
+    width: 34px;
+    height: 34px;
+  }
+
+  .football-pred-process-item h4 {
+    font-size: 13px;
+  }
+
+  .football-pred-process-item p {
+    font-size: 12px;
+    line-height: 1.65;
+  }
+
+  .football-pred-empty-footer {
+    margin-top: 30px;
+  }
+
+  .football-pred-empty-footer strong {
+    font-size: 13px;
+  }
+
+  .football-pred-empty-footer span {
+    max-width: 280px;
+    margin-top: 6px;
+    font-size: 11px;
+  }
+}
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 420px) {
+  .football-pred-empty-state {
+    padding: 35px 18px 30px;
+    border-radius: 18px;
+  }
+
+  .football-pred-empty-intro h3 {
+    font-size: 24px;
+  }
+
+  .football-pred-empty-intro p {
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .football-pred-process {
+    margin-top: 32px;
+  }
+
+  .football-pred-process-item {
+    gap: 12px;
+    padding: 20px 0;
+  }
+
+  .football-pred-process-item > span {
+    width: 31px;
+    height: 31px;
+    font-size: 10px;
+  }
+
+  .football-pred-process-item h4 {
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .football-pred-process-item p {
+    font-size: 11px;
+  }
 }
 
 /* =========================================
