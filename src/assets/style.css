@@ -415,9 +415,11 @@ body {
   min-height: 100vh;
   overflow: hidden;
   background: var(--kp-bg-soft);
-} /* ========================================================= TOP INFINITE TICKER ========================================================= */
+}
+/* ========================================================= TOP INFINITE TICKER ========================================================= */
+
 .kp-hero-ticker {
-  position: absolute;
+  position: fixed;
   top: 72px;
   left: 0;
   width: 100%;
