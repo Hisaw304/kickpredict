@@ -111,7 +111,7 @@ export default function History() {
                 className="kp-history-button"
                 onClick={() => navigate("/predictions")}
               >
-                View Predictions
+                View Today's Predictions
               </button>
             </div>
           </>

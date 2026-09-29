@@ -89,7 +89,7 @@ export default function Predictions() {
             </div>
           </div>
         ) : (
-          <div className="football-pred-panel">
+          <div id="predictions" className="football-pred-panel">
             {/* PANEL HEADER */}
             <div className="football-pred-panel-header">
               <div className="football-pred-panel-date">
