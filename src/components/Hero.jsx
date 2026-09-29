@@ -120,7 +120,7 @@ export default function Hero() {
             id: "telegram",
             match: "Join KickPredict",
             league: "Telegram",
-            prediction: "@kickpredict",
+            prediction: "@kickprediction",
             confidence: null,
           },
         ];
@@ -162,7 +162,7 @@ export default function Hero() {
                     Join KickPredict on Telegram
                   </span>
 
-                  <span className="kp-ticker-handle">@kickpredict</span>
+                  <span className="kp-ticker-handle">@kickprediction</span>
                 </>
               )}
 
@@ -186,9 +186,9 @@ export default function Hero() {
             </h1>
 
             <p className="kp-hero-desc">
-              KickPredict delivers data-driven football predictions designed to
-              help fans and analysts make more informed decisions before every
-              match.
+              KickPredict delivers data-driven football predictions backed by
+              match analysis, team form, and key performance trends to support
+              more informed decisions before every match.
             </p>
 
             <div className="kp-hero-actions">
@@ -198,7 +198,7 @@ export default function Hero() {
               </a>
 
               <a
-                href="https://t.me/kickpredict"
+                href="https://t.me/kickprediction"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="kp-telegram-btn"
@@ -311,7 +311,7 @@ export default function Hero() {
 
             <div>
               <span>Follow the community</span>
-              <strong>@kickpredict</strong>
+              <strong>@kickprediction</strong>
             </div>
 
             <ArrowUpRight size={17} />
