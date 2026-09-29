@@ -1174,6 +1174,8 @@ body {
     margin-top: 27px;
     font-size: 15px;
     line-height: 1.8;
+    align-self: flex-start;
+    text-align: left;
   }
 
   /* =========================
