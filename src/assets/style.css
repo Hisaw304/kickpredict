@@ -13,16 +13,18 @@ body {
    NAVBAR
 ========================================= */
 
+/* ========================= Navbar ========================= */
 .kp-navbar {
   position: fixed;
   width: 100%;
   top: 0;
+  left: 0;
   z-index: 1000;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 }
-
 .kp-nav-container {
   max-width: 1200px;
   margin: auto;
@@ -407,548 +409,973 @@ body {
   }
 }
 
-/* =========================================
-   KICKPREDICT HERO SECTION
-========================================= */
-
+/* ========================================================= HERO ========================================================= */
 .kp-hero {
+  position: relative;
   min-height: 100vh;
-
+  overflow: hidden;
+  background: var(--kp-bg-soft);
+} /* ========================================================= TOP INFINITE TICKER ========================================================= */
+.kp-hero-ticker {
+  position: absolute;
+  top: 72px;
+  left: 0;
+  width: 100%;
+  height: 44px;
   display: flex;
   align-items: center;
-
-  position: relative;
-
   overflow: hidden;
+  z-index: 20;
+  background: var(--kp-primary-black);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
 }
-
-.kp-hero::before {
-  content: "";
-
-  position: absolute;
-
-  inset: 0;
-
-  background: rgba(34, 197, 94, 0.08);
-
-  z-index: 0;
-}
-
-/* =========================================
-   HERO GRID
-========================================= */
-
-.kp-hero-con {
-  margin: auto;
-
-  padding: 0 24px;
-
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-
-  gap: 60px;
-
+.kp-ticker-track {
+  display: flex;
   align-items: center;
+  width: max-content;
+  flex-shrink: 0;
+  will-change: transform;
+  animation: kpTickerInfinite 32s linear infinite;
 }
-
-/* =========================================
-   HERO CONTAINER
-========================================= */
-
-.kp-hero-container {
-  padding-left: 110px;
-
-  position: relative;
-
-  z-index: 2;
+.kp-hero-ticker:hover .kp-ticker-track {
+  animation-play-state: paused;
 }
-
-/* =========================================
-   HERO CONTENT
-========================================= */
-
-.kp-hero-tag {
-  display: inline-block;
-
-  padding: 6px 14px;
-
-  border-radius: 30px;
-
-  font-size: 14px;
-
-  margin-bottom: 20px;
-
-  background: rgba(34, 197, 94, 0.15);
-
-  color: var(--kp-primary-black);
+.kp-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 28px;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 500;
 }
-
-.kp-hero-title {
-  font-size: 52px;
-
-  line-height: 1.1;
-
-  margin-bottom: 20px;
-
+.kp-ticker-status {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.13);
+  color: var(--kp-primary);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.kp-ticker-match {
+  color: #ffffff;
+  font-weight: 600;
+}
+.kp-ticker-prediction {
+  color: rgba(255, 255, 255, 0.55);
+}
+.kp-ticker-confidence {
+  color: var(--kp-primary);
   font-weight: 700;
 }
-
+.kp-ticker-divider {
+  width: 4px;
+  height: 4px;
+  flex-shrink: 0;
+  margin-left: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+} /* ========================================================= TELEGRAM TICKER ========================================================= */
+.kp-ticker-telegram-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.14);
+  color: var(--kp-primary);
+}
+.kp-ticker-telegram {
+  color: #ffffff;
+  font-weight: 600;
+}
+.kp-ticker-handle {
+  color: var(--kp-primary);
+  font-weight: 700;
+} /* ========================================================= TICKER ANIMATION ========================================================= */
+@keyframes kpTickerInfinite {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+} /* ========================================================= HERO CONTAINER ========================================================= */
+.kp-hero-con {
+  position: relative;
+  z-index: 2;
+  max-width: 1320px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 145px 50px 70px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(420px, 0.8fr);
+  gap: 80px;
+  align-items: center;
+} /* ========================================================= HERO CONTENT ========================================================= */
+.kp-hero-container {
+  position: relative;
+  z-index: 3;
+}
+.kp-hero-content {
+  max-width: 650px;
+} /* ========================================================= HERO TAG ========================================================= */
+.kp-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  margin-bottom: 22px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.07);
+  color: #198a42;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+} /* ========================================================= HERO TITLE ========================================================= */
+.kp-hero-title {
+  margin: 0;
+  max-width: 680px;
+  color: var(--kp-primary-black);
+  font-size: clamp(48px, 5.2vw, 76px);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  font-weight: 750;
+}
 .kp-hero-title span {
   color: var(--kp-primary);
-}
-
+} /* ========================================================= HERO DESCRIPTION ========================================================= */
 .kp-hero-desc {
-  font-size: 17px;
-
-  color: #555;
-
-  margin-bottom: 28px;
-
-  max-width: 460px;
+  max-width: 550px;
+  margin: 26px 0 0;
+  color: #667066;
+  font-size: 16px;
+  line-height: 1.75;
 }
-
-/* =========================================
-   CTA BUTTON
-========================================= */
-
+/* ========================================================= HERO ACTIONS ========================================================= */
+.kp-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+} /* ========================================================= MAIN BUTTON ========================================================= */
 .kp-hero-btnn {
-  display: inline-block;
-
-  padding: 14px 26px;
-
-  border-radius: 30px;
-
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 11px;
+  padding: 0 16px 0 21px;
+  margin: 0 !important;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  border: 0;
+  border-radius: 999px;
   background: var(--kp-primary-black);
-
-  color: white;
-
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition: 0.3s;
-
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
   text-decoration: none;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
-
+.kp-hero-btnn svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  margin: 0;
+  padding: 0;
+  transition: transform 0.25s ease;
+}
 .kp-hero-btnn:hover {
   transform: translateY(-2px);
-
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background: #071b0f;
+  box-shadow: 0 12px 30px rgba(10, 36, 20, 0.18);
 }
-
-/* =========================================
-   STATS
-========================================= */
-
-.kp-hero-stats {
-  margin-top: 35px;
-
-  display: flex;
-
-  justify-content: space-between;
-
-  padding: 24px 28px;
-
-  border-radius: 14px;
-
-  background: var(--kp-primary);
-}
-
-.kp-stat {
+.kp-hero-btnn:hover svg {
+  transform: translate(2px, -2px);
+} /* ========================================================= TELEGRAM BUTTON ========================================================= */
+.kp-telegram-btn {
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  gap: 7px;
+  padding: 0 13px;
+  margin: 0 !important;
+  box-sizing: border-box;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: max-content !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
   text-align: center;
-}
-
-.kp-stat h3 {
-  font-size: 28px;
-
+  border: 1px solid rgba(10, 36, 20, 0.12);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--kp-primary-black);
+  font-size: 13px;
   font-weight: 700;
-
-  color: var(--kp-primary-black);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: transform 0.25s ease, border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
-
-.kp-stat p {
-  font-size: 14px;
-
-  margin-top: 4px;
-
-  color: var(--kp-primary-black);
+.kp-telegram-btn svg {
+  display: block !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  max-width: 15px !important;
+  flex: 0 0 15px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #229ed9;
 }
-
-/* =========================================
-   HERO IMAGE
-========================================= */
-
-.kp-hero-image {
+.kp-telegram-btn span {
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+.kp-telegram-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34, 197, 94, 0.3);
+  box-shadow: 0 10px 25px rgba(10, 36, 20, 0.08);
+}
+/* ========================================================= STATS ========================================================= */
+.kp-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 570px;
+  margin-top: 48px;
+  padding-top: 26px;
+  border-top: 1px solid rgba(10, 36, 20, 0.1);
+}
+.kp-stat {
   position: relative;
-
-  height: 100vh;
-
-  z-index: 1;
+  padding-right: 24px;
 }
-
-.kp-hero-image img {
+.kp-stat:not(:last-child)::after {
+  content: "";
   position: absolute;
-
-  top: -120px;
-
-  right: 0;
-
+  top: 4px;
+  right: 24px;
+  width: 1px;
+  height: 42px;
+  background: rgba(10, 36, 20, 0.1);
+}
+.kp-stat h3 {
+  margin: 0;
+  color: var(--kp-primary-black);
+  font-size: 27px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 750;
+}
+.kp-stat p {
+  margin: 8px 0 0;
+  color: #7a827a;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+} /* ========================================================= RIGHT HERO VISUAL ========================================================= */
+.kp-hero-visual {
+  position: relative;
+  min-height: 680px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} /* ========================================================= PHONE ========================================================= */
+.kp-phone {
+  position: relative;
+  width: 338px;
+  height: 650px;
+  padding: 9px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  border-radius: 42px;
+  background: #111611;
+  box-shadow: 0 45px 90px rgba(0, 0, 0, 0.18), 0 15px 35px rgba(0, 0, 0, 0.12);
+  transform: rotate(1deg);
+  transition: transform 0.4s ease;
+}
+.kp-phone:hover {
+  transform: rotate(0deg) translateY(-5px);
+} /* ========================================================= PHONE TOP BAR ========================================================= */
+.kp-phone-top {
+  height: 66px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-radius: 34px 34px 0 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.kp-phone-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kp-phone-avatar {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--kp-primary);
+  color: var(--kp-primary-black);
+  font-size: 11px;
+  font-weight: 800;
+}
+.kp-phone-profile div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kp-phone-profile strong {
+  color: #151a15;
+  font-size: 13px;
+}
+.kp-phone-profile span {
+  color: #39a95c;
+  font-size: 10px;
+  font-weight: 600;
+} /* ========================================================= PHONE MENU ========================================================= */
+.kp-phone-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px;
+}
+.kp-phone-menu span {
+  display: block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #707570;
+} /* ========================================================= CHAT WINDOW ========================================================= */
+.kp-chat-window {
+  position: relative;
+  height: calc(100% - 122px);
+  overflow: hidden;
+  background: #f3f6f3;
+}
+.kp-chat-date {
+  position: absolute;
+  top: 12px;
+  left: 0;
   width: 100%;
-
-  height: calc(100vh + 120px);
-
-  object-fit: cover;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
 }
-
-/* =========================================
-   FLOATING TOP PICKS WRAPPER
-========================================= */
-
-.kp-floating-cards {
+.kp-chat-date span {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #7c827c;
+  font-size: 9px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+} /* ========================================================= CHAT MESSAGES ========================================================= */
+.kp-chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 48px 13px 20px;
+  will-change: transform;
+  animation: kpChatInfinite 32s linear infinite;
+}
+.kp-phone:hover .kp-chat-messages {
+  animation-play-state: paused;
+}
+.kp-chat-message {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.kp-message-avatar {
+  width: 27px;
+  height: 27px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #dfe6df;
+  color: #596159;
+  font-size: 9px;
+  font-weight: 800;
+}
+.kp-message-content {
+  max-width: 245px;
+}
+.kp-message-content > strong {
+  display: block;
+  margin: 0 0 4px 7px;
+  color: #6a716a;
+  font-size: 9px;
+  font-weight: 700;
+}
+.kp-message-bubble {
+  padding: 9px 10px 7px;
+  border-radius: 5px 14px 14px 14px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.045);
+}
+.kp-message-bubble p {
+  margin: 0;
+  padding-right: 25px;
+  color: #313731;
+  font-size: 10.5px;
+  line-height: 1.48;
+}
+.kp-message-time {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  margin-top: 4px;
+  color: #a0a6a0;
+  font-size: 8px;
+}
+.kp-message-time svg {
+  color: #229ed9;
+} /* ========================================================= PHONE INPUT ========================================================= */
+.kp-phone-input {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: #ffffff;
+  border-radius: 0 0 34px 34px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  color: #a0a5a0;
+  font-size: 10px;
+}
+.kp-phone-input > span {
+  flex: 1;
+  padding-left: 10px;
+}
+.kp-send-button {
+  width: 31px;
+  height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--kp-primary);
+  color: var(--kp-primary-black);
+} /* ========================================================= PHONE INFINITE CHAT ========================================================= */
+@keyframes kpChatInfinite {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+} /* ========================================================= TELEGRAM COMMUNITY LABEL ========================================================= */
+.kp-telegram-label {
   position: absolute;
-
-  bottom: 60px;
-
-  right: 40px;
-
-  width: 300px;
-
+  right: -10px;
+  bottom: 78px;
+  min-width: 210px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
   z-index: 5;
 }
-
-/* =========================================
-   FLOATING TOP PICK CARD
-========================================= */
-
-.kp-floating-card {
-  width: 100%;
-
-  box-sizing: border-box;
-
-  background: rgba(255, 255, 255, 0.96);
-
-  backdrop-filter: blur(10px);
-
-  -webkit-backdrop-filter: blur(10px);
-
-  padding: 22px 20px;
-
-  border-radius: 20px;
-
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.14);
-
-  border: 1px solid rgba(34, 197, 94, 0.12);
-}
-
-/* =========================================
-   SLIDE ANIMATION
-========================================= */
-
-.kp-floating-card-slide {
-  animation: kpFloatingSlide 0.45s ease;
-}
-
-@keyframes kpFloatingSlide {
-  0% {
-    opacity: 0;
-
-    transform: translateX(35px);
-  }
-
-  100% {
-    opacity: 1;
-
-    transform: translateX(0);
-  }
-}
-
-/* =========================================
-   CARD TOP
-========================================= */
-
-.kp-floating-top {
+.kp-telegram-label-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
   display: flex;
-
   align-items: center;
-
-  justify-content: space-between;
-
-  margin-bottom: 12px;
-}
-
-/* =========================================
-   BADGE
-========================================= */
-
-.kp-floating-badge {
-  display: inline-block;
-
-  background: rgba(34, 197, 94, 0.1);
-
-  color: var(--kp-primary);
-
-  font-size: 12px;
-
-  font-weight: 700;
-
-  padding: 6px 12px;
-
-  border-radius: 999px;
-
-  letter-spacing: 0.3px;
-
-  text-transform: uppercase;
-}
-
-/* =========================================
-   PICK NUMBER
-========================================= */
-
-.kp-pick-number {
-  margin: 0;
-
-  padding: 0;
-
-  background: transparent;
-
-  color: #888;
-
-  font-size: 12px;
-
-  font-weight: 600;
-}
-
-/* =========================================
-   CARD TITLE
-========================================= */
-
-.kp-floating-card h4 {
-  font-size: 18px;
-
-  font-weight: 800;
-
-  color: var(--kp-primary-black);
-
-  margin: 0 0 14px;
-
-  line-height: 1.2;
-}
-
-/* =========================================
-   INFORMATION
-========================================= */
-
-.kp-floating-info {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 10px;
-
-  margin-bottom: 16px;
-}
-
-.kp-floating-info p {
-  font-size: 14px;
-
-  color: #4b5563;
-
-  margin: 0;
-
-  line-height: 1.5;
-}
-
-.kp-floating-info strong {
-  color: var(--kp-primary-black);
-
-  font-weight: 700;
-}
-
-/* =========================================
-   ACCURACY
-========================================= */
-
-.kp-floating-accuracy {
-  display: inline-block;
-
-  margin-top: 4px;
-
-  font-size: 13px;
-
-  color: var(--kp-primary);
-
-  font-weight: 700;
-
-  background: rgba(34, 197, 94, 0.08);
-
-  padding: 8px 12px;
-
-  border-radius: 999px;
-}
-
-/* =========================================
-   SLIDER DOTS
-========================================= */
-
-.kp-floating-dots {
-  display: flex;
-
   justify-content: center;
-
-  align-items: center;
-
-  gap: 6px;
-
-  margin-top: 16px;
+  border-radius: 11px;
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--kp-primary);
+}
+.kp-telegram-label > div:nth-child(2) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kp-telegram-label span {
+  color: #858b85;
+  font-size: 9px;
+}
+.kp-telegram-label strong {
+  color: var(--kp-primary-black);
+  font-size: 11px;
 }
 
-.kp-floating-dots button {
-  width: 7px;
-
-  height: 7px;
-
-  padding: 0;
-
-  border: none;
-
-  border-radius: 50%;
-
-  background: #d1d5db;
-
-  cursor: pointer;
-
-  transition: all 0.3s ease;
-}
-
-.kp-floating-dots button.active {
-  width: 20px;
-
-  border-radius: 10px;
-
-  background: var(--kp-primary);
-}
-
-/* =========================================
-   HOVER
-========================================= */
-
-.kp-floating-card:hover {
-  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.18);
-}
-
-/* =========================================
+/* =========================================================
    TABLET
-========================================= */
+   ========================================================= */
 
-@media (max-width: 900px) {
-  .kp-hero {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    padding-top: 120px;
+@media (max-width: 1050px) {
+  .kp-hero-con {
+    grid-template-columns: 1fr 0.8fr;
+    gap: 45px;
+    padding-left: 30px;
+    padding-right: 30px;
   }
+
+  .kp-hero-title {
+    font-size: clamp(45px, 5.8vw, 62px);
+  }
+
+  .kp-phone {
+    width: 310px;
+    height: 600px;
+  }
+
+  .kp-hero-visual {
+    min-height: 620px;
+  }
+
+  .kp-telegram-label {
+    right: -5px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .kp-hero-ticker {
+    top: 70px;
+    height: 42px;
+  }
+
+  .kp-ticker-track {
+    animation-duration: 27s;
+  }
+
+  .kp-ticker-item {
+    padding: 0 22px;
+    font-size: 11px;
+  }
+
+  /* =========================
+     HERO
+     ========================= */
+
+  .kp-hero-con {
+    min-height: auto;
+    padding: 135px 22px 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+  }
+
+  /* =========================
+     CONTENT
+     ========================= */
 
   .kp-hero-container {
-    padding-left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .kp-hero-content {
+    width: 100%;
+    max-width: 620px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .kp-hero-tag {
+    margin-bottom: 18px;
+  }
+
+  .kp-hero-title {
+    max-width: 620px;
+    font-size: clamp(43px, 10vw, 60px);
+    line-height: 1;
+  }
+
+  .kp-hero-desc {
+    max-width: 530px;
+    margin-top: 22px;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* =========================
+     BUTTONS
+     ========================= */
+
+  .kp-hero-actions {
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 28px;
+    flex-wrap: nowrap;
+  }
+
+  .kp-hero-btnn,
+  .kp-telegram-btn {
+    height: 48px;
+    min-height: 48px;
+    width: fit-content;
+    min-width: 0;
+    max-width: max-content;
+    flex: 0 0 auto;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    white-space: nowrap;
+    flex-wrap: nowrap;
+
+    box-sizing: border-box;
+    font-size: 12px;
+  }
+
+  .kp-hero-btnn {
+    padding: 0 14px 0 17px;
+    gap: 8px;
+  }
+
+  .kp-telegram-btn {
+    padding: 0 11px;
+    gap: 6px;
+  }
+
+  .kp-hero-btnn span,
+  .kp-telegram-btn span {
+    white-space: nowrap;
+    width: auto;
+  }
+
+  .kp-telegram-btn svg {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    flex: 0 0 14px;
+  }
+
+  /* =========================
+     STATS
+     ========================= */
+
+  .kp-hero-stats {
+    width: 100%;
+    max-width: 520px;
+    margin-top: 42px;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .kp-stat {
+    width: 100%;
+    padding: 0;
+  }
+
+  .kp-stat:not(:last-child)::after {
+    right: 0;
+    top: 3px;
+    height: 38px;
+  }
+
+  .kp-stat h3 {
+    font-size: 24px;
+  }
+
+  .kp-stat p {
+    margin-top: 7px;
+    font-size: 9px;
+  }
+
+  /* =========================
+     PHONE
+     ========================= */
+
+  .kp-hero-visual {
+    width: 100%;
+    min-height: 650px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .kp-phone {
+    width: 315px;
+    height: 610px;
+    transform: rotate(0deg);
+  }
+
+  .kp-phone:hover {
+    transform: none;
+  }
+
+  /* =========================
+     TELEGRAM LABEL
+     ========================= */
+
+  .kp-telegram-label {
+    right: 50%;
+    bottom: 20px;
+    transform: translateX(50%);
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+  .kp-hero-ticker {
+    top: 66px;
+    height: 40px;
+  }
+
+  .kp-ticker-item {
+    padding: 0 19px;
+    font-size: 10px;
   }
 
   .kp-hero-con {
-    grid-template-columns: 1fr;
+    padding: 118px 17px 55px;
+    gap: 48px;
   }
 
-  .kp-hero-image {
-    height: 420px;
-    position: relative;
+  .kp-hero-title {
+    font-size: clamp(39px, 11.5vw, 52px);
   }
 
-  .kp-hero-image img {
-    position: relative;
-    top: 0;
-    right: auto;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .kp-hero-desc {
+    max-width: 420px;
+    font-size: 14px;
   }
 
-  .kp-floating-cards {
-    position: absolute;
+  /* =========================
+     BUTTONS
+     ========================= */
 
-    bottom: 20px;
-    right: 20px;
+  .kp-hero-actions {
+    gap: 7px;
+  }
 
-    width: 300px;
+  .kp-hero-btnn,
+  .kp-telegram-btn {
+    height: 46px;
+    min-height: 46px;
+    width: fit-content;
+    min-width: 0;
+    max-width: max-content;
+    flex: 0 0 auto;
+    font-size: 11px;
+  }
 
-    z-index: 10;
+  .kp-hero-btnn {
+    padding: 0 13px 0 16px;
+    gap: 7px;
+  }
+
+  .kp-telegram-btn {
+    padding: 0 10px;
+    gap: 5px;
+  }
+
+  .kp-telegram-btn svg {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    flex: 0 0 14px;
+  }
+
+  /* =========================
+     STATS
+     ========================= */
+
+  .kp-hero-stats {
+    max-width: 390px;
+    margin-top: 38px;
+  }
+
+  .kp-stat h3 {
+    font-size: 22px;
+  }
+
+  .kp-stat p {
+    font-size: 8px;
+  }
+
+  .kp-stat:not(:last-child)::after {
+    height: 34px;
+  }
+
+  /* =========================
+     PHONE
+     ========================= */
+
+  .kp-hero-visual {
+    min-height: 600px;
+  }
+
+  .kp-phone {
+    width: min(300px, 82vw);
+    height: min(580px, 158vw);
+    border-radius: 37px;
+    padding: 8px;
+  }
+
+  .kp-phone-top {
+    height: 61px;
+    border-radius: 30px 30px 0 0;
+  }
+
+  .kp-phone-avatar {
+    width: 35px;
+    height: 35px;
+  }
+
+  .kp-chat-window {
+    height: calc(100% - 113px);
+  }
+
+  .kp-phone-input {
+    height: 52px;
+    border-radius: 0 0 30px 30px;
+  }
+
+  .kp-message-content {
+    max-width: calc(100vw - 125px);
+  }
+
+  .kp-message-bubble p {
+    font-size: 10px;
+  }
+
+  /* =========================
+     TELEGRAM LABEL
+     ========================= */
+
+  .kp-telegram-label {
+    right: 50%;
+    bottom: 5px;
+    min-width: 190px;
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
+
+  .kp-telegram-label-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
   }
 }
 
-/* =========================================
-   MOBILE
-========================================= */
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
 
-@media (max-width: 768px) {
-  .kp-floating-cards {
-    position: absolute;
-
-    bottom: 20px;
-    right: 20px;
-
-    width: calc(100% - 40px);
-    max-width: 300px;
-
-    z-index: 10;
+@media (max-width: 380px) {
+  .kp-hero-actions {
+    gap: 5px;
   }
 
-  .kp-floating-card {
-    padding: 18px 17px;
-    border-radius: 17px;
+  .kp-hero-btnn,
+  .kp-telegram-btn {
+    height: 44px;
+    min-height: 44px;
+    width: fit-content;
+    min-width: 0;
+    max-width: max-content;
+    font-size: 10px;
+  }
+
+  .kp-hero-btnn {
+    padding: 0 10px 0 12px;
+    gap: 6px;
+  }
+
+  .kp-telegram-btn {
+    padding: 0 9px;
+    gap: 5px;
+  }
+
+  .kp-telegram-btn svg {
+    width: 13px;
+    height: 13px;
+    min-width: 13px;
+    flex-basis: 13px;
+  }
+
+  .kp-phone {
+    width: 285px;
+    height: 550px;
+  }
+
+  .kp-hero-visual {
+    min-height: 570px;
   }
 }
 
-/* =========================================
-   SMALL PHONES
-========================================= */
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
 
-@media (max-width: 480px) {
-  .kp-floating-cards {
-    position: absolute;
-
-    bottom: 15px;
-    left: 15px;
-    right: 15px;
-
-    width: auto;
-    max-width: none;
-
-    margin: 0;
-
-    z-index: 10;
+@media (prefers-reduced-motion: reduce) {
+  .kp-ticker-track,
+  .kp-chat-messages {
+    animation: none;
   }
 
-  .kp-floating-card {
-    padding: 17px 16px;
-    border-radius: 17px;
-  }
-
-  .kp-floating-info {
-    gap: 8px;
-    margin-bottom: 13px;
-  }
-
-  .kp-floating-info p {
-    font-size: 13px;
-  }
-
-  .kp-floating-card h4 {
-    font-size: 17px;
-    margin-bottom: 12px;
-  }
-
-  .kp-floating-accuracy {
-    font-size: 12px;
-    padding: 7px 10px;
+  .kp-phone,
+  .kp-hero-btnn,
+  .kp-telegram-btn {
+    transition: none;
   }
 }
 
@@ -3950,7 +4377,7 @@ body {
   transform: translateY(-2px);
 }
 
-.kp-telegram-btn {
+.kp-telegram-btns {
   display: block;
   width: 100%;
   margin-top: 14px;
@@ -3965,7 +4392,7 @@ body {
   transition: 0.3s ease;
 }
 
-.kp-telegram-btn:hover {
+.kp-telegram-btns:hover {
   transform: translateY(-2px);
 }
 

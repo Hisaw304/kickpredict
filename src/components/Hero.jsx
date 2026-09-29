@@ -1,11 +1,10 @@
-import heroImg from "../assets/hero1.jpg";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import React, { useEffect, useState } from "react";
+import { Send, ArrowUpRight, CheckCheck } from "lucide-react";
 
 export default function Hero() {
   const [overallAccuracy, setOverallAccuracy] = useState(0);
   const [topPicks, setTopPicks] = useState([]);
-  const [activePick, setActivePick] = useState(0);
 
   useEffect(() => {
     fetchOverallAccuracy();
@@ -40,13 +39,7 @@ export default function Hero() {
   }
 
   /* =========================================
-     TODAY'S TOP PICKS
-
-     Gets the 2 highest-confidence
-     pending predictions for today.
-
-     If confidence is tied, the prediction
-     created first comes first.
+     TODAY'S PREDICTIONS
   ========================================= */
 
   async function fetchTopPicks() {
@@ -63,48 +56,125 @@ export default function Hero() {
       .order("created_at", {
         ascending: true,
       })
-      .limit(2);
+      .limit(8);
 
     if (error) {
-      console.error("Error fetching top picks:", error);
+      console.error("Error fetching predictions:", error);
       return;
     }
 
     setTopPicks(data || []);
-    setActivePick(0);
   }
 
   /* =========================================
-     AUTOMATIC TOP PICK SLIDER
+     TELEGRAM CONVERSATION
   ========================================= */
 
-  useEffect(() => {
-    if (topPicks.length <= 1) {
-      return;
-    }
+  const telegramMessages = [
+    {
+      name: "Michael",
+      message: "Thank you KickPredict, I edited the prediction and won 🔥",
+      time: "10:42",
+    },
+    {
+      name: "David",
+      message: "KickPredict came through again today. That pick was spot on.",
+      time: "10:46",
+    },
+    {
+      name: "Samuel",
+      message: "Been following the predictions for weeks. Very solid results.",
+      time: "10:51",
+    },
+    {
+      name: "Daniel",
+      message: "That Over 2.5 prediction was exactly what I needed today.",
+      time: "11:03",
+    },
+    {
+      name: "Chris",
+      message: "Won my ticket today. Appreciate the analysis 🙌",
+      time: "11:08",
+    },
+    {
+      name: "Victor",
+      message: "The confidence levels actually make it easier to choose.",
+      time: "11:15",
+    },
+    {
+      name: "James",
+      message: "Another good day. Keep the picks coming.",
+      time: "11:21",
+    },
+  ];
 
-    const interval = setInterval(() => {
-      setActivePick((current) => {
-        return (current + 1) % topPicks.length;
-      });
-    }, 5000);
+  /* Duplicate messages so the ticker loops seamlessly */
 
-    return () => clearInterval(interval);
-  }, [topPicks.length]);
+  const tickerPicks = topPicks.length > 0 ? [...topPicks, ...topPicks] : [];
 
-  /* =========================================
-     MANUAL PICK SELECTION
-  ========================================= */
-
-  function changePick(index) {
-    setActivePick(index);
-  }
+  const tickerMessages =
+    tickerPicks.length > 0
+      ? tickerPicks
+      : [
+          {
+            id: "telegram",
+            match: "Join KickPredict",
+            league: "Telegram",
+            prediction: "@kickpredict",
+            confidence: null,
+          },
+        ];
 
   return (
     <section className="kp-hero">
+      {/* =========================================
+          TOP LIVE TICKER
+      ========================================= */}
+
+      <div className="kp-hero-ticker">
+        <div className="kp-ticker-track">
+          {tickerMessages.map((pick, index) => (
+            <div
+              className="kp-ticker-item"
+              key={`${pick.id || index}-${index}`}
+            >
+              {pick.confidence ? (
+                <>
+                  <span className="kp-ticker-status">Today</span>
+
+                  <span className="kp-ticker-match">{pick.match}</span>
+
+                  <span className="kp-ticker-prediction">
+                    {pick.prediction}
+                  </span>
+
+                  <span className="kp-ticker-confidence">
+                    {pick.confidence}%
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="kp-ticker-telegram-icon">
+                    <Send size={12} />
+                  </span>
+
+                  <span className="kp-ticker-telegram">
+                    Join KickPredict on Telegram
+                  </span>
+
+                  <span className="kp-ticker-handle">@kickpredict</span>
+                </>
+              )}
+
+              <span className="kp-ticker-divider" />
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="kp-hero-con">
         {/* =========================================
-            HERO LEFT CONTENT
+            LEFT CONTENT
         ========================================= */}
 
         <div className="kp-hero-container">
@@ -117,12 +187,26 @@ export default function Hero() {
 
             <p className="kp-hero-desc">
               KickPredict delivers data-driven football predictions designed to
-              help fans and analysts stay ahead with smarter match insights.
+              help fans and analysts make more informed decisions before every
+              match.
             </p>
 
-            <a href="#predictions" className="kp-hero-btnn">
-              View Predictions
-            </a>
+            <div className="kp-hero-actions">
+              <a href="#predictions" className="kp-hero-btnn">
+                <span>View Predictions</span>
+                <ArrowUpRight size={17} />
+              </a>
+
+              <a
+                href="https://t.me/kickpredict"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="kp-telegram-btn"
+              >
+                <Send size={16} />
+                <span>Join Telegram</span>
+              </a>
+            </div>
 
             {/* =========================================
                 STATS
@@ -148,79 +232,89 @@ export default function Hero() {
         </div>
 
         {/* =========================================
-            RIGHT IMAGE
+            RIGHT — TELEGRAM PHONE
         ========================================= */}
 
-        <div>
-          <div className="kp-hero-image">
-            <img src={heroImg} alt="football analytics" />
+        <div className="kp-hero-visual">
+          <div className="kp-phone">
+            {/* PHONE TOP BAR */}
 
-            {/* =========================================
-                TOP PICKS SLIDER
-            ========================================= */}
+            <div className="kp-phone-top">
+              <div className="kp-phone-profile">
+                <div className="kp-phone-avatar">KP</div>
 
-            {topPicks.length > 0 && (
-              <div className="kp-floating-cards">
-                <div
-                  key={topPicks[activePick].id}
-                  className="kp-floating-card kp-floating-card-slide"
-                >
-                  {/* CARD TOP */}
-                  <div className="kp-floating-top">
-                    <div className="kp-floating-badge">🔥 Top Pick</div>
-
-                    {topPicks.length > 1 && (
-                      <span className="kp-pick-number">
-                        {activePick + 1}/{topPicks.length}
-                      </span>
-                    )}
-                  </div>
-
-                  <h4>Today's Top Pick</h4>
-
-                  {/* PICK INFORMATION */}
-                  <div className="kp-floating-info">
-                    <p>
-                      <strong>League:</strong> {topPicks[activePick].league}
-                    </p>
-
-                    <p>
-                      <strong>Team:</strong> {topPicks[activePick].match}
-                    </p>
-
-                    <p>
-                      <strong>Prediction:</strong>{" "}
-                      {topPicks[activePick].prediction}
-                    </p>
-
-                    <p>
-                      <strong>Confidence:</strong>{" "}
-                      {topPicks[activePick].confidence}%
-                    </p>
-                  </div>
-
-                  {/* OVERALL ACCURACY */}
-                  <span className="kp-floating-accuracy">
-                    Overall Prediction Accuracy {overallAccuracy}%
-                  </span>
-
-                  {/* SLIDER DOTS */}
-                  {topPicks.length > 1 && (
-                    <div className="kp-floating-dots">
-                      {topPicks.map((pick, index) => (
-                        <button
-                          key={pick.id}
-                          type="button"
-                          className={index === activePick ? "active" : ""}
-                          onClick={() => changePick(index)}
-                          aria-label={`Show top pick ${index + 1}`}
-                        />
-                      ))}
-                    </div>
-                  )}
+                <div>
+                  <strong>KickPredict</strong>
+                  <span>online</span>
                 </div>
               </div>
-            )}
+
+              <div className="kp-phone-menu">
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
+
+            {/* TELEGRAM CHAT */}
+
+            <div className="kp-chat-window">
+              <div className="kp-chat-date">
+                <span>Today</span>
+              </div>
+
+              <div className="kp-chat-messages">
+                {[...telegramMessages, ...telegramMessages].map(
+                  (item, index) => (
+                    <div
+                      className="kp-chat-message"
+                      key={`${item.name}-${index}`}
+                    >
+                      <div className="kp-message-avatar">
+                        {item.name.charAt(0)}
+                      </div>
+
+                      <div className="kp-message-content">
+                        <strong>{item.name}</strong>
+
+                        <div className="kp-message-bubble">
+                          <p>{item.message}</p>
+
+                          <span className="kp-message-time">
+                            {item.time}
+                            <CheckCheck size={12} />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* PHONE BOTTOM */}
+
+            <div className="kp-phone-input">
+              <span>Message</span>
+              <div className="kp-send-button">
+                <Send size={14} />
+              </div>
+            </div>
+          </div>
+
+          {/* TELEGRAM LABEL */}
+
+          <div className="kp-telegram-label">
+            <div className="kp-telegram-label-icon">
+              <Send size={17} />
+            </div>
+
+            <div>
+              <span>Follow the community</span>
+              <strong>@kickpredict</strong>
+            </div>
+
+            <ArrowUpRight size={17} />
           </div>
         </div>
       </div>

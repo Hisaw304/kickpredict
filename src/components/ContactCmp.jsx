@@ -148,7 +148,10 @@ export default function ContactCmp() {
                 {loading ? "Sending..." : "Send Message"}
               </button>
 
-              <a href="https://t.me/kickprediction" className="kp-telegram-btn">
+              <a
+                href="https://t.me/kickprediction"
+                className="kp-telegram-btns"
+              >
                 For fast response, contact us on Telegram
               </a>
 
