@@ -100,6 +100,11 @@ export default function History() {
       <div className="kp-history-container">
         <h2 className="kp-history-title">{historyLabel}</h2>
 
+        <p className="kp-history-description">
+          Review the latest completed predictions, including their results,
+          confidence levels, and overall accuracy.
+        </p>
+
         {history.length === 0 ? (
           <>
             <p className="kp-history-empty">

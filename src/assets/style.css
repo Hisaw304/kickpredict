@@ -3,6 +3,7 @@
   --kp-primary-black: #0a2414;
   --kp-bg-soft: #f1f5f3;
   --kp-black: #000000;
+  --kp-text-muted: #66736b;
 }
 body {
   background: var(--kp-bg-soft);
@@ -1594,7 +1595,7 @@ body {
   color: white;
   text-align: center;
   font-size: 36px;
-  font-weight: 800;
+  font-weight: 900;
   margin: 0 0 50px;
 }
 
@@ -2495,15 +2496,23 @@ body {
   max-width: 1200px;
   margin: 0 auto;
 }
-
 /* TITLE */
 
 .kp-history-title {
   text-align: center;
   color: var(--kp-primary-black);
   font-size: 36px;
-  font-weight: bold;
-  margin: 0 0 60px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.kp-history-description {
+  max-width: 620px;
+  margin: 0 auto 28px;
+  text-align: center;
+  color: var(--kp-text-muted);
+  font-size: 15px;
+  line-height: 1.75;
 }
 
 /* EMPTY */
@@ -2926,7 +2935,7 @@ body {
 
   .kp-history-title {
     font-size: 30px;
-    margin-bottom: 40px;
+    margin-bottom: 10px;
   }
 
   .kp-history-panel {
@@ -3039,7 +3048,7 @@ body {
   .kp-history-title {
     font-size: 27px;
     line-height: 1.2;
-    margin-bottom: 35px;
+    margin-bottom: 20px;
   }
 
   .kp-history-panel-header {
@@ -3798,7 +3807,7 @@ body {
   font-size: 36px;
   margin-bottom: 20px;
   color: var(--kp-black);
-  font-weight: bold;
+  font-weight: 900;
 }
 
 .kp-about-title span {
@@ -3885,7 +3894,7 @@ body {
 .kp-why-title {
   font-size: 36px;
   margin-bottom: 20px;
-  font-weight: bold;
+  font-weight: 900;
 }
 
 .kp-why-title span {
@@ -4018,7 +4027,7 @@ body {
   text-align: center;
   color: var(--kp-primary-black);
   font-size: 36px;
-  font-weight: bold;
+  font-weight: 900;
   margin-bottom: 10px;
 }
 
@@ -4305,7 +4314,7 @@ body {
   color: var(--kp-bg-soft);
   font-size: 36px;
   margin-bottom: 10px;
-  font-weight: bold;
+  font-weight: 900;
 }
 
 .kp-faq-header p {
@@ -4794,7 +4803,7 @@ body {
   color: var(--kp-black);
   font-size: 36px;
   margin-bottom: 10px;
-  font-weight: bold;
+  font-weight: 900;
 }
 
 .kp-contact-subtitle {
