@@ -374,7 +374,24 @@ body {
   margin-bottom: 12px;
 }
 
+.kp-footer-policy {
+  width: 100%;
+  margin-top: 32px;
+  padding: 24px 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.kp-footer-policy-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 12px;
+}
+
 .kp-footer-policy-text {
+  width: 100%;
   max-width: 950px;
   margin: 0 auto;
   font-size: 14px;
@@ -392,6 +409,44 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   font-size: 14px;
   opacity: 0.8;
+}
+
+/* ================================
+   MOBILE POLICY
+================================ */
+
+@media (max-width: 600px) {
+  .kp-footer-policy {
+    padding: 24px 22px 0;
+  }
+
+  .kp-footer-policy-title {
+    font-size: 15px;
+    margin-bottom: 13px;
+  }
+
+  .kp-footer-policy-text {
+    max-width: 100%;
+    font-size: 13px;
+    line-height: 1.85;
+  }
+}
+
+@media (max-width: 420px) {
+  .kp-footer-policy {
+    padding: 22px 18px 0;
+  }
+
+  .kp-footer-policy-title {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .kp-footer-policy-text {
+    max-width: 100%;
+    font-size: 12.5px;
+    line-height: 1.85;
+  }
 }
 
 /* =========================================
@@ -951,32 +1006,84 @@ body {
 }
 
 /* =========================================================
-   TABLET
+   TABLET / MEDIUM
    ========================================================= */
 
 @media (max-width: 1050px) {
   .kp-hero-con {
-    grid-template-columns: 1fr 0.8fr;
-    gap: 45px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.78fr);
+    gap: 35px;
     padding-left: 30px;
     padding-right: 30px;
   }
 
   .kp-hero-title {
-    font-size: clamp(45px, 5.8vw, 62px);
+    font-size: clamp(44px, 5.5vw, 58px);
+    line-height: 1.02;
+  }
+
+  .kp-hero-desc {
+    max-width: 500px;
   }
 
   .kp-phone {
-    width: 310px;
-    height: 600px;
+    width: 295px;
+    height: 570px;
   }
 
   .kp-hero-visual {
-    min-height: 620px;
+    min-height: 590px;
   }
 
   .kp-telegram-label {
-    right: -5px;
+    right: -2px;
+  }
+}
+
+/* =========================================================
+   TABLET — MORE BREATHING ROOM
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .kp-hero-con {
+    grid-template-columns: 1fr 0.72fr;
+    gap: 25px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .kp-hero-title {
+    font-size: clamp(42px, 5.3vw, 54px);
+    line-height: 1.04;
+  }
+
+  .kp-hero-desc {
+    max-width: 460px;
+    margin-top: 20px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .kp-hero-actions {
+    margin-top: 26px;
+  }
+
+  .kp-hero-stats {
+    margin-top: 35px;
+  }
+
+  .kp-phone {
+    width: 275px;
+    height: 535px;
+  }
+
+  .kp-hero-visual {
+    min-height: 555px;
+  }
+
+  .kp-telegram-label {
+    right: 0;
+    bottom: 10px;
   }
 }
 
@@ -995,26 +1102,27 @@ body {
   }
 
   .kp-ticker-item {
+    height: 42px;
     padding: 0 22px;
     font-size: 11px;
   }
 
   /* =========================
-     HERO
-     ========================= */
+     HERO LAYOUT
+  ========================= */
 
   .kp-hero-con {
     min-height: auto;
-    padding: 135px 22px 70px;
+    padding: 128px 22px 75px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 60px;
+    gap: 72px;
   }
 
   /* =========================
      CONTENT
-     ========================= */
+  ========================= */
 
   .kp-hero-container {
     width: 100%;
@@ -1025,95 +1133,87 @@ body {
 
   .kp-hero-content {
     width: 100%;
-    max-width: 620px;
+    max-width: 600px;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
 
   .kp-hero-tag {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
   }
 
   .kp-hero-title {
-    max-width: 620px;
-    font-size: clamp(43px, 10vw, 60px);
-    line-height: 1;
+    max-width: 600px;
+    font-size: clamp(42px, 9vw, 56px);
+    line-height: 1.02;
   }
 
   .kp-hero-desc {
-    max-width: 530px;
-    margin-top: 22px;
+    max-width: 540px;
+    margin-top: 23px;
     font-size: 15px;
-    line-height: 1.7;
+    line-height: 1.75;
   }
 
   /* =========================
      BUTTONS
-     ========================= */
+  ========================= */
 
   .kp-hero-actions {
     width: auto;
+    margin-top: 30px;
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    margin-top: 28px;
+    gap: 9px;
     flex-wrap: nowrap;
   }
 
   .kp-hero-btnn,
   .kp-telegram-btn {
-    height: 48px;
-    min-height: 48px;
-    width: fit-content;
-    min-width: 0;
-    max-width: max-content;
-    flex: 0 0 auto;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    width: fit-content !important;
+    min-width: 0 !important;
+    max-width: max-content !important;
+    flex: 0 0 auto !important;
     white-space: nowrap;
-    flex-wrap: nowrap;
-
     box-sizing: border-box;
     font-size: 12px;
   }
 
   .kp-hero-btnn {
-    padding: 0 14px 0 17px;
+    padding: 0 15px 0 18px;
     gap: 8px;
   }
 
   .kp-telegram-btn {
-    padding: 0 11px;
+    padding: 0 12px;
     gap: 6px;
   }
 
   .kp-hero-btnn span,
   .kp-telegram-btn span {
     white-space: nowrap;
-    width: auto;
   }
 
   .kp-telegram-btn svg {
-    width: 14px;
-    height: 14px;
-    min-width: 14px;
-    flex: 0 0 14px;
+    width: 14px !important;
+    height: 14px !important;
+    min-width: 14px !important;
+    flex: 0 0 14px !important;
   }
 
   /* =========================
      STATS
-     ========================= */
+  ========================= */
 
   .kp-hero-stats {
     width: 100%;
-    max-width: 520px;
-    margin-top: 42px;
+    max-width: 500px;
+    margin-top: 46px;
     justify-items: center;
     text-align: center;
   }
@@ -1139,21 +1239,22 @@ body {
   }
 
   /* =========================
-     PHONE
-     ========================= */
+     PHONE SECTION
+  ========================= */
 
   .kp-hero-visual {
     width: 100%;
-    min-height: 650px;
+    min-height: 600px;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
   }
 
   .kp-phone {
-    width: 315px;
-    height: 610px;
-    transform: rotate(0deg);
+    width: 300px;
+    height: 580px;
+    transform: none;
   }
 
   .kp-phone:hover {
@@ -1162,11 +1263,11 @@ body {
 
   /* =========================
      TELEGRAM LABEL
-     ========================= */
+  ========================= */
 
   .kp-telegram-label {
     right: 50%;
-    bottom: 20px;
+    bottom: 0;
     transform: translateX(50%);
   }
 }
@@ -1182,40 +1283,55 @@ body {
   }
 
   .kp-ticker-item {
+    height: 40px;
     padding: 0 19px;
     font-size: 10px;
   }
 
+  /* =========================
+     HERO LAYOUT
+  ========================= */
+
   .kp-hero-con {
-    padding: 118px 17px 55px;
-    gap: 48px;
+    padding: 112px 17px 60px;
+    gap: 58px;
+  }
+
+  /* =========================
+     CONTENT
+  ========================= */
+
+  .kp-hero-tag {
+    margin-bottom: 17px;
   }
 
   .kp-hero-title {
-    font-size: clamp(39px, 11.5vw, 52px);
+    max-width: 390px;
+    font-size: clamp(38px, 10.8vw, 49px);
+    line-height: 1.03;
   }
 
   .kp-hero-desc {
-    max-width: 420px;
-    font-size: 14px;
+    max-width: 380px;
+    margin-top: 21px;
+    font-size: 13.5px;
+    line-height: 1.75;
   }
 
   /* =========================
      BUTTONS
-     ========================= */
+  ========================= */
 
   .kp-hero-actions {
+    margin-top: 27px;
     gap: 7px;
   }
 
   .kp-hero-btnn,
   .kp-telegram-btn {
-    height: 46px;
-    min-height: 46px;
-    width: fit-content;
-    min-width: 0;
-    max-width: max-content;
-    flex: 0 0 auto;
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
     font-size: 11px;
   }
 
@@ -1229,92 +1345,99 @@ body {
     gap: 5px;
   }
 
+  .kp-hero-btnn svg {
+    width: 15px;
+    height: 15px;
+  }
+
   .kp-telegram-btn svg {
-    width: 14px;
-    height: 14px;
-    min-width: 14px;
-    flex: 0 0 14px;
+    width: 13px !important;
+    height: 13px !important;
+    min-width: 13px !important;
+    flex-basis: 13px !important;
   }
 
   /* =========================
      STATS
-     ========================= */
+  ========================= */
 
   .kp-hero-stats {
-    max-width: 390px;
-    margin-top: 38px;
+    max-width: 370px;
+    margin-top: 42px;
   }
 
   .kp-stat h3 {
-    font-size: 22px;
+    font-size: 21px;
   }
 
   .kp-stat p {
     font-size: 8px;
+    margin-top: 6px;
   }
 
   .kp-stat:not(:last-child)::after {
-    height: 34px;
+    height: 32px;
   }
 
   /* =========================
      PHONE
-     ========================= */
+  ========================= */
 
   .kp-hero-visual {
-    min-height: 600px;
+    min-height: 555px;
   }
 
   .kp-phone {
-    width: min(300px, 82vw);
-    height: min(580px, 158vw);
-    border-radius: 37px;
+    width: min(285px, 80vw);
+    height: min(555px, 155vw);
+    border-radius: 35px;
     padding: 8px;
   }
 
   .kp-phone-top {
-    height: 61px;
-    border-radius: 30px 30px 0 0;
+    height: 59px;
+    border-radius: 28px 28px 0 0;
   }
 
   .kp-phone-avatar {
-    width: 35px;
-    height: 35px;
+    width: 34px;
+    height: 34px;
   }
 
   .kp-chat-window {
-    height: calc(100% - 113px);
+    height: calc(100% - 111px);
   }
 
   .kp-phone-input {
     height: 52px;
-    border-radius: 0 0 30px 30px;
+    border-radius: 0 0 28px 28px;
   }
 
   .kp-message-content {
-    max-width: calc(100vw - 125px);
+    max-width: calc(100vw - 120px);
   }
 
   .kp-message-bubble p {
     font-size: 10px;
+    line-height: 1.45;
   }
 
   /* =========================
      TELEGRAM LABEL
-     ========================= */
+  ========================= */
 
   .kp-telegram-label {
+    bottom: 0;
     right: 50%;
-    bottom: 5px;
-    min-width: 190px;
-    padding: 10px 12px;
-    border-radius: 14px;
+    min-width: 185px;
+    padding: 9px 11px;
+    border-radius: 13px;
   }
 
   .kp-telegram-label-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 9px;
+    width: 29px;
+    height: 29px;
+    border-radius: 8px;
   }
 }
 
@@ -1323,17 +1446,33 @@ body {
    ========================================================= */
 
 @media (max-width: 380px) {
+  .kp-hero-con {
+    padding: 108px 15px 52px;
+    gap: 52px;
+  }
+
+  .kp-hero-title {
+    max-width: 350px;
+    font-size: 36px;
+    line-height: 1.04;
+  }
+
+  .kp-hero-desc {
+    max-width: 340px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
   .kp-hero-actions {
     gap: 5px;
+    margin-top: 25px;
   }
 
   .kp-hero-btnn,
   .kp-telegram-btn {
-    height: 44px;
-    min-height: 44px;
-    width: fit-content;
-    min-width: 0;
-    max-width: max-content;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
     font-size: 10px;
   }
 
@@ -1343,24 +1482,47 @@ body {
   }
 
   .kp-telegram-btn {
-    padding: 0 9px;
-    gap: 5px;
+    padding: 0 8px;
+    gap: 4px;
+  }
+
+  .kp-hero-btnn svg {
+    width: 14px;
+    height: 14px;
   }
 
   .kp-telegram-btn svg {
-    width: 13px;
-    height: 13px;
-    min-width: 13px;
-    flex-basis: 13px;
+    width: 12px !important;
+    height: 12px !important;
+    min-width: 12px !important;
+    flex-basis: 12px !important;
+  }
+
+  .kp-hero-stats {
+    margin-top: 36px;
+    max-width: 340px;
+  }
+
+  .kp-stat h3 {
+    font-size: 20px;
+  }
+
+  .kp-stat p {
+    font-size: 8px;
   }
 
   .kp-phone {
-    width: 285px;
-    height: 550px;
+    width: 270px;
+    height: 525px;
   }
 
   .kp-hero-visual {
-    min-height: 570px;
+    min-height: 535px;
+  }
+
+  .kp-telegram-label {
+    min-width: 178px;
+    bottom: 0;
   }
 }
 
