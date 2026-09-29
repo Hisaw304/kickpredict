@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 
 export default function History() {
   const [history, setHistory] = useState([]);
+  const [historyLabel, setHistoryLabel] = useState("Yesterday's Results");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -11,23 +12,67 @@ export default function History() {
   }, []);
 
   async function fetchHistory() {
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0];
+
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const dateString = yesterday.toISOString().split("T")[0];
+    const yesterdayString = yesterday.toISOString().split("T")[0];
 
-    const { data, error } = await supabase
+    // First: try yesterday
+    const { data: yesterdayData, error: yesterdayError } = await supabase
       .from("predictions")
       .select("*")
-      .eq("match_date", dateString)
+      .eq("match_date", yesterdayString)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error(error);
+    if (yesterdayError) {
+      console.error(yesterdayError);
       return;
     }
 
-    setHistory(data || []);
+    if (yesterdayData && yesterdayData.length > 0) {
+      setHistory(yesterdayData);
+      setHistoryLabel("Yesterday's Results");
+      return;
+    }
+
+    // Fallback: get the most recent prediction date before today
+    const { data: latestData, error: latestError } = await supabase
+      .from("predictions")
+      .select("*")
+      .lt("match_date", todayString)
+      .order("match_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (latestError) {
+      console.error(latestError);
+      return;
+    }
+
+    if (!latestData || latestData.length === 0) {
+      setHistory([]);
+      return;
+    }
+
+    const latestDate = latestData[0].match_date;
+
+    // Fetch all predictions from that most recent date
+    const { data: recentHistory, error: recentError } = await supabase
+      .from("predictions")
+      .select("*")
+      .eq("match_date", latestDate)
+      .order("created_at", { ascending: false });
+
+    if (recentError) {
+      console.error(recentError);
+      return;
+    }
+
+    setHistory(recentHistory || []);
+    setHistoryLabel("Recent Results");
   }
 
   const wins = history.filter((item) => item.status === "win").length;
@@ -53,10 +98,23 @@ export default function History() {
   return (
     <section className="kp-history">
       <div className="kp-history-container">
-        <h2 className="kp-history-title">Yesterday's Prediction Results</h2>
+        <h2 className="kp-history-title">{historyLabel}</h2>
 
         {history.length === 0 ? (
-          <p className="kp-history-empty">No predictions for yesterday.</p>
+          <>
+            <p className="kp-history-empty">
+              No prediction results available yet.
+            </p>
+
+            <div className="kp-history-button-wrapper">
+              <button
+                className="kp-history-button"
+                onClick={() => navigate("/predictions")}
+              >
+                View Predictions
+              </button>
+            </div>
+          </>
         ) : (
           <>
             {/* RESULTS PANEL */}
@@ -69,9 +127,7 @@ export default function History() {
                   <strong>{historyDate}</strong>
                 </div>
 
-                <div className="kp-history-results-badge">
-                  Yesterday's Results
-                </div>
+                <div className="kp-history-results-badge">{historyLabel}</div>
               </div>
 
               {/* COLUMN HEADER */}
