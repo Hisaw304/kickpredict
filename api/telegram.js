@@ -4,13 +4,82 @@ import {
   formatTelegramError,
 } from "../src/lib/telegram/format.js";
 
-export default async function handler(req, res) {
-  /*
-   * GET
-   *
-   * Useful for checking that the Vercel function exists.
-   */
+const WELCOME_MESSAGE = [
+  "KICKPREDICT AI",
+  "",
+  "Your football prediction assistant.",
+  "",
+  "Ask naturally. Get researched football picks in seconds.",
+  "",
+  "WHAT CAN I DO?",
+  "",
+  "• Find high-confidence picks",
+  "• Analyze today's and upcoming fixtures",
+  "• Find Over / Under markets",
+  "• Find 1X, X2 and Double Chance picks",
+  "• Find BTTS picks",
+  "• Filter by league",
+  "• Adjust how safe or aggressive your picks are",
+  "• Understand normal language, shorthand and typos",
+  "",
+  "You don't need complicated commands.",
+  "Just tell me what you want.",
+  "",
+  "TRY ONE OF THESE",
+  "",
+  "“Give me 5 safe picks tonight”",
+  "",
+  "“abeg give me 5 sure o2.5 picks tonite”",
+  "",
+  "“Give me 5 1X picks tomorrow”",
+  "",
+  "Or ask me anything about football predictions.",
+  "",
+  "Let's find your picks.",
+].join("\n");
 
+const HELP_MESSAGE = [
+  "KICKPREDICT AI",
+  "",
+  "Here's what you can ask me for.",
+  "",
+  "PREDICTION TYPES",
+  "",
+  "• Safe picks",
+  "• Over / Under",
+  "• Double Chance",
+  "• BTTS",
+  "• Home / Away goals",
+  "• League-specific picks",
+  "• Weekend picks",
+  "• Strong or aggressive selections",
+  "",
+  "USEFUL COMMANDS",
+  "",
+  "/start — Start KickPredict",
+  "/help — Show this guide",
+  "",
+  "TRY ONE OF THESE",
+  "",
+  "“Give me 5 safe picks tonight”",
+  "",
+  "“Give me 5 over 2.5 picks”",
+  "",
+  "“Give me 5 1X picks tomorrow”",
+  "",
+  "“Give me 10 picks this weekend”",
+  "",
+  "“Give me 5 strong BTTS picks”",
+  "",
+  "“Give me 5 safe Premier League picks”",
+  "",
+  "You can also use normal language,",
+  "shorthand and typos.",
+  "",
+  "Just tell me what you want.",
+].join("\n");
+
+export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
@@ -18,10 +87,6 @@ export default async function handler(req, res) {
       webhook: "active",
     });
   }
-
-  /*
-   * Telegram sends webhook updates using POST.
-   */
 
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -32,13 +97,6 @@ export default async function handler(req, res) {
 
   try {
     const update = req.body;
-
-    /*
-     * Telegram can send different types of updates.
-     *
-     * For now we only care about normal messages.
-     */
-
     const message = update?.message;
 
     if (!message) {
@@ -52,10 +110,6 @@ export default async function handler(req, res) {
 
     const text = typeof message?.text === "string" ? message.text.trim() : "";
 
-    /*
-     * Ignore messages without usable text.
-     */
-
     if (!chatId || !text) {
       return res.status(200).json({
         ok: true,
@@ -64,31 +118,10 @@ export default async function handler(req, res) {
     }
 
     /*
-     * ============================
-     * /start
-     * ============================
+     * START
      */
-
     if (text === "/start") {
-      await sendTelegramMessage(
-        chatId,
-        [
-          "KICKPREDICT AI",
-          "",
-          "Welcome to KickPredict.",
-          "",
-          "Ask me for football predictions naturally.",
-          "",
-          "Examples:",
-          "",
-          "Give me 5 safe picks tonight",
-          "Give me 5 over 2.5 picks",
-          "Give me 5 1X picks tomorrow",
-          "Give me 10 picks this weekend",
-          "",
-          "You can use normal language, shorthand and typos.",
-        ].join("\n")
-      );
+      await sendTelegramMessage(chatId, WELCOME_MESSAGE);
 
       return res.status(200).json({
         ok: true,
@@ -96,28 +129,10 @@ export default async function handler(req, res) {
     }
 
     /*
-     * ============================
-     * /help
-     * ============================
+     * HELP
      */
-
     if (text === "/help") {
-      await sendTelegramMessage(
-        chatId,
-        [
-          "KICKPREDICT AI",
-          "",
-          "Ask me for football predictions naturally.",
-          "",
-          "Examples:",
-          "",
-          "Give me 5 safe picks tonight",
-          "Give me 5 safe over 2.5 picks",
-          "Give me 7 strong 1X picks",
-          "Give me 5 under 1.5 tomorrow",
-          "Give me 10 picks this weekend",
-        ].join("\n")
-      );
+      await sendTelegramMessage(chatId, HELP_MESSAGE);
 
       return res.status(200).json({
         ok: true,
@@ -125,14 +140,8 @@ export default async function handler(req, res) {
     }
 
     /*
-     * ============================
-     * STATUS MESSAGE
-     * ============================
-     *
-     * This is intentionally just a
-     * normal message for now.
+     * RESEARCH STATUS
      */
-
     try {
       await sendTelegramMessage(chatId, "Researching fixtures...");
     } catch (statusError) {
@@ -140,17 +149,8 @@ export default async function handler(req, res) {
     }
 
     /*
-     * ============================
      * CALL KICKPREDICT AGENT
-     * ============================
-     *
-     * The Telegram bot does not create
-     * its own prediction logic.
-     *
-     * It sends the exact natural-language
-     * request to the existing agent.
      */
-
     const host = req.headers.host;
 
     if (!host) {
@@ -189,12 +189,6 @@ export default async function handler(req, res) {
       );
     }
 
-    /*
-     * ============================
-     * SEND RESULT TO TELEGRAM
-     * ============================
-     */
-
     const formatted = formatPredictionResponse(agentData);
 
     await sendTelegramMessage(chatId, formatted);
@@ -205,11 +199,6 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Telegram webhook error:", error);
 
-    /*
-     * Try to tell the Telegram user that
-     * something went wrong.
-     */
-
     try {
       const chatId = req.body?.message?.chat?.id;
 
@@ -219,11 +208,6 @@ export default async function handler(req, res) {
     } catch (telegramError) {
       console.error("Failed to send Telegram error:", telegramError);
     }
-
-    /*
-     * Always return 200 to Telegram so it
-     * doesn't continuously retry the update.
-     */
 
     return res.status(200).json({
       ok: false,
