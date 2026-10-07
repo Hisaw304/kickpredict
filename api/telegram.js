@@ -1,16 +1,31 @@
 import { sendTelegramMessage } from "../src/lib/telegram/bot.js";
-
 import {
   formatPredictionResponse,
   formatTelegramError,
 } from "../src/lib/telegram/format.js";
 
-import { parsePredictionRequest } from "../src/lib/agent/parser.js";
-import { interpretPredictionRequest } from "../src/lib/agent/interpreter.js";
-
 export default async function handler(req, res) {
+  /*
+   * GET
+   *
+   * Useful for checking that the Vercel function exists.
+   */
+
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      service: "KickPredict Telegram Bot",
+      webhook: "active",
+    });
+  }
+
+  /*
+   * Telegram sends webhook updates using POST.
+   */
+
   if (req.method !== "POST") {
     return res.status(405).json({
+      ok: false,
       error: "Method not allowed.",
     });
   }
@@ -18,26 +33,40 @@ export default async function handler(req, res) {
   try {
     const update = req.body;
 
+    /*
+     * Telegram can send different types of updates.
+     *
+     * For now we only care about normal messages.
+     */
+
     const message = update?.message;
 
     if (!message) {
       return res.status(200).json({
         ok: true,
+        ignored: true,
       });
     }
 
-    const chatId = message.chat?.id;
+    const chatId = message?.chat?.id;
 
-    const text = message.text?.trim();
+    const text = typeof message?.text === "string" ? message.text.trim() : "";
+
+    /*
+     * Ignore messages without usable text.
+     */
 
     if (!chatId || !text) {
       return res.status(200).json({
         ok: true,
+        ignored: true,
       });
     }
 
     /*
-     * COMMANDS
+     * ============================
+     * /start
+     * ============================
      */
 
     if (text === "/start") {
@@ -48,15 +77,16 @@ export default async function handler(req, res) {
           "",
           "Welcome to KickPredict.",
           "",
-          "Tell me what kind of football picks you're looking for.",
+          "Ask me for football predictions naturally.",
           "",
           "Examples:",
-          "• Give me 5 safe picks tonight",
-          "• Give me 5 over 2.5 picks",
-          "• Give me 5 1X picks tomorrow",
-          "• Give me 10 picks this weekend",
           "",
-          "You can type naturally. I understand normal conversation, shorthand and typos.",
+          "Give me 5 safe picks tonight",
+          "Give me 5 over 2.5 picks",
+          "Give me 5 1X picks tomorrow",
+          "Give me 10 picks this weekend",
+          "",
+          "You can use normal language, shorthand and typos.",
         ].join("\n")
       );
 
@@ -64,6 +94,12 @@ export default async function handler(req, res) {
         ok: true,
       });
     }
+
+    /*
+     * ============================
+     * /help
+     * ============================
+     */
 
     if (text === "/help") {
       await sendTelegramMessage(
@@ -74,6 +110,7 @@ export default async function handler(req, res) {
           "Ask me for football predictions naturally.",
           "",
           "Examples:",
+          "",
           "Give me 5 safe picks tonight",
           "Give me 5 safe over 2.5 picks",
           "Give me 7 strong 1X picks",
@@ -88,57 +125,42 @@ export default async function handler(req, res) {
     }
 
     /*
-     * TEMPORARY TYPING INDICATOR
+     * ============================
+     * STATUS MESSAGE
+     * ============================
+     *
+     * This is intentionally just a
+     * normal message for now.
      */
 
     try {
       await sendTelegramMessage(chatId, "Researching fixtures...");
-    } catch (typingError) {
-      console.warn("Telegram status message failed:", typingError);
+    } catch (statusError) {
+      console.warn("Telegram status message failed:", statusError);
     }
 
     /*
-     * AI INTERPRETATION
-     */
-
-    let interpreted;
-
-    try {
-      interpreted = await interpretPredictionRequest(text, new Date());
-    } catch (error) {
-      console.error("Telegram AI interpreter failed:", error);
-
-      /*
-       * Deterministic parser remains the fallback.
-       */
-      interpreted = null;
-    }
-
-    /*
-     * CLARIFICATION
-     */
-
-    if (interpreted?.needsClarification) {
-      await sendTelegramMessage(
-        chatId,
-        interpreted.clarification ||
-          "Could you clarify what prediction market you want?"
-      );
-
-      return res.status(200).json({
-        ok: true,
-      });
-    }
-
-    /*
-     * CALL EXISTING AGENT
+     * ============================
+     * CALL KICKPREDICT AGENT
+     * ============================
      *
-     * We intentionally keep the prediction engine untouched.
+     * The Telegram bot does not create
+     * its own prediction logic.
+     *
+     * It sends the exact natural-language
+     * request to the existing agent.
      */
+
+    const host = req.headers.host;
+
+    if (!host) {
+      throw new Error("Unable to determine KickPredict host.");
+    }
+
+    const protocol = req.headers["x-forwarded-proto"] || "https";
 
     const agentUrl =
-      process.env.KICKPREDICT_AGENT_URL ||
-      `https://${req.headers.host}/api/agent`;
+      process.env.KICKPREDICT_AGENT_URL || `${protocol}://${host}/api/agent`;
 
     const agentResponse = await fetch(
       `${agentUrl}?q=${encodeURIComponent(text)}`,
@@ -150,11 +172,28 @@ export default async function handler(req, res) {
       }
     );
 
-    const agentData = await agentResponse.json();
+    let agentData;
+
+    try {
+      agentData = await agentResponse.json();
+    } catch {
+      throw new Error(
+        `Agent returned an invalid response (${agentResponse.status}).`
+      );
+    }
 
     if (!agentResponse.ok) {
-      throw new Error(agentData?.error || "Prediction agent request failed.");
+      throw new Error(
+        agentData?.error ||
+          `Prediction agent failed with status ${agentResponse.status}.`
+      );
     }
+
+    /*
+     * ============================
+     * SEND RESULT TO TELEGRAM
+     * ============================
+     */
 
     const formatted = formatPredictionResponse(agentData);
 
@@ -166,6 +205,11 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Telegram webhook error:", error);
 
+    /*
+     * Try to tell the Telegram user that
+     * something went wrong.
+     */
+
     try {
       const chatId = req.body?.message?.chat?.id;
 
@@ -176,8 +220,14 @@ export default async function handler(req, res) {
       console.error("Failed to send Telegram error:", telegramError);
     }
 
+    /*
+     * Always return 200 to Telegram so it
+     * doesn't continuously retry the update.
+     */
+
     return res.status(200).json({
-      ok: true,
+      ok: false,
+      error: "Telegram update could not be processed.",
     });
   }
 }

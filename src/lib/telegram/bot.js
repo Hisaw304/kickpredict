@@ -36,7 +36,6 @@ export async function sendTelegramMessage(chatId, text, options = {}) {
   return telegramRequest("sendMessage", {
     chat_id: chatId,
     text,
-    parse_mode: options.parseMode || undefined,
     disable_web_page_preview: true,
     ...options,
   });
