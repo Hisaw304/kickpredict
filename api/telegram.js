@@ -29,7 +29,7 @@ const WELCOME_MESSAGE = [
   "",
   "“Give me 5 safe picks tonight”",
   "",
-  "“abeg give me 5 sure o2.5 picks tonite”",
+  "“Give me 5 over 2.5 picks”",
   "",
   "“Give me 5 1X picks tomorrow”",
   "",
@@ -41,9 +41,9 @@ const WELCOME_MESSAGE = [
 const HELP_MESSAGE = [
   "KICKPREDICT AI",
   "",
-  "Here's what you can ask me for.",
+  "Here's what I can help you with.",
   "",
-  "PREDICTION TYPES",
+  "PREDICTIONS",
   "",
   "• Safe picks",
   "• Over / Under",
@@ -73,11 +73,117 @@ const HELP_MESSAGE = [
   "",
   "“Give me 5 safe Premier League picks”",
   "",
-  "You can also use normal language,",
+  "You can use normal language,",
   "shorthand and typos.",
-  "",
-  "Just tell me what you want.",
 ].join("\n");
+
+const GREETING_MESSAGE = [
+  "KICKPREDICT AI",
+  "",
+  "Hey 👋",
+  "",
+  "I'm your football prediction assistant.",
+  "",
+  "Tell me what kind of picks you're looking for and I'll research the available fixtures.",
+  "",
+  "For example:",
+  "",
+  "“Give me 5 safe picks tonight”",
+  "",
+  "Or type /help to see what I can do.",
+].join("\n");
+
+const ABOUT_MESSAGE = [
+  "KICKPREDICT AI",
+  "",
+  "I'm KickPredict's football prediction assistant.",
+  "",
+  "I can understand normal football requests and turn them into researched predictions.",
+  "",
+  "You can ask for:",
+  "",
+  "• Safe picks",
+  "• Over / Under",
+  "• Double Chance",
+  "• BTTS",
+  "• League-specific picks",
+  "• Today's picks",
+  "• Weekend picks",
+  "• Strong or aggressive selections",
+  "",
+  "You don't need special commands.",
+  "Just tell me what you're looking for.",
+].join("\n");
+
+function normalizeMessage(text) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[!?.,]+$/g, "");
+}
+
+function isGreeting(text) {
+  const value = normalizeMessage(text);
+
+  return [
+    "hi",
+    "hello",
+    "hey",
+    "hey there",
+    "hiya",
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "morning",
+    "afternoon",
+    "evening",
+    "yo",
+    "sup",
+    "wassup",
+    "what's up",
+    "whats up",
+    "how are you",
+  ].includes(value);
+}
+
+function isAboutQuestion(text) {
+  const value = normalizeMessage(text);
+
+  const patterns = [
+    "what can you do",
+    "what do you do",
+    "what can you help with",
+    "how can you help",
+    "who are you",
+    "what are you",
+    "tell me about yourself",
+    "tell me what you can do",
+    "what is kickpredict",
+    "what's kickpredict",
+    "whats kickpredict",
+    "what is this bot",
+    "what does this bot do",
+    "what can this bot do",
+  ];
+
+  return patterns.some((pattern) => value.includes(pattern));
+}
+
+function isHelpRequest(text) {
+  const value = normalizeMessage(text);
+
+  return [
+    "help",
+    "help me",
+    "i need help",
+    "how does this work",
+    "how do i use this",
+    "how do i use you",
+    "commands",
+    "show commands",
+    "show me commands",
+  ].includes(value);
+}
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
@@ -129,7 +235,7 @@ export default async function handler(req, res) {
     }
 
     /*
-     * HELP
+     * HELP COMMAND
      */
     if (text === "/help") {
       await sendTelegramMessage(chatId, HELP_MESSAGE);
@@ -140,17 +246,49 @@ export default async function handler(req, res) {
     }
 
     /*
-     * RESEARCH STATUS
+     * NORMAL HELP
      */
+    if (isHelpRequest(text)) {
+      await sendTelegramMessage(chatId, HELP_MESSAGE);
+
+      return res.status(200).json({
+        ok: true,
+      });
+    }
+
+    /*
+     * GREETINGS
+     */
+    if (isGreeting(text)) {
+      await sendTelegramMessage(chatId, GREETING_MESSAGE);
+
+      return res.status(200).json({
+        ok: true,
+      });
+    }
+
+    /*
+     * ABOUT / CAPABILITY QUESTIONS
+     */
+    if (isAboutQuestion(text)) {
+      await sendTelegramMessage(chatId, ABOUT_MESSAGE);
+
+      return res.status(200).json({
+        ok: true,
+      });
+    }
+
+    /*
+     * EVERYTHING BELOW THIS POINT
+     * IS TREATED AS A REAL PREDICTION REQUEST.
+     */
+
     try {
       await sendTelegramMessage(chatId, "Researching fixtures...");
     } catch (statusError) {
       console.warn("Telegram status message failed:", statusError);
     }
 
-    /*
-     * CALL KICKPREDICT AGENT
-     */
     const host = req.headers.host;
 
     if (!host) {
