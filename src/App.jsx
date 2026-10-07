@@ -12,6 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import Agent from "./pages/Agent";
 
 const App = () => {
   const location = useLocation();
@@ -32,6 +33,7 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/predictions" element={<Predictions />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/agent" element={<Agent />} />
 
           {/* ADMIN LOGIN */}
           <Route path="/login" element={<Login />} />
