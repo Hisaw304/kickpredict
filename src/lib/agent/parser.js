@@ -80,35 +80,117 @@ function extractMarkets(text) {
 
   const markets = [];
 
-  if (/\b(double chance|1x|x2|12)\b/.test(normalized)) {
-    markets.push("double_chance");
+  /*
+   * DOUBLE CHANCE
+   */
+
+  if (/\bdouble chance\b/.test(normalized)) {
+    if (/\b1x\b/.test(normalized)) {
+      markets.push("double_chance_1x");
+    } else if (/\bx2\b/.test(normalized)) {
+      markets.push("double_chance_x2");
+    } else if (/\b12\b/.test(normalized)) {
+      markets.push("double_chance_12");
+    } else {
+      markets.push("double_chance_1x");
+      markets.push("double_chance_x2");
+      markets.push("double_chance_12");
+    }
+  } else {
+    /*
+     * Support shorthand requests such as:
+     *
+     * "1X picks"
+     * "X2 predictions"
+     * "12 tips"
+     */
+
+    if (/\b1x\b/.test(normalized)) {
+      markets.push("double_chance_1x");
+    }
+
+    if (/\bx2\b/.test(normalized)) {
+      markets.push("double_chance_x2");
+    }
+
+    if (/\b12\b/.test(normalized)) {
+      markets.push("double_chance_12");
+    }
   }
 
-  if (/\b(over|under)\s*1\.5\b/.test(normalized)) {
-    markets.push("over_under_1_5");
+  /*
+   * OVER / UNDER 1.5
+   */
+
+  if (/\bover\s*1\.5\b/.test(normalized)) {
+    markets.push("over_1_5");
   }
 
-  if (/\b(over|under)\s*2\.5\b/.test(normalized)) {
-    markets.push("over_under_2_5");
+  if (/\bunder\s*1\.5\b/.test(normalized)) {
+    markets.push("under_1_5");
   }
 
-  if (/\b(over|under)\s*3\.5\b/.test(normalized)) {
-    markets.push("over_under_3_5");
+  /*
+   * OVER / UNDER 2.5
+   */
+
+  if (/\bover\s*2\.5\b/.test(normalized)) {
+    markets.push("over_2_5");
   }
+
+  if (/\bunder\s*2\.5\b/.test(normalized)) {
+    markets.push("under_2_5");
+  }
+
+  /*
+   * OVER / UNDER 3.5
+   */
+
+  if (/\bover\s*3\.5\b/.test(normalized)) {
+    markets.push("over_3_5");
+  }
+
+  if (/\bunder\s*3\.5\b/.test(normalized)) {
+    markets.push("under_3_5");
+  }
+
+  /*
+   * BTTS
+   */
 
   if (/\b(btts|both teams to score)\b/.test(normalized)) {
-    markets.push("btts");
+    if (/\b(btts\s*no|both teams.*not.*score)\b/.test(normalized)) {
+      markets.push("btts_no");
+    } else {
+      markets.push("btts_yes");
+    }
   }
 
-  if (/\b(home win|home wins|home team)\b/.test(normalized)) {
+  /*
+   * HOME WIN
+   */
+
+  if (
+    /\b(home win|home wins|home team to win|home victory)\b/.test(normalized)
+  ) {
     markets.push("home_win");
   }
 
-  if (/\b(away win|away wins|away team)\b/.test(normalized)) {
+  /*
+   * AWAY WIN
+   */
+
+  if (
+    /\b(away win|away wins|away team to win|away victory)\b/.test(normalized)
+  ) {
     markets.push("away_win");
   }
 
-  return markets.length ? markets : null;
+  /*
+   * Remove duplicates while preserving order.
+   */
+
+  return markets.length ? [...new Set(markets)] : null;
 }
 
 function extractRequestType(text) {
