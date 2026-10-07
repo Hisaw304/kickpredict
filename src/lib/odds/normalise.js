@@ -1,41 +1,94 @@
-import { getFixtureOdds } from "../src/lib/odds/client.js";
+const MARKET_MAP = {
+  "Match Winner": "match_winner",
+  "Fulltime Result": "match_winner",
 
-import { normalizeOddsResponse } from "../src/lib/odds/normalise.js";
+  "Double Chance": "double_chance",
 
-export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({
-      ok: false,
-      error: "Method not allowed.",
-    });
+  "Both Teams Score": "btts",
+  "Both Teams To Score": "btts",
+
+  "Over/Under 1.5 Goals": "over_under_1_5",
+  "Over/Under 2.5 Goals": "over_under_2_5",
+  "Over/Under 3.5 Goals": "over_under_3_5",
+
+  "Home/Away": "home_away",
+
+  "Home Team Total Goals": "home_team_total_goals",
+  "Away Team Total Goals": "away_team_total_goals",
+};
+
+function normalizeMarketName(name) {
+  if (!name) {
+    return null;
   }
 
-  try {
-    const fixtureId = req.query?.fixtureId;
+  return (
+    MARKET_MAP[name] ||
+    name
+      .toLowerCase()
+      .replace(/[^\w]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+  );
+}
 
-    if (!fixtureId) {
-      return res.status(400).json({
-        ok: false,
-        error: "fixtureId is required.",
-      });
-    }
-
-    const data = await getFixtureOdds(fixtureId);
-
-    const odds = normalizeOddsResponse(data);
-
-    return res.status(200).json({
-      ok: true,
-      fixtureId: Number(fixtureId),
-      count: odds.markets.length,
-      markets: odds.markets,
-    });
-  } catch (error) {
-    console.error("Odds API error:", error);
-
-    return res.status(500).json({
-      ok: false,
-      error: error?.message || "Failed to retrieve bookmaker odds.",
-    });
+function normalizeOdd(odd) {
+  if (!odd) {
+    return null;
   }
+
+  const value = Number(odd.value);
+
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  return {
+    id: odd.id ?? null,
+
+    fixtureId: odd.fixture_id ?? null,
+
+    bookmakerId: odd.bookmaker_id ?? null,
+
+    bookmakerName: odd.bookmaker?.name ?? odd.bookmaker_name ?? null,
+
+    marketId: odd.market_id ?? null,
+
+    market: normalizeMarketName(
+      odd.market?.name || odd.market?.developer_name || null
+    ),
+
+    marketName: odd.market?.name ?? odd.market_name ?? null,
+
+    selection: odd.label ?? null,
+
+    odd: value,
+
+    probability:
+      odd.probability != null
+        ? Number(String(odd.probability).replace("%", ""))
+        : null,
+
+    fractional: odd.fractional ?? null,
+
+    american: odd.american ?? null,
+
+    handicap: odd.handicap ?? null,
+
+    updatedAt:
+      odd.latest_bookmaker_update ?? odd.last_update ?? odd.updated_at ?? null,
+  };
+}
+
+export function normalizeOddsResponse(data) {
+  const odds = Array.isArray(data?.data) ? data.data : [];
+
+  const markets = odds.map(normalizeOdd).filter(Boolean);
+
+  return {
+    fixtureId: markets[0]?.fixtureId ?? data?.data?.[0]?.fixture_id ?? null,
+
+    count: markets.length,
+
+    markets,
+  };
 }

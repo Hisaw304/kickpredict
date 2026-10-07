@@ -27,11 +27,11 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       fixtureId: Number(fixtureId),
-      count: odds.markets.length,
+      count: odds.count,
       markets: odds.markets,
     });
   } catch (error) {
-    console.error("Odds API error:", error);
+    console.error("Sportmonks Odds API error:", error);
 
     return res.status(500).json({
       ok: false,
