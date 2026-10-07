@@ -4,6 +4,10 @@ import {
   formatTelegramError,
 } from "../src/lib/telegram/format.js";
 
+const BOT_USERNAME = (
+  process.env.TELEGRAM_BOT_USERNAME || "KickPredictBot"
+).replace(/^@/, "");
+
 const WELCOME_MESSAGE = [
   "KICKPREDICT AI",
   "",
@@ -58,6 +62,7 @@ const HELP_MESSAGE = [
   "",
   "/start — Start KickPredict",
   "/help — Show this guide",
+  "/predict — Make a prediction request",
   "",
   "TRY ONE OF THESE",
   "",
@@ -73,8 +78,9 @@ const HELP_MESSAGE = [
   "",
   "“Give me 5 safe Premier League picks”",
   "",
-  "You can use normal language,",
-  "shorthand and typos.",
+  "In the discussion group, mention me:",
+  "",
+  `@${BOT_USERNAME} give me 5 safe picks tonight`,
 ].join("\n");
 
 const GREETING_MESSAGE = [
@@ -115,8 +121,22 @@ const ABOUT_MESSAGE = [
   "Just tell me what you're looking for.",
 ].join("\n");
 
+const THANKS_MESSAGE = [
+  "You're welcome.",
+  "",
+  "Good luck with the picks. ⚽",
+  "",
+  "Whenever you're ready, just ask me for another prediction.",
+].join("\n");
+
+const GOODBYE_MESSAGE = [
+  "You're all set.",
+  "",
+  "Good luck and see you next time. ⚽",
+].join("\n");
+
 function normalizeMessage(text) {
-  return text
+  return String(text || "")
     .toLowerCase()
     .trim()
     .replace(/[!?.,]+$/g, "");
@@ -143,6 +163,67 @@ function isGreeting(text) {
     "what's up",
     "whats up",
     "how are you",
+  ].includes(value);
+}
+
+function isThanks(text) {
+  const value = normalizeMessage(text);
+
+  return [
+    "thanks",
+    "thank you",
+    "thank u",
+    "thanks a lot",
+    "thank you so much",
+    "appreciate it",
+    "much appreciated",
+    "cheers",
+    "perfect thanks",
+    "great thanks",
+    "okay thanks",
+    "ok thanks",
+    "thanks bro",
+    "thanks mate",
+  ].includes(value);
+}
+
+function isGoodbye(text) {
+  const value = normalizeMessage(text);
+
+  return [
+    "bye",
+    "goodbye",
+    "good bye",
+    "see you",
+    "see ya",
+    "later",
+    "talk later",
+    "i'm done",
+    "im done",
+    "that's all",
+    "thats all",
+    "that's it",
+    "thats it",
+  ].includes(value);
+}
+
+function isAcknowledgement(text) {
+  const value = normalizeMessage(text);
+
+  return [
+    "ok",
+    "okay",
+    "alright",
+    "all right",
+    "got it",
+    "understood",
+    "nice",
+    "great",
+    "perfect",
+    "cool",
+    "sounds good",
+    "good",
+    "awesome",
   ].includes(value);
 }
 
@@ -185,15 +266,139 @@ function isHelpRequest(text) {
   ].includes(value);
 }
 
+function getChatType(message) {
+  return message?.chat?.type || "private";
+}
+
+function isGroupChat(message) {
+  const type = getChatType(message);
+
+  return type === "group" || type === "supergroup";
+}
+
+function extractBotMention(text) {
+  if (!text) {
+    return {
+      mentioned: false,
+      cleanedText: "",
+    };
+  }
+
+  const mentionPattern = new RegExp(`@${BOT_USERNAME}\\b`, "i");
+
+  const mentioned = mentionPattern.test(text);
+
+  if (!mentioned) {
+    return {
+      mentioned: false,
+      cleanedText: text.trim(),
+    };
+  }
+
+  return {
+    mentioned: true,
+    cleanedText: text.replace(mentionPattern, "").trim(),
+  };
+}
+
+function extractCommand(text) {
+  const match = String(text || "")
+    .trim()
+    .match(/^\/([a-zA-Z0-9_]+)(?:@\w+)?(?:\s+([\s\S]+))?$/);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    command: match[1].toLowerCase(),
+    argument: match[2]?.trim() || "",
+  };
+}
+
+function shouldProcessGroupMessage(message, text) {
+  const command = extractCommand(text);
+
+  /*
+   * Commands can always be processed.
+   */
+  if (command) {
+    return true;
+  }
+
+  /*
+   * In groups, normal conversation belongs to humans.
+   * The bot only responds when explicitly mentioned.
+   */
+  const mention = extractBotMention(text);
+
+  return mention.mentioned;
+}
+
+function cleanGroupMessage(text) {
+  const mention = extractBotMention(text);
+
+  return mention.cleanedText;
+}
+
+async function callAgent(req, text) {
+  const host = req.headers.host;
+
+  if (!host) {
+    throw new Error("Unable to determine KickPredict host.");
+  }
+
+  const protocol = req.headers["x-forwarded-proto"] || "https";
+
+  const agentUrl =
+    process.env.KICKPREDICT_AGENT_URL || `${protocol}://${host}/api/agent`;
+
+  const agentResponse = await fetch(
+    `${agentUrl}?q=${encodeURIComponent(text)}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+
+  let agentData;
+
+  try {
+    agentData = await agentResponse.json();
+  } catch {
+    throw new Error(
+      `Agent returned an invalid response (${agentResponse.status}).`
+    );
+  }
+
+  if (!agentResponse.ok) {
+    throw new Error(
+      agentData?.error ||
+        `Prediction agent failed with status ${agentResponse.status}.`
+    );
+  }
+
+  return agentData;
+}
+
 export default async function handler(req, res) {
+  /*
+   * HEALTH CHECK
+   */
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
       service: "KickPredict Telegram Bot",
       webhook: "active",
+      botUsername: BOT_USERNAME,
     });
   }
 
+  /*
+   * METHOD CHECK
+   */
   if (req.method !== "POST") {
     return res.status(405).json({
       ok: false,
@@ -203,8 +408,12 @@ export default async function handler(req, res) {
 
   try {
     const update = req.body;
+
     const message = update?.message;
 
+    /*
+     * Ignore updates that aren't normal messages.
+     */
     if (!message) {
       return res.status(200).json({
         ok: true,
@@ -214,19 +423,65 @@ export default async function handler(req, res) {
 
     const chatId = message?.chat?.id;
 
-    const text = typeof message?.text === "string" ? message.text.trim() : "";
+    const rawText =
+      typeof message?.text === "string" ? message.text.trim() : "";
 
-    if (!chatId || !text) {
+    if (!chatId || !rawText) {
       return res.status(200).json({
         ok: true,
         ignored: true,
       });
     }
 
+    const group = isGroupChat(message);
+
     /*
-     * START
+     * GROUP BEHAVIOR
+     *
+     * In the discussion group, don't let the bot
+     * hijack normal conversations.
+     *
+     * It must either receive a command:
+     *
+     * /predict ...
+     *
+     * or be explicitly mentioned:
+     *
+     * @KickPredictBot ...
      */
-    if (text === "/start") {
+    if (group && !shouldProcessGroupMessage(message, rawText)) {
+      return res.status(200).json({
+        ok: true,
+        ignored: true,
+        reason: "Group message was not directed at KickPredict.",
+      });
+    }
+
+    /*
+     * Remove @KickPredictBot from group requests.
+     */
+    const text = group ? cleanGroupMessage(rawText) : rawText;
+
+    if (!text) {
+      await sendTelegramMessage(
+        chatId,
+        "I'm here. Tell me what you'd like me to research."
+      );
+
+      return res.status(200).json({
+        ok: true,
+      });
+    }
+
+    /*
+     * COMMAND PARSING
+     */
+    const command = extractCommand(text);
+
+    /*
+     * /start
+     */
+    if (command?.command === "start") {
       await sendTelegramMessage(chatId, WELCOME_MESSAGE);
 
       return res.status(200).json({
@@ -235,10 +490,48 @@ export default async function handler(req, res) {
     }
 
     /*
-     * HELP COMMAND
+     * /help
      */
-    if (text === "/help") {
+    if (command?.command === "help") {
       await sendTelegramMessage(chatId, HELP_MESSAGE);
+
+      return res.status(200).json({
+        ok: true,
+      });
+    }
+
+    /*
+     * /predict
+     */
+    if (command?.command === "predict") {
+      if (!command.argument) {
+        await sendTelegramMessage(
+          chatId,
+          "Tell me what you want predicted.\n\nExample:\n\n/predict 5 safe picks tonight"
+        );
+
+        return res.status(200).json({
+          ok: true,
+        });
+      }
+
+      /*
+       * Replace the command with the actual
+       * natural-language request.
+       */
+      const predictionRequest = command.argument;
+
+      try {
+        await sendTelegramMessage(chatId, "Researching fixtures...");
+      } catch (statusError) {
+        console.warn("Telegram status message failed:", statusError);
+      }
+
+      const agentData = await callAgent(req, predictionRequest);
+
+      const formatted = formatPredictionResponse(agentData);
+
+      await sendTelegramMessage(chatId, formatted);
 
       return res.status(200).json({
         ok: true,
@@ -268,6 +561,42 @@ export default async function handler(req, res) {
     }
 
     /*
+     * THANKS
+     */
+    if (isThanks(text)) {
+      await sendTelegramMessage(chatId, THANKS_MESSAGE);
+
+      return res.status(200).json({
+        ok: true,
+      });
+    }
+
+    /*
+     * GOODBYE
+     */
+    if (isGoodbye(text)) {
+      await sendTelegramMessage(chatId, GOODBYE_MESSAGE);
+
+      return res.status(200).json({
+        ok: true,
+      });
+    }
+
+    /*
+     * SIMPLE ACKNOWLEDGEMENTS
+     */
+    if (isAcknowledgement(text)) {
+      await sendTelegramMessage(
+        chatId,
+        "Absolutely. Whenever you're ready, just tell me what you'd like to research. ⚽"
+      );
+
+      return res.status(200).json({
+        ok: true,
+      });
+    }
+
+    /*
      * ABOUT / CAPABILITY QUESTIONS
      */
     if (isAboutQuestion(text)) {
@@ -279,8 +608,19 @@ export default async function handler(req, res) {
     }
 
     /*
-     * EVERYTHING BELOW THIS POINT
-     * IS TREATED AS A REAL PREDICTION REQUEST.
+     * EVERYTHING REACHING THIS POINT IS NOW
+     * A POTENTIAL REAL AGENT REQUEST.
+     *
+     * The important difference is that group messages
+     * have already been filtered above.
+     *
+     * Conversation messages such as:
+     * "thanks"
+     * "okay"
+     * "nice"
+     * "bye"
+     *
+     * have also already been handled.
      */
 
     try {
@@ -289,43 +629,7 @@ export default async function handler(req, res) {
       console.warn("Telegram status message failed:", statusError);
     }
 
-    const host = req.headers.host;
-
-    if (!host) {
-      throw new Error("Unable to determine KickPredict host.");
-    }
-
-    const protocol = req.headers["x-forwarded-proto"] || "https";
-
-    const agentUrl =
-      process.env.KICKPREDICT_AGENT_URL || `${protocol}://${host}/api/agent`;
-
-    const agentResponse = await fetch(
-      `${agentUrl}?q=${encodeURIComponent(text)}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-      }
-    );
-
-    let agentData;
-
-    try {
-      agentData = await agentResponse.json();
-    } catch {
-      throw new Error(
-        `Agent returned an invalid response (${agentResponse.status}).`
-      );
-    }
-
-    if (!agentResponse.ok) {
-      throw new Error(
-        agentData?.error ||
-          `Prediction agent failed with status ${agentResponse.status}.`
-      );
-    }
+    const agentData = await callAgent(req, text);
 
     const formatted = formatPredictionResponse(agentData);
 
@@ -347,6 +651,10 @@ export default async function handler(req, res) {
       console.error("Failed to send Telegram error:", telegramError);
     }
 
+    /*
+     * Telegram expects a successful webhook response
+     * even when we couldn't process the message.
+     */
     return res.status(200).json({
       ok: false,
       error: "Telegram update could not be processed.",
