@@ -1,4 +1,5 @@
 import { resolveTimeWindow } from "./time.js";
+import { normalizeQuery } from "./normalizeQuery.js";
 
 const LEAGUE_ALIASES = {
   "premier league": "PL",
@@ -210,7 +211,7 @@ export function parsePredictionRequest(query, now) {
     throw new Error("Prediction request is required.");
   }
 
-  const text = query.trim().replace(/\s+/g, " ");
+  const text = normalizeQuery(query);
 
   const count = Math.min(Math.max(extractCount(text), 1), 20);
 
