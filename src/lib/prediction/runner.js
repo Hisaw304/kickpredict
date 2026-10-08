@@ -250,6 +250,17 @@ export function runPredictions({
     if (homeMatches.length < minHistory || awayMatches.length < minHistory) {
       insufficientHistory += 1;
 
+      console.log("INSUFFICIENT HISTORY:", {
+        fixtureId: fixture.id,
+        home: fixture.homeTeam?.name,
+        away: fixture.awayTeam?.name,
+        competition: fixture.competition?.name,
+        homeMatches: homeMatches.length,
+        awayMatches: awayMatches.length,
+        required: minHistory,
+        fixtureTime: fixture.utcDate,
+      });
+
       continue;
     }
 
