@@ -2,7 +2,7 @@ import {
   discoverFixtures,
   discoverHistoricalMatches,
 } from "../src/lib/football/discovery.js";
-
+import { loadCalibrationProfile } from "../src/lib/prediction/calibrationStore.js";
 import { runPredictions } from "../src/lib/prediction/runner.js";
 
 import { selectPredictions } from "../src/lib/prediction/select.js";
@@ -13,9 +13,9 @@ import { interpretPredictionRequest } from "../src/lib/agent/interpreter.js";
 
 import { buildAgentResponse } from "../src/lib/agent/response.js";
 
-import { runBacktest } from "../src/lib/backtest/runner.js";
+// import { runBacktest } from "../src/lib/backtest/runner.js";
 
-import { buildCalibrationProfile } from "../src/lib/prediction/calibration.js";
+// import { buildCalibrationProfile } from "../src/lib/prediction/calibration.js";
 
 function getDateTime(date, time) {
   return new Date(`${date}T${time}:00Z`).getTime();
@@ -677,9 +677,9 @@ export default async function handler(req, res) {
       : request.dateFrom;
 
     const historicalMatches = await discoverHistoricalMatches({
+      fixtures: eligibleFixtures,
       dateTo: historyDate,
-
-      historyDays: 90,
+      historyDays: 30,
     });
 
     console.log("AGENT HISTORICAL MATCHES:", historicalMatches.length);
@@ -692,15 +692,22 @@ export default async function handler(req, res) {
 
     console.log("AGENT BUILDING CALIBRATION PROFILE...");
 
-    const calibrationBacktest = runBacktest({
-      matches: historicalMatches,
+    let calibrationProfile = {};
 
-      minHistory: 5,
-    });
+    try {
+      calibrationProfile = await loadCalibrationProfile();
 
-    const calibrationProfile = buildCalibrationProfile(calibrationBacktest, {
-      minSamples: 20,
-    });
+      console.log("CALIBRATION LOADED:", {
+        markets: Object.keys(calibrationProfile).length,
+      });
+    } catch (error) {
+      console.error("CALIBRATION LOAD FAILED:", error.message);
+
+      /*
+       * Prediction still works without calibration.
+       */
+      calibrationProfile = {};
+    }
 
     console.log(
       "AGENT CALIBRATION PROFILE:",
