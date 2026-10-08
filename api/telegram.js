@@ -5,7 +5,7 @@ import {
 } from "../src/lib/telegram/format.js";
 
 const BOT_USERNAME = (
-  process.env.TELEGRAM_BOT_USERNAME || "KickPredictBot"
+  process.env.TELEGRAM_BOT_USERNAME || "KickPredictAI_bot"
 ).replace(/^@/, "");
 
 const WELCOME_MESSAGE = [

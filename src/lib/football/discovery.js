@@ -19,9 +19,8 @@ function formatDate(date) {
 }
 
 /**
- * Get competitions available to the current API key.
- *
- * We intentionally do NOT hard-code PL, PD, BL1, etc.
+ * Discover every competition available to the current
+ * Football-Data.org API account.
  */
 async function discoverCompetitions() {
   const response = await footballClient.get("/competitions");
@@ -43,6 +42,85 @@ async function discoverCompetitions() {
   return competitions;
 }
 
+/**
+ * Query competitions individually instead of relying only
+ * on the global /matches endpoint.
+ *
+ * This is important because the global endpoint may not
+ * expose the complete fixture pool available to the account.
+ */
+async function discoverFixturesByCompetition({
+  dateFrom,
+  dateTo,
+  competitions,
+}) {
+  const allMatches = [];
+
+  for (const competition of competitions) {
+    const code = competition?.code;
+
+    if (!code) {
+      continue;
+    }
+
+    try {
+      console.log("CHECKING COMPETITION:", {
+        code,
+        name: competition.name,
+        dateFrom,
+        dateTo,
+      });
+
+      const data = await getMatches({
+        dateFrom,
+        dateTo,
+        competitions: code,
+        limit: 500,
+      });
+
+      const matches = Array.isArray(data?.matches) ? data.matches : [];
+
+      console.log("COMPETITION RESPONSE:", {
+        code,
+        name: competition.name,
+        count: matches.length,
+      });
+
+      allMatches.push(...matches);
+    } catch (error) {
+      console.error("COMPETITION DISCOVERY FAILED:", {
+        code,
+        name: competition.name,
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+
+      /*
+       * One competition failing should not prevent us
+       * from discovering the rest of the available fixtures.
+       */
+      if (error.response?.status === 429) {
+        throw error;
+      }
+    }
+  }
+
+  return allMatches;
+}
+
+/**
+ * Discover upcoming fixtures for the requested date range.
+ *
+ * Strategy:
+ *
+ * 1. Discover competitions available to the account.
+ * 2. Query each competition individually.
+ * 3. Also query the global endpoint as a fallback/source.
+ * 4. Merge everything.
+ * 5. Remove duplicate fixtures.
+ * 6. Normalize and sort.
+ */
 export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   const from = dateFrom ? startOfDay(dateFrom) : startOfDay(new Date());
 
@@ -57,36 +135,113 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   });
 
   try {
-    const globalData = await getMatches({
+    /*
+     * ----------------------------------------------------
+     * 1. Discover competitions available to this account
+     * ----------------------------------------------------
+     */
+
+    const competitions = await discoverCompetitions();
+
+    console.log("COMPETITION DISCOVERY COMPLETE:", {
+      count: competitions.length,
+    });
+
+    /*
+     * ----------------------------------------------------
+     * 2. Query each competition individually
+     * ----------------------------------------------------
+     */
+
+    const competitionMatches = await discoverFixturesByCompetition({
       dateFrom: formattedFrom,
       dateTo: formattedTo,
-      limit: 500,
+      competitions,
     });
 
-    const matches = Array.isArray(globalData?.matches)
-      ? globalData.matches
-      : [];
+    /*
+     * ----------------------------------------------------
+     * 3. Also query the global endpoint
+     *
+     * Keep this because it can sometimes return fixtures
+     * that individual competition requests expose differently.
+     * ----------------------------------------------------
+     */
 
-    console.log("GLOBAL MATCH RESPONSE:", {
-      filters: globalData?.filters,
-      resultSet: globalData?.resultSet,
-      count: matches.length,
-    });
+    let globalMatches = [];
 
-    if (!matches.length) {
-      console.log("NO FIXTURES RETURNED BY GLOBAL ENDPOINT:", {
+    try {
+      const globalData = await getMatches({
         dateFrom: formattedFrom,
         dateTo: formattedTo,
+        limit: 500,
       });
 
-      return [];
+      globalMatches = Array.isArray(globalData?.matches)
+        ? globalData.matches
+        : [];
+
+      console.log("GLOBAL MATCH RESPONSE:", {
+        filters: globalData?.filters,
+        resultSet: globalData?.resultSet,
+        count: globalMatches.length,
+      });
+    } catch (error) {
+      console.error("GLOBAL FIXTURE DISCOVERY FAILED:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+
+      if (error.response?.status === 429) {
+        throw error;
+      }
     }
 
-    const normalized = matches
+    /*
+     * ----------------------------------------------------
+     * 4. Merge all sources
+     * ----------------------------------------------------
+     */
+
+    const combinedMatches = [...competitionMatches, ...globalMatches];
+
+    console.log("COMBINED FIXTURE POOL:", {
+      competitionMatches: competitionMatches.length,
+      globalMatches: globalMatches.length,
+      combined: combinedMatches.length,
+    });
+
+    /*
+     * ----------------------------------------------------
+     * 5. Remove duplicates
+     * ----------------------------------------------------
+     */
+
+    const uniqueMatches = Array.from(
+      new Map(
+        combinedMatches.map((match) => [String(match.id), match])
+      ).values()
+    );
+
+    /*
+     * ----------------------------------------------------
+     * 6. Normalize and sort
+     * ----------------------------------------------------
+     */
+
+    const normalized = uniqueMatches
       .map(normalizeFixture)
+      .filter((fixture) => fixture?.id || fixture?.fixtureId)
       .sort(
         (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
       );
+
+    /*
+     * ----------------------------------------------------
+     * 7. Produce useful discovery diagnostics
+     * ----------------------------------------------------
+     */
 
     const competitionMap = new Map();
 
@@ -113,7 +268,7 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
 
     return normalized;
   } catch (error) {
-    console.error("Global fixture discovery failed:", {
+    console.error("FIXTURE DISCOVERY FAILED:", {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
@@ -123,6 +278,9 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   }
 }
 
+/**
+ * Discover historical finished matches.
+ */
 export async function discoverHistoricalMatches({
   dateTo,
   historyDays = 90,
@@ -130,6 +288,7 @@ export async function discoverHistoricalMatches({
   const end = dateTo ? endOfDay(dateTo) : endOfDay(new Date());
 
   const start = new Date(end);
+
   start.setUTCDate(start.getUTCDate() - historyDays);
 
   const allMatches = [];
@@ -139,7 +298,10 @@ export async function discoverHistoricalMatches({
   while (chunkStart < end) {
     const chunkEnd = new Date(chunkStart);
 
-    // Football-Data.org allows a maximum 10-day period.
+    /*
+     * Football-Data.org allows a maximum
+     * 10-day period.
+     */
     chunkEnd.setUTCDate(chunkEnd.getUTCDate() + 9);
 
     if (chunkEnd > end) {
@@ -180,19 +342,16 @@ export async function discoverHistoricalMatches({
         data: error.response?.data,
       });
 
-      // Don't completely kill the tips request
-      // because one historical window failed.
       if (error.response?.status === 429) {
         throw error;
       }
     }
 
-    // Move to the next window.
     chunkStart = new Date(chunkEnd);
+
     chunkStart.setUTCDate(chunkStart.getUTCDate() + 1);
   }
 
-  // Remove duplicate fixtures.
   const uniqueMatches = Array.from(
     new Map(allMatches.map((match) => [String(match.id), match])).values()
   );
