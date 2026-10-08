@@ -22,9 +22,6 @@ function isUpcoming(match) {
     return false;
   }
 
-  /*
-   * Never predict matches that have already started.
-   */
   if (fixtureTime <= Date.now()) {
     return false;
   }
@@ -36,13 +33,8 @@ function isUpcoming(match) {
  * ------------------------------------------------
  * BUILD HISTORY INDEX
  * ------------------------------------------------
- *
- * Instead of repeatedly doing:
- *
- * matches.filter(...).filter(...).sort(...)
- *
- * for every fixture, we build indexes once.
  */
+
 function buildHistoryIndex(matches = []) {
   const teamMatches = new Map();
   const competitionMatches = new Map();
@@ -63,7 +55,7 @@ function buildHistoryIndex(matches = []) {
     const competitionId = match.competition?.id;
 
     /*
-     * Index by home team.
+     * HOME TEAM
      */
     if (homeTeamId != null) {
       const key = String(homeTeamId);
@@ -76,7 +68,7 @@ function buildHistoryIndex(matches = []) {
     }
 
     /*
-     * Index by away team.
+     * AWAY TEAM
      */
     if (awayTeamId != null) {
       const key = String(awayTeamId);
@@ -89,7 +81,7 @@ function buildHistoryIndex(matches = []) {
     }
 
     /*
-     * Index by competition.
+     * COMPETITION
      */
     if (competitionId != null) {
       const key = String(competitionId);
@@ -103,7 +95,7 @@ function buildHistoryIndex(matches = []) {
   }
 
   /*
-   * Sort each list newest → oldest once.
+   * Newest → oldest.
    */
   for (const matchesForTeam of teamMatches.values()) {
     matchesForTeam.sort((a, b) => getMatchTime(b) - getMatchTime(a));
@@ -124,6 +116,7 @@ function buildHistoryIndex(matches = []) {
  * GET PREVIOUS TEAM MATCHES
  * ------------------------------------------------
  */
+
 function getPreviousTeamMatches(teamMatches, teamId, fixtureTime) {
   if (teamId == null) {
     return [];
@@ -131,12 +124,6 @@ function getPreviousTeamMatches(teamMatches, teamId, fixtureTime) {
 
   const matches = teamMatches.get(String(teamId)) || [];
 
-  /*
-   * Lists are already sorted newest → oldest.
-   *
-   * Stop as soon as we reach a match that is
-   * not before the fixture.
-   */
   return matches.filter((match) => getMatchTime(match) < fixtureTime);
 }
 
@@ -145,6 +132,7 @@ function getPreviousTeamMatches(teamMatches, teamId, fixtureTime) {
  * GET PREVIOUS LEAGUE MATCHES
  * ------------------------------------------------
  */
+
 function getPreviousLeagueMatches(
   competitionMatches,
   competitionId,
@@ -163,11 +151,21 @@ function getPreviousLeagueMatches(
  * ------------------------------------------------
  * RUN PREDICTIONS
  * ------------------------------------------------
+ *
+ * Important:
+ *
+ * minHistory is a minimum research threshold,
+ * not a requirement for perfect statistical history.
+ *
+ * A fixture with 3–4 previous matches can still be
+ * researched and predicted. The research layer decides
+ * which metrics are reliable enough to use.
  */
+
 export function runPredictions({
   fixtures = [],
   historicalMatches = [],
-  minHistory = 5,
+  minHistory = 3,
 } = {}) {
   const results = [];
 
@@ -184,7 +182,7 @@ export function runPredictions({
   });
 
   /*
-   * Build once.
+   * Build history indexes once.
    */
   const { teamMatches, competitionMatches } =
     buildHistoryIndex(historicalMatches);
@@ -195,8 +193,7 @@ export function runPredictions({
 
   for (const rawFixture of fixtures) {
     /*
-     * Never generate predictions for a fixture
-     * that has already started or finished.
+     * Only scheduled future fixtures.
      */
     if (!isUpcoming(rawFixture)) {
       continue;
@@ -207,27 +204,36 @@ export function runPredictions({
     const fixture = normalizeFixture(rawFixture);
 
     if (!fixture?.homeTeam?.id || !fixture?.awayTeam?.id) {
+      console.log("PREDICTION RUNNER: invalid fixture", {
+        fixtureId: fixture?.id,
+      });
+
       continue;
     }
 
     const fixtureTime = getMatchTime(fixture);
 
     if (!Number.isFinite(fixtureTime)) {
+      console.log("PREDICTION RUNNER: invalid fixture time", {
+        fixtureId: fixture.id,
+        utcDate: fixture.utcDate,
+      });
+
       continue;
     }
 
     /*
-     * Historical matches for home team.
+     * ------------------------------------------------
+     * TEAM HISTORY
+     * ------------------------------------------------
      */
+
     const homeMatches = getPreviousTeamMatches(
       teamMatches,
       fixture.homeTeam.id,
       fixtureTime
     );
 
-    /*
-     * Historical matches for away team.
-     */
     const awayMatches = getPreviousTeamMatches(
       teamMatches,
       fixture.awayTeam.id,
@@ -235,9 +241,11 @@ export function runPredictions({
     );
 
     /*
-     * Historical matches from the same
-     * competition.
+     * ------------------------------------------------
+     * LEAGUE HISTORY
+     * ------------------------------------------------
      */
+
     const leagueMatches = getPreviousLeagueMatches(
       competitionMatches,
       fixture.competition?.id,
@@ -245,8 +253,35 @@ export function runPredictions({
     );
 
     /*
-     * Require enough history for BOTH teams.
+     * ------------------------------------------------
+     * DIAGNOSTIC
+     * ------------------------------------------------
      */
+
+    console.log("FIXTURE HISTORY:", {
+      fixtureId: fixture.id,
+      home: fixture.homeTeam?.name,
+      away: fixture.awayTeam?.name,
+      competition: fixture.competition?.name,
+      homeMatches: homeMatches.length,
+      awayMatches: awayMatches.length,
+      leagueMatches: leagueMatches.length,
+      required: minHistory,
+    });
+
+    /*
+     * ------------------------------------------------
+     * MINIMUM HISTORY
+     * ------------------------------------------------
+     *
+     * We need at least a small sample for BOTH teams.
+     *
+     * Do NOT require five matches anymore.
+     *
+     * The research engine handles weighting and stronger
+     * form calculations when more history is available.
+     */
+
     if (homeMatches.length < minHistory || awayMatches.length < minHistory) {
       insufficientHistory += 1;
 
@@ -264,6 +299,12 @@ export function runPredictions({
       continue;
     }
 
+    /*
+     * ------------------------------------------------
+     * GENERATE PREDICTION
+     * ------------------------------------------------
+     */
+
     try {
       const prediction = predictFixture({
         fixture,
@@ -271,6 +312,12 @@ export function runPredictions({
         awayMatches,
         leagueMatches,
       });
+
+      if (!prediction) {
+        console.log(`Prediction returned no result for fixture ${fixture.id}`);
+
+        continue;
+      }
 
       results.push({
         fixture: {
