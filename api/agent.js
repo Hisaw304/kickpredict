@@ -873,10 +873,8 @@ export default async function handler(req, res) {
 
     const predictions = runPredictions({
       fixtures: eligibleFixtures,
-
       historicalMatches,
-
-      minHistory: 5,
+      minHistory: 3,
     });
 
     console.log("AGENT PREDICTIONS:", predictions.length);
