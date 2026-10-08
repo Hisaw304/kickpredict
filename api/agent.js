@@ -2,7 +2,9 @@ import {
   discoverFixtures,
   discoverHistoricalMatches,
 } from "../src/lib/football/discovery.js";
+
 import { loadCalibrationProfile } from "../src/lib/prediction/calibrationStore.js";
+
 import { runPredictions } from "../src/lib/prediction/runner.js";
 
 import { selectPredictions } from "../src/lib/prediction/select.js";
@@ -13,9 +15,80 @@ import { interpretPredictionRequest } from "../src/lib/agent/interpreter.js";
 
 import { buildAgentResponse } from "../src/lib/agent/response.js";
 
-// import { runBacktest } from "../src/lib/backtest/runner.js";
+/*
+ * ================================================================
+ * DETERMINISTIC PARSER GATE
+ * ================================================================
+ *
+ * Simple requests should NEVER consume OpenAI tokens.
+ *
+ * Examples:
+ *
+ *   Give me 5 safe picks tonight
+ *   Give me 10 premier league picks tomorrow
+ *   5 over 2.5 picks tonight
+ *   3 btts picks
+ *   5 home win picks tonight
+ *   5 odds tonight
+ *
+ * More complex requests are sent to the AI interpreter.
+ *
+ * Examples:
+ *
+ *   Give me picks based on recent home form
+ *   Find teams that have scored in their last 5 games
+ *   Give me picks where both teams have good form
+ *   Avoid teams with injuries
+ *   Find value picks
+ * ================================================================
+ */
 
-// import { buildCalibrationProfile } from "../src/lib/prediction/calibration.js";
+function shouldUseDeterministicParser(query, parsedRequest) {
+  const text = String(query || "")
+    .toLowerCase()
+    .trim();
+
+  if (!parsedRequest) {
+    return false;
+  }
+
+  const hasRequestKeyword =
+    /\b(picks?|predictions?|tips?|bets?|odds?|accumulator|acca|parlay|combo|combined)\b/i.test(
+      text
+    );
+
+  if (!hasRequestKeyword) {
+    return false;
+  }
+
+  /*
+   * These indicate that the user is asking for something
+   * beyond the deterministic parser's basic capabilities.
+   */
+  const complexIntentPattern =
+    /\b(where|that|which|whose|based on|according to|because|since|avoid|excluding|exclude|only if|if they|if the|teams that|games that|matches that|looked|form|recent form|home form|away form|head[- ]?to[- ]?head|h2h|injur|injuries|suspension|suspended|lineup|line[- ]?up|starting eleven|weather|motivation|value|underdog|favorite|favourite)\b/i;
+
+  if (complexIntentPattern.test(text)) {
+    return false;
+  }
+
+  /*
+   * If the deterministic parser successfully resolved
+   * the request into a basic prediction/odds request
+   * with a valid date range, no AI call is necessary.
+   */
+  return (
+    (parsedRequest.type === "picks" || parsedRequest.type === "odds") &&
+    Boolean(parsedRequest.dateFrom) &&
+    Boolean(parsedRequest.dateTo)
+  );
+}
+
+/*
+ * ================================================================
+ * DATE HELPERS
+ * ================================================================
+ */
 
 function getDateTime(date, time) {
   return new Date(`${date}T${time}:00Z`).getTime();
@@ -24,6 +97,12 @@ function getDateTime(date, time) {
 function formatDate(date) {
   return date.toISOString().slice(0, 10);
 }
+
+/*
+ * ================================================================
+ * UPCOMING FIXTURE
+ * ================================================================
+ */
 
 function isUpcomingFixture(fixture) {
   const fixtureTime = new Date(fixture.utcDate).getTime();
@@ -39,9 +118,19 @@ function isUpcomingFixture(fixture) {
 }
 
 /*
- * ------------------------------------------------
+ * ================================================================
  * DISCOVERY RANGE
- * ------------------------------------------------
+ * ================================================================
+ *
+ * Search slightly before the requested date and several days
+ * after it so fallback fixtures are available.
+ *
+ * Example:
+ *
+ * October 8 request
+ * =>
+ * October 7 through October 14
+ * ================================================================
  */
 
 function expandDiscoveryRange(request) {
@@ -60,26 +149,15 @@ function expandDiscoveryRange(request) {
 }
 
 /*
- * ------------------------------------------------
+ * ================================================================
  * TIME WINDOW
- * ------------------------------------------------
+ * ================================================================
  */
 
 function matchesTimeWindow(fixture, timeWindow) {
   if (!timeWindow) {
     return true;
   }
-
-  /*
-   * The deterministic parser returns an object:
-   *
-   * {
-   *   start: "18:00",
-   *   end: "23:59"
-   * }
-   *
-   * Protect against malformed values.
-   */
 
   if (typeof timeWindow !== "object" || !timeWindow.start || !timeWindow.end) {
     return true;
@@ -109,9 +187,9 @@ function matchesTimeWindow(fixture, timeWindow) {
 }
 
 /*
- * ------------------------------------------------
- * REQUESTED DATE
- * ------------------------------------------------
+ * ================================================================
+ * DATE RANGE
+ * ================================================================
  */
 
 function isWithinDateRange(fixture, request) {
@@ -129,9 +207,9 @@ function isWithinDateRange(fixture, request) {
 }
 
 /*
- * ------------------------------------------------
- * FILTER EXACT USER REQUEST
- * ------------------------------------------------
+ * ================================================================
+ * EXACT FIXTURE FILTER
+ * ================================================================
  */
 
 function filterFixtures(fixtures, request) {
@@ -157,11 +235,25 @@ function filterFixtures(fixtures, request) {
 }
 
 /*
- * ------------------------------------------------
- * FIND FIXTURES ON REQUESTED DATE
- * ------------------------------------------------
+ * ================================================================
+ * REQUESTED DATE FIXTURES
+ * ================================================================
  *
- * Deliberately ignores time window.
+ * This intentionally ignores the time window.
+ *
+ * Why?
+ *
+ * If the user says:
+ *
+ *   "safe picks tonight"
+ *
+ * and there are games today but none tonight,
+ * we should NOT immediately use tomorrow.
+ *
+ * We first know that today's date has fixtures,
+ * then return zero qualifying picks for the requested
+ * time window.
+ * ================================================================
  */
 
 function getFixturesOnRequestedDate(fixtures, request) {
@@ -183,9 +275,9 @@ function getFixturesOnRequestedDate(fixtures, request) {
 }
 
 /*
- * ------------------------------------------------
- * FIND NEXT AVAILABLE FIXTURES
- * ------------------------------------------------
+ * ================================================================
+ * NEXT AVAILABLE FIXTURES
+ * ================================================================
  */
 
 function getNextAvailableFixtures(fixtures, request) {
@@ -215,9 +307,9 @@ function getNextAvailableFixtures(fixtures, request) {
 }
 
 /*
- * ------------------------------------------------
+ * ================================================================
  * CONFIDENCE THRESHOLD
- * ------------------------------------------------
+ * ================================================================
  */
 
 function getMinimumProbability(confidence) {
@@ -237,9 +329,9 @@ function getMinimumProbability(confidence) {
 }
 
 /*
- * ------------------------------------------------
+ * ================================================================
  * MARKET FILTER
- * ------------------------------------------------
+ * ================================================================
  */
 
 function filterMarkets(predictions, requestedMarkets) {
@@ -255,26 +347,22 @@ function filterMarkets(predictions, requestedMarkets) {
 
       predictions:
         result.prediction?.predictions?.filter((market) =>
-          requestedMarkets.some((requested) =>
-            market.market?.includes(requested)
-          )
+          requestedMarkets.some((requested) => market.market === requested)
         ) || [],
     },
   }));
 }
 
 /*
- * ------------------------------------------------
- * VALIDATE AI INTERPRETATION
- * ------------------------------------------------
+ * ================================================================
+ * APPLY AI INTERPRETATION
+ * ================================================================
  *
- * The AI is allowed to understand language.
+ * The AI is only responsible for understanding
+ * complicated natural language.
  *
- * It is NOT allowed to introduce arbitrary values
- * into the prediction system.
- *
- * This function converts its structured output into
- * the shape expected by the existing agent.
+ * It cannot invent markets or arbitrary values.
+ * ================================================================
  */
 
 function applyAiInterpretation(parsedRequest, interpretedRequest) {
@@ -283,7 +371,7 @@ function applyAiInterpretation(parsedRequest, interpretedRequest) {
   };
 
   /*
-   * Count
+   * COUNT
    */
 
   if (
@@ -295,7 +383,7 @@ function applyAiInterpretation(parsedRequest, interpretedRequest) {
   }
 
   /*
-   * Confidence
+   * CONFIDENCE
    */
 
   const validConfidence = ["high", "medium_high", "standard", "aggressive"];
@@ -305,7 +393,7 @@ function applyAiInterpretation(parsedRequest, interpretedRequest) {
   }
 
   /*
-   * League
+   * LEAGUE
    */
 
   const validLeagues = ["PL", "PD", "BL1", "SA", "FL1", "CL"];
@@ -318,7 +406,7 @@ function applyAiInterpretation(parsedRequest, interpretedRequest) {
   }
 
   /*
-   * Request type
+   * REQUEST TYPE
    */
 
   if (
@@ -331,27 +419,18 @@ function applyAiInterpretation(parsedRequest, interpretedRequest) {
   /*
    * MARKET
    *
-   * The AI returns one canonical market.
+   * AI returns one canonical market.
    *
-   * The existing prediction pipeline expects
-   * an array, so convert it here.
+   * Convert it to the array expected by
+   * the prediction pipeline.
    */
 
   if (interpretedRequest.market) {
     request.markets = [interpretedRequest.market];
   } else {
     /*
-     * IMPORTANT:
-     *
-     * Do not overwrite a valid deterministic
-     * parser result when AI intentionally says
-     * there is no explicit market.
-     *
-     * This allows:
-     *
-     * "give me 5 safe picks tonight"
-     *
-     * to remain a broad prediction request.
+     * Do not destroy a deterministic parser
+     * market when AI intentionally returns null.
      */
 
     if (!parsedRequest.markets || !parsedRequest.markets.length) {
@@ -360,19 +439,17 @@ function applyAiInterpretation(parsedRequest, interpretedRequest) {
   }
 
   /*
-   * Preserve deterministic date resolution.
-   *
-   * parsePredictionRequest() is still the
-   * authoritative date/time resolver.
+   * Date/time remains controlled by the
+   * deterministic parser.
    */
 
   return request;
 }
 
 /*
- * ------------------------------------------------
- * BUILD CLARIFICATION RESPONSE
- * ------------------------------------------------
+ * ================================================================
+ * CLARIFICATION RESPONSE
+ * ================================================================
  */
 
 function buildClarificationResponse(query, interpretedRequest) {
@@ -411,24 +488,19 @@ function buildClarificationResponse(query, interpretedRequest) {
 
     dataset: {
       fixtures: 0,
-
       requestedDateFixtures: 0,
-
       eligibleFixtures: 0,
-
       historicalMatches: 0,
-
       predictions: 0,
-
       markets: 0,
     },
   };
 }
 
 /*
- * ------------------------------------------------
+ * ================================================================
  * MAIN HANDLER
- * ------------------------------------------------
+ * ================================================================
  */
 
 export default async function handler(req, res) {
@@ -438,6 +510,10 @@ export default async function handler(req, res) {
     });
   }
 
+  /*
+   * Football-Data is required for fixture discovery.
+   */
+
   if (!process.env.FOOTBALL_API_KEY) {
     return res.status(500).json({
       error: "FOOTBALL_API_KEY is not configured on the server.",
@@ -446,9 +522,9 @@ export default async function handler(req, res) {
 
   try {
     /*
-     * --------------------------------------------
+     * ------------------------------------------------
      * 1. READ QUERY
-     * --------------------------------------------
+     * ------------------------------------------------
      */
 
     const query =
@@ -466,92 +542,128 @@ export default async function handler(req, res) {
     }
 
     /*
-     * --------------------------------------------
-     * 2. DETERMINISTIC PARSER
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 2. DETERMINISTIC PARSER FIRST
+     * ------------------------------------------------
      *
-     * We keep this.
+     * This is the critical change.
      *
-     * It is particularly useful for:
+     * We parse every request locally first.
      *
-     * - date resolution
-     * - time-window resolution
-     * - fallback behavior
-     * - AI failure fallback
-     *
-     * The AI interpreter will then improve the
-     * understanding of the user's actual intent.
+     * Simple requests never reach OpenAI.
      */
 
-    const parsedRequest = parsePredictionRequest(query);
+    const parsedRequest = parsePredictionRequest(query, new Date());
 
     console.log("AGENT DETERMINISTIC REQUEST:", parsedRequest);
 
-    /*
-     * --------------------------------------------
-     * 3. AI INTERPRETER
-     * --------------------------------------------
-     *
-     * The AI understands the user's natural
-     * language and returns structured intent.
-     *
-     * If the interpreter is temporarily unavailable,
-     * we fall back to the deterministic parser.
-     */
-
     let interpretedRequest = null;
 
-    try {
-      interpretedRequest = await interpretPredictionRequest(query, new Date());
+    let request = null;
 
-      console.log("AGENT AI INTERPRETATION:", interpretedRequest);
-    } catch (interpreterError) {
-      console.error("AGENT AI INTERPRETER FAILED:", interpreterError);
+    const useDeterministicParser = shouldUseDeterministicParser(
+      query,
+      parsedRequest
+    );
 
+    /*
+     * ------------------------------------------------
+     * 3. SIMPLE REQUEST
+     * ------------------------------------------------
+     *
+     * NO OPENAI CALL.
+     * ------------------------------------------------
+     */
+
+    if (useDeterministicParser) {
+      request = parsedRequest;
+
+      console.log("AGENT USING DETERMINISTIC PARSER:", {
+        type: request.type,
+        count: request.count,
+        confidence: request.confidence,
+        league: request.league,
+        markets: request.markets,
+        dateFrom: request.dateFrom,
+        dateTo: request.dateTo,
+        timeWindow: request.timeWindow,
+      });
+    } else {
       /*
-       * Do NOT fail the whole prediction agent.
+       * ------------------------------------------------
+       * 3B. COMPLEX REQUEST
+       * ------------------------------------------------
        *
-       * The existing parser remains our fallback.
+       * Only complicated natural-language requests
+       * reach OpenAI.
        */
 
-      interpretedRequest = null;
+      console.log("AGENT USING AI INTERPRETER:", {
+        query,
+      });
+
+      try {
+        interpretedRequest = await interpretPredictionRequest(
+          query,
+          new Date()
+        );
+
+        console.log("AGENT AI INTERPRETATION:", interpretedRequest);
+      } catch (interpreterError) {
+        /*
+         * OpenAI being unavailable should NOT
+         * destroy the entire prediction endpoint.
+         */
+
+        console.error("AGENT AI INTERPRETER FAILED:", interpreterError);
+
+        interpretedRequest = null;
+      }
+
+      /*
+       * ------------------------------------------------
+       * 4. AI CLARIFICATION
+       * ------------------------------------------------
+       *
+       * If the AI says the request is ambiguous,
+       * stop before hitting Football-Data.
+       */
+
+      if (interpretedRequest?.needsClarification === true) {
+        return res
+          .status(200)
+          .json(buildClarificationResponse(query, interpretedRequest));
+      }
+
+      /*
+       * ------------------------------------------------
+       * 5. BUILD FINAL REQUEST
+       * ------------------------------------------------
+       */
+
+      request = interpretedRequest
+        ? applyAiInterpretation(parsedRequest, interpretedRequest)
+        : parsedRequest;
+
+      console.log("AGENT FINAL REQUEST:", request);
     }
 
     /*
-     * --------------------------------------------
-     * 4. CLARIFICATION
-     * --------------------------------------------
-     *
-     * If AI understands that the user's request
-     * is ambiguous, stop here.
-     *
-     * Do NOT call the football API.
-     * Do NOT research fixtures.
-     * Do NOT generate predictions.
+     * ------------------------------------------------
+     * 6. FINAL VALIDATION
+     * ------------------------------------------------
      */
 
-    if (interpretedRequest?.needsClarification === true) {
-      return res
-        .status(200)
-        .json(buildClarificationResponse(query, interpretedRequest));
+    if (!request) {
+      return res.status(400).json({
+        error: "Could not understand prediction request.",
+      });
     }
 
     /*
-     * --------------------------------------------
-     * 5. BUILD FINAL REQUEST
-     * --------------------------------------------
-     */
-
-    const request = interpretedRequest
-      ? applyAiInterpretation(parsedRequest, interpretedRequest)
-      : parsedRequest;
-
-    console.log("AGENT FINAL REQUEST:", request);
-
-    /*
-     * --------------------------------------------
-     * 6. DISCOVER FIXTURES
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 7. DISCOVER FIXTURES
+     * ------------------------------------------------
      */
 
     const discoveryRange = expandDiscoveryRange(request);
@@ -566,9 +678,9 @@ export default async function handler(req, res) {
     console.log("AGENT FIXTURES DISCOVERED:", fixtures.length);
 
     /*
-     * --------------------------------------------
-     * 7. CHECK REQUESTED DATE
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 8. REQUESTED DATE FIXTURES
+     * ------------------------------------------------
      */
 
     const requestedDateFixtures = getFixturesOnRequestedDate(fixtures, request);
@@ -576,9 +688,9 @@ export default async function handler(req, res) {
     console.log("AGENT REQUESTED DATE FIXTURES:", requestedDateFixtures.length);
 
     /*
-     * --------------------------------------------
-     * 8. EXACT REQUESTED FIXTURES
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 9. EXACT ELIGIBLE FIXTURES
+     * ------------------------------------------------
      */
 
     let eligibleFixtures = filterFixtures(fixtures, request);
@@ -586,12 +698,15 @@ export default async function handler(req, res) {
     let usedFallback = false;
 
     /*
-     * --------------------------------------------
-     * 9. FALLBACK
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 10. FALLBACK
+     * ------------------------------------------------
      *
-     * ONLY fallback when there are ZERO fixtures
-     * during the requested period.
+     * Only fallback if there are ZERO fixtures
+     * on the requested date.
+     *
+     * If there are games today but none match
+     * "tonight", do NOT silently switch to tomorrow.
      */
 
     if (requestedDateFixtures.length === 0) {
@@ -620,9 +735,9 @@ export default async function handler(req, res) {
     console.log("AGENT ELIGIBLE FIXTURES:", eligibleFixtures.length);
 
     /*
-     * --------------------------------------------
-     * 10. STILL NOTHING
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 11. NO ELIGIBLE FIXTURES
+     * ------------------------------------------------
      */
 
     if (!eligibleFixtures.length) {
@@ -667,30 +782,42 @@ export default async function handler(req, res) {
     }
 
     /*
-     * --------------------------------------------
-     * 11. DISCOVER HISTORY
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 12. HISTORICAL MATCHES
+     * ------------------------------------------------
      */
 
     const historyDate = usedFallback
       ? formatDate(new Date(eligibleFixtures[0].utcDate))
       : request.dateFrom;
 
+    console.log("AGENT HISTORY REQUEST:", {
+      dateTo: historyDate,
+      historyDays: 30,
+      fixtures: eligibleFixtures.length,
+    });
+
     const historicalMatches = await discoverHistoricalMatches({
       fixtures: eligibleFixtures,
+
       dateTo: historyDate,
+
       historyDays: 30,
     });
 
     console.log("AGENT HISTORICAL MATCHES:", historicalMatches.length);
 
     /*
-     * --------------------------------------------
-     * 12. BUILD CALIBRATION PROFILE
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 13. LOAD CALIBRATION
+     * ------------------------------------------------
+     *
+     * Calibration is loaded from Supabase.
+     *
+     * We do NOT run a backtest on every request.
      */
 
-    console.log("AGENT BUILDING CALIBRATION PROFILE...");
+    console.log("AGENT LOADING CALIBRATION PROFILE...");
 
     let calibrationProfile = {};
 
@@ -704,10 +831,16 @@ export default async function handler(req, res) {
       console.error("CALIBRATION LOAD FAILED:", error.message);
 
       /*
-       * Prediction still works without calibration.
+       * Prediction continues using raw
+       * probabilities when calibration is unavailable.
        */
+
       calibrationProfile = {};
     }
+
+    /*
+     * Optional calibration diagnostics.
+     */
 
     console.log(
       "AGENT CALIBRATION PROFILE:",
@@ -733,9 +866,9 @@ export default async function handler(req, res) {
     );
 
     /*
-     * --------------------------------------------
-     * 13. RUN PREDICTIONS
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 14. RUN PREDICTIONS
+     * ------------------------------------------------
      */
 
     const predictions = runPredictions({
@@ -749,25 +882,25 @@ export default async function handler(req, res) {
     console.log("AGENT PREDICTIONS:", predictions.length);
 
     /*
-     * --------------------------------------------
-     * 14. MARKET FILTER
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 15. MARKET FILTER
+     * ------------------------------------------------
      */
 
     const marketFiltered = filterMarkets(predictions, request.markets);
 
     /*
-     * --------------------------------------------
-     * 15. QUALITY THRESHOLD
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 16. MINIMUM PROBABILITY
+     * ------------------------------------------------
      */
 
     const minProbability = getMinimumProbability(request.confidence);
 
     /*
-     * --------------------------------------------
-     * 16. SELECT PICKS
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 17. SELECT PICKS
+     * ------------------------------------------------
      */
 
     const picks = selectPredictions({
@@ -783,9 +916,9 @@ export default async function handler(req, res) {
     console.log("AGENT SELECTED PICKS:", picks.length);
 
     /*
-     * --------------------------------------------
-     * 17. DATASET
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 18. MARKET COUNT
+     * ------------------------------------------------
      */
 
     const totalMarkets = marketFiltered.reduce(
@@ -794,9 +927,9 @@ export default async function handler(req, res) {
     );
 
     /*
-     * --------------------------------------------
-     * 18. RESPONSE
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 19. BUILD RESPONSE
+     * ------------------------------------------------
      */
 
     const response = buildAgentResponse({
@@ -828,9 +961,9 @@ export default async function handler(req, res) {
     });
 
     /*
-     * --------------------------------------------
-     * 19. EXPLAIN FALLBACK / SHORT RESULT
-     * --------------------------------------------
+     * ------------------------------------------------
+     * 20. RESPONSE MESSAGE
+     * ------------------------------------------------
      */
 
     if (usedFallback) {
@@ -844,6 +977,12 @@ export default async function handler(req, res) {
         picks.length === 1 ? "" : "s"
       } instead of the requested ${request.count}.`;
     }
+
+    /*
+     * ------------------------------------------------
+     * 21. RETURN
+     * ------------------------------------------------
+     */
 
     return res.status(200).json(response);
   } catch (error) {
