@@ -1,4 +1,5 @@
-import { getMatches, getTeamMatches } from "./service.js";
+import { getMatches } from "./service.js";
+import footballClient from "./client.js";
 import { normalizeFixture } from "./normalise.js";
 
 function startOfDay(date) {
@@ -17,16 +18,30 @@ function formatDate(date) {
   return date.toISOString().slice(0, 10);
 }
 
-/*
- * ------------------------------------------------
- * UPCOMING FIXTURES
- * ------------------------------------------------
+/**
+ * Get competitions available to the current API key.
  *
- * One global request.
- *
- * Do NOT query every competition individually here.
- * That creates a huge number of API calls.
+ * We intentionally do NOT hard-code PL, PD, BL1, etc.
  */
+async function discoverCompetitions() {
+  const response = await footballClient.get("/competitions");
+
+  const competitions = Array.isArray(response.data?.competitions)
+    ? response.data.competitions
+    : [];
+
+  console.log("AVAILABLE COMPETITIONS:", {
+    count: competitions.length,
+    competitions: competitions.map((competition) => ({
+      id: competition.id,
+      name: competition.name,
+      code: competition.code,
+      type: competition.type,
+    })),
+  });
+
+  return competitions;
+}
 
 export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   const from = dateFrom ? startOfDay(dateFrom) : startOfDay(new Date());
@@ -42,27 +57,33 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   });
 
   try {
-    const data = await getMatches({
+    const globalData = await getMatches({
       dateFrom: formattedFrom,
       dateTo: formattedTo,
       limit: 500,
     });
 
-    const matches = Array.isArray(data?.matches) ? data.matches : [];
+    const matches = Array.isArray(globalData?.matches)
+      ? globalData.matches
+      : [];
 
-    console.log("GLOBAL FIXTURE RESPONSE:", {
+    console.log("GLOBAL MATCH RESPONSE:", {
+      filters: globalData?.filters,
+      resultSet: globalData?.resultSet,
       count: matches.length,
-      filters: data?.filters,
-      resultSet: data?.resultSet,
     });
 
-    const uniqueMatches = Array.from(
-      new Map(matches.map((match) => [String(match.id), match])).values()
-    );
+    if (!matches.length) {
+      console.log("NO FIXTURES RETURNED BY GLOBAL ENDPOINT:", {
+        dateFrom: formattedFrom,
+        dateTo: formattedTo,
+      });
 
-    const normalized = uniqueMatches
+      return [];
+    }
+
+    const normalized = matches
       .map(normalizeFixture)
-      .filter((fixture) => fixture?.id)
       .sort(
         (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
       );
@@ -92,7 +113,7 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
 
     return normalized;
   } catch (error) {
-    console.error("FIXTURE DISCOVERY FAILED:", {
+    console.error("Global fixture discovery failed:", {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
@@ -102,108 +123,76 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   }
 }
 
-/*
- * ------------------------------------------------
- * TEAM HISTORY
- * ------------------------------------------------
- *
- * Instead of downloading 90 days of every match
- * in every competition, get history only for the
- * teams we actually need.
- */
-
 export async function discoverHistoricalMatches({
-  fixtures = [],
   dateTo,
   historyDays = 90,
 } = {}) {
   const end = dateTo ? endOfDay(dateTo) : endOfDay(new Date());
 
   const start = new Date(end);
-
   start.setUTCDate(start.getUTCDate() - historyDays);
-
-  const formattedFrom = formatDate(start);
-  const formattedTo = formatDate(end);
-
-  /*
-   * Get unique team IDs from the fixtures we're
-   * actually trying to predict.
-   */
-
-  const teamIds = Array.from(
-    new Set(
-      fixtures
-        .flatMap((fixture) => [fixture.homeTeam?.id, fixture.awayTeam?.id])
-        .filter(Boolean)
-        .map(String)
-    )
-  );
-
-  console.log("HISTORY TEAMS:", {
-    count: teamIds.length,
-    teams: teamIds,
-    dateFrom: formattedFrom,
-    dateTo: formattedTo,
-  });
-
-  if (!teamIds.length) {
-    return [];
-  }
 
   const allMatches = [];
 
-  /*
-   * Query each relevant team only.
-   *
-   * This is still several requests, but dramatically
-   * fewer than downloading every competition's history.
-   */
+  let chunkStart = new Date(start);
 
-  for (const teamId of teamIds) {
+  while (chunkStart < end) {
+    const chunkEnd = new Date(chunkStart);
+
+    // Football-Data.org allows a maximum 10-day period.
+    chunkEnd.setUTCDate(chunkEnd.getUTCDate() + 9);
+
+    if (chunkEnd > end) {
+      chunkEnd.setTime(end.getTime());
+    }
+
+    const formattedFrom = formatDate(chunkStart);
+    const formattedTo = formatDate(chunkEnd);
+
+    console.log("HISTORY CHUNK:", {
+      dateFrom: formattedFrom,
+      dateTo: formattedTo,
+    });
+
     try {
-      console.log("FETCHING TEAM HISTORY:", {
-        teamId,
-      });
-
-      const data = await getTeamMatches({
-        teamId,
+      const data = await getMatches({
         dateFrom: formattedFrom,
         dateTo: formattedTo,
         status: "FINISHED",
-        limit: 100,
+        limit: 500,
       });
 
       const matches = Array.isArray(data?.matches) ? data.matches : [];
 
-      console.log("TEAM HISTORY RESPONSE:", {
-        teamId,
+      console.log("HISTORY CHUNK RESPONSE:", {
+        dateFrom: formattedFrom,
+        dateTo: formattedTo,
         count: matches.length,
       });
 
       allMatches.push(...matches);
     } catch (error) {
-      console.error("TEAM HISTORY FAILED:", {
-        teamId,
+      console.error("HISTORY CHUNK FAILED:", {
+        dateFrom: formattedFrom,
+        dateTo: formattedTo,
         message: error.message,
         status: error.response?.status,
         data: error.response?.data,
       });
 
-      /*
-       * If rate limited, stop immediately.
-       */
-
+      // Don't completely kill the tips request
+      // because one historical window failed.
       if (error.response?.status === 429) {
         throw error;
       }
     }
+
+    // Move to the next window.
+    chunkStart = new Date(chunkEnd);
+    chunkStart.setUTCDate(chunkStart.getUTCDate() + 1);
   }
 
-  /*
-   * Remove duplicate matches.
-   */
-
+  // Remove duplicate fixtures.
   const uniqueMatches = Array.from(
     new Map(allMatches.map((match) => [String(match.id), match])).values()
   );
@@ -214,7 +203,6 @@ export async function discoverHistoricalMatches({
 
   console.log("HISTORY COMPLETE:", {
     requestedDays: historyDays,
-    teams: teamIds.length,
     rawMatches: allMatches.length,
     uniqueMatches: uniqueMatches.length,
   });

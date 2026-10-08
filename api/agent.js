@@ -677,10 +677,11 @@ export default async function handler(req, res) {
       : request.dateFrom;
 
     const historicalMatches = await discoverHistoricalMatches({
-      fixtures: eligibleFixtures,
       dateTo: historyDate,
+
       historyDays: 90,
     });
+
     console.log("AGENT HISTORICAL MATCHES:", historicalMatches.length);
 
     /*
