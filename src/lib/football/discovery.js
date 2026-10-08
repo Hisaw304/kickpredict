@@ -88,6 +88,29 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
         (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
       );
 
+    const fixturesByDate = normalized.reduce((acc, fixture) => {
+      const date = fixture.utcDate?.slice(0, 10);
+
+      if (!date) return acc;
+
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+
+      acc[date].push({
+        id: fixture.id,
+        home: fixture.homeTeam?.name,
+        away: fixture.awayTeam?.name,
+        competition: fixture.competition?.name,
+        competitionCode: fixture.competition?.code,
+        utcDate: fixture.utcDate,
+      });
+
+      return acc;
+    }, {});
+
+    console.log("FIXTURES BY DATE:", fixturesByDate);
+
     const competitionMap = new Map();
 
     for (const fixture of normalized) {
