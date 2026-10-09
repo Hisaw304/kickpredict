@@ -16,14 +16,8 @@ function isFinished(match) {
 function isUpcoming(match) {
   const fixtureTime = getMatchTime(match);
 
-  if (!Number.isFinite(fixtureTime)) {
-    return false;
-  }
+  if (!Number.isFinite(fixtureTime)) return false;
 
-  /*
-   * Only generate tips for matches that have
-   * not started yet.
-   */
   return (
     fixtureTime > Date.now() &&
     (match.status === "SCHEDULED" || match.status === "TIMED")
@@ -55,56 +49,82 @@ export function runPredictions({
 } = {}) {
   const results = [];
 
+  const diagnostics = {
+    receivedFixtures: fixtures.length,
+    upcomingFixtures: 0,
+    skippedNotUpcoming: 0,
+    skippedInsufficientHistory: 0,
+    predictionFailures: 0,
+    successfulPredictions: 0,
+    minHistory,
+    fixtures: [],
+  };
+
   for (const rawFixture of fixtures) {
-    /*
-     * Important:
-     * The tips system must never generate a prediction
-     * for a finished or already-started fixture.
-     */
+    const fixtureName =
+      `${rawFixture.homeTeam?.name || "Unknown"} vs ` +
+      `${rawFixture.awayTeam?.name || "Unknown"}`;
+
     if (!isUpcoming(rawFixture)) {
+      diagnostics.skippedNotUpcoming++;
+
+      diagnostics.fixtures.push({
+        fixture: fixtureName,
+        outcome: "SKIPPED_NOT_UPCOMING",
+        status: rawFixture.status,
+        utcDate: rawFixture.utcDate,
+      });
+
       continue;
     }
 
-    const fixture = normalizeFixture(rawFixture);
+    diagnostics.upcomingFixtures++;
 
+    const fixture = normalizeFixture(rawFixture);
     const fixtureTime = getMatchTime(fixture);
 
     if (!Number.isFinite(fixtureTime)) {
+      diagnostics.skippedNotUpcoming++;
+
+      diagnostics.fixtures.push({
+        fixture: fixtureName,
+        outcome: "SKIPPED_INVALID_DATE",
+        utcDate: fixture.utcDate,
+      });
+
       continue;
     }
 
-    /*
-     * Previous matches for the home team.
-     */
     const homeMatches = getPreviousTeamMatches(
       historicalMatches,
       fixture.homeTeam.id,
       fixtureTime
     );
 
-    /*
-     * Previous matches for the away team.
-     */
     const awayMatches = getPreviousTeamMatches(
       historicalMatches,
       fixture.awayTeam.id,
       fixtureTime
     );
 
-    /*
-     * Previous matches from the same competition.
-     */
     const leagueMatches = getPreviousLeagueMatches(
       historicalMatches,
       fixture.competition.id,
       fixtureTime
     );
 
-    /*
-     * Don't predict fixtures where either team
-     * doesn't have enough historical data.
-     */
     if (homeMatches.length < minHistory || awayMatches.length < minHistory) {
+      diagnostics.skippedInsufficientHistory++;
+
+      diagnostics.fixtures.push({
+        fixture: fixtureName,
+        outcome: "SKIPPED_INSUFFICIENT_HISTORY",
+        homeHistory: homeMatches.length,
+        awayHistory: awayMatches.length,
+        requiredHistory: minHistory,
+        competition: fixture.competition?.name,
+      });
+
       continue;
     }
 
@@ -116,35 +136,57 @@ export function runPredictions({
         leagueMatches,
       });
 
+      if (!prediction) {
+        diagnostics.predictionFailures++;
+
+        diagnostics.fixtures.push({
+          fixture: fixtureName,
+          outcome: "EMPTY_PREDICTION",
+        });
+
+        continue;
+      }
+
       results.push({
         fixture: {
           id: fixture.id,
-
           utcDate: fixture.utcDate,
-
           status: fixture.status,
-
           competition: fixture.competition,
-
           homeTeam: fixture.homeTeam,
-
           awayTeam: fixture.awayTeam,
         },
-
         research: {
           homeMatches: homeMatches.length,
-
           awayMatches: awayMatches.length,
-
           leagueMatches: leagueMatches.length,
         },
-
         prediction,
       });
+
+      diagnostics.successfulPredictions++;
+
+      diagnostics.fixtures.push({
+        fixture: fixtureName,
+        outcome: "PREDICTED",
+        homeHistory: homeMatches.length,
+        awayHistory: awayMatches.length,
+        competition: fixture.competition?.name,
+      });
     } catch (error) {
+      diagnostics.predictionFailures++;
+
       console.error(`Prediction failed for fixture ${fixture.id}:`, error);
+
+      diagnostics.fixtures.push({
+        fixture: fixtureName,
+        outcome: "PREDICTION_ERROR",
+        error: error.message,
+      });
     }
   }
+
+  console.log("RUN PREDICTIONS DIAGNOSTICS:", diagnostics);
 
   return results;
 }
