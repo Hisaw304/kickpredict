@@ -1,4 +1,4 @@
-import { getMatches } from "./service.js";
+import { getMatches, getFixtures } from "./service.js";
 import footballClient from "./client.js";
 import { normalizeFixture } from "./normalise.js";
 
@@ -19,9 +19,8 @@ function formatDate(date) {
 }
 
 /**
- * Get competitions available to the current API key.
- *
- * We intentionally do NOT hard-code PL, PD, BL1, etc.
+ * Discover competitions exposed by the current API key.
+ * No hardcoded league list.
  */
 async function discoverCompetitions() {
   const response = await footballClient.get("/competitions");
@@ -32,19 +31,23 @@ async function discoverCompetitions() {
 
   console.log("AVAILABLE COMPETITIONS:", {
     count: competitions.length,
-    competitions: competitions.map((competition) => ({
-      id: competition.id,
-      name: competition.name,
-      code: competition.code,
-      type: competition.type,
+    competitions: competitions.map(({ id, name, code, type }) => ({
+      id,
+      name,
+      code,
+      type,
     })),
   });
 
-  return competitions;
+  return competitions.filter((competition) => competition.code);
 }
 
+/**
+ * Discover fixtures across the competitions available to the API key.
+ */
 export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   const from = dateFrom ? startOfDay(dateFrom) : startOfDay(new Date());
+
   const to = dateTo ? endOfDay(dateTo) : endOfDay(from);
 
   const formattedFrom = formatDate(from);
@@ -56,120 +59,146 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   });
 
   try {
-    const globalData = await getMatches({
-      dateFrom: formattedFrom,
-      dateTo: formattedTo,
-      limit: 500,
-    });
+    const competitions = await discoverCompetitions();
 
-    const matches = Array.isArray(globalData?.matches)
-      ? globalData.matches
-      : [];
-
-    const summary = {
-      dateFrom: formattedFrom,
-      dateTo: formattedTo,
-      returnedMatches: matches.length,
-      resultSet: globalData?.resultSet || null,
-      filters: globalData?.filters || null,
-      competitions: [
-        ...new Map(
-          matches
-            .filter((match) => match.competition?.code)
-            .map((match) => [match.competition.code, match.competition.name])
-        ),
-      ].map(([code, name]) => ({ code, name })),
-      statuses: matches.reduce((acc, match) => {
-        const status = match.status || "UNKNOWN";
-        acc[status] = (acc[status] || 0) + 1;
-        return acc;
-      }, {}),
-      sampleMatches: matches.slice(0, 5).map((match) => ({
-        id: match.id,
-        utcDate: match.utcDate,
-        status: match.status,
-        competition: match.competition?.name,
-        competitionCode: match.competition?.code,
-        home: match.homeTeam?.name,
-        away: match.awayTeam?.name,
-      })),
-    };
-
-    console.log("DISCOVERY DEBUG:", summary);
-
-    if (!matches.length) {
-      console.warn("NO FIXTURES RETURNED BY GLOBAL ENDPOINT:", summary);
+    if (!competitions.length) {
+      console.warn("NO COMPETITIONS AVAILABLE TO THIS API KEY");
       return [];
     }
 
-    const normalized = matches
+    const results = await Promise.allSettled(
+      competitions.map(async (competition) => {
+        const code = competition.code;
+
+        const response = await getFixtures({
+          league: code,
+          dateFrom: formattedFrom,
+          dateTo: formattedTo,
+        });
+
+        const matches = Array.isArray(response?.matches)
+          ? response.matches
+          : [];
+
+        return {
+          competition,
+          matches,
+        };
+      })
+    );
+
+    const successful = [];
+    const failed = [];
+
+    results.forEach((result, index) => {
+      const competition = competitions[index];
+
+      if (result.status === "fulfilled") {
+        successful.push(result.value);
+
+        console.log("COMPETITION FIXTURES RESULT:", {
+          code: competition.code,
+          name: competition.name,
+          count: result.value.matches.length,
+        });
+      } else {
+        const error = result.reason;
+
+        failed.push({
+          code: competition.code,
+          name: competition.name,
+          message: error?.message || "Unknown error",
+          status: error?.response?.status || null,
+          data: error?.response?.data || null,
+        });
+
+        console.error("COMPETITION FIXTURES FAILED:", {
+          code: competition.code,
+          name: competition.name,
+          message: error?.message,
+          status: error?.response?.status,
+          data: error?.response?.data,
+        });
+      }
+    });
+
+    const uniqueMatches = new Map();
+
+    for (const result of successful) {
+      for (const match of result.matches) {
+        if (match?.id != null) {
+          uniqueMatches.set(String(match.id), match);
+        }
+      }
+    }
+
+    const rawMatches = [...uniqueMatches.values()];
+
+    console.log("FIXTURE DISCOVERY SUMMARY:", {
+      requestedDateFrom: formattedFrom,
+      requestedDateTo: formattedTo,
+      availableCompetitions: competitions.length,
+      successfulCompetitionRequests: successful.length,
+      failedCompetitionRequests: failed.length,
+      failedCompetitions: failed,
+      totalUniqueMatches: rawMatches.length,
+    });
+
+    if (successful.length === 0 && failed.length > 0) {
+      throw new Error(
+        `All competition fixture requests failed: ${failed
+          .map(({ code, status, message }) => `${code}: ${status || message}`)
+          .join("; ")}`
+      );
+    }
+
+    if (!rawMatches.length) {
+      console.warn("NO FIXTURES FOUND FOR REQUESTED DATE:", {
+        dateFrom: formattedFrom,
+        dateTo: formattedTo,
+      });
+
+      return [];
+    }
+
+    const normalized = rawMatches
       .map(normalizeFixture)
+      .filter(Boolean)
       .sort(
         (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
       );
 
-    const fixturesByDate = normalized.reduce((acc, fixture) => {
-      const date = fixture.utcDate?.slice(0, 10);
-      if (!date) return acc;
-
-      if (!acc[date]) acc[date] = [];
-
-      acc[date].push({
+    console.log(
+      "DISCOVERED FIXTURES:",
+      normalized.map((fixture) => ({
         id: fixture.id,
-        home: fixture.homeTeam?.name,
-        away: fixture.awayTeam?.name,
+        date: fixture.utcDate,
+        status: fixture.status,
         competition: fixture.competition?.name,
         competitionCode: fixture.competition?.code,
-        utcDate: fixture.utcDate,
-        status: fixture.status,
-      });
-
-      return acc;
-    }, {});
-
-    console.log(
-      "FIXTURE DATE SUMMARY:",
-      Object.entries(fixturesByDate).map(([date, dateFixtures]) => ({
-        date,
-        count: dateFixtures.length,
-        competitions: [
-          ...new Set(
-            dateFixtures
-              .map((fixture) => fixture.competitionCode)
-              .filter(Boolean)
-          ),
-        ],
+        home: fixture.homeTeam?.name,
+        away: fixture.awayTeam?.name,
       }))
     );
 
-    console.log("DISCOVERED FIXTURES:", {
-      count: normalized.length,
-      competitions: [
-        ...new Map(
-          normalized
-            .filter((fixture) => fixture.competition?.code)
-            .map((fixture) => [
-              fixture.competition.code,
-              fixture.competition.name,
-            ])
-        ),
-      ].map(([code, name]) => ({ code, name })),
-    });
-
     return normalized;
   } catch (error) {
-    console.error("Global fixture discovery failed:", {
+    console.error("Fixture discovery failed:", {
       requestedDateFrom: formattedFrom,
       requestedDateTo: formattedTo,
       message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
+      status: error.response?.status || null,
+      data: error.response?.data || null,
     });
 
     throw error;
   }
 }
 
+/**
+ * Retrieve historical finished matches for team research.
+ * Historical lookback remains separate from fixture discovery.
+ */
 export async function discoverHistoricalMatches({
   dateTo,
   historyDays = 90,
@@ -180,13 +209,10 @@ export async function discoverHistoricalMatches({
   start.setUTCDate(start.getUTCDate() - historyDays);
 
   const allMatches = [];
-
   let chunkStart = new Date(start);
 
   while (chunkStart < end) {
     const chunkEnd = new Date(chunkStart);
-
-    // Football-Data.org allows a maximum 10-day period.
     chunkEnd.setUTCDate(chunkEnd.getUTCDate() + 9);
 
     if (chunkEnd > end) {
@@ -223,23 +249,19 @@ export async function discoverHistoricalMatches({
         dateFrom: formattedFrom,
         dateTo: formattedTo,
         message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
+        status: error.response?.status || null,
+        data: error.response?.data || null,
       });
 
-      // Don't completely kill the tips request
-      // because one historical window failed.
       if (error.response?.status === 429) {
         throw error;
       }
     }
 
-    // Move to the next window.
     chunkStart = new Date(chunkEnd);
     chunkStart.setUTCDate(chunkStart.getUTCDate() + 1);
   }
 
-  // Remove duplicate fixtures.
   const uniqueMatches = Array.from(
     new Map(allMatches.map((match) => [String(match.id), match])).values()
   );
