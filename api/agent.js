@@ -594,67 +594,57 @@ export default async function handler(req, res) {
      * --------------------------------------------
      * 2. DETERMINISTIC PARSER
      * --------------------------------------------
-     *
-     * We keep this.
-     *
-     * It is particularly useful for:
-     *
-     * - date resolution
-     * - time-window resolution
-     * - fallback behavior
-     * - AI failure fallback
-     *
-     * The AI interpreter will then improve the
-     * understanding of the user's actual intent.
      */
-
     const parsedRequest = parsePredictionRequest(query);
 
     console.log("AGENT DETERMINISTIC REQUEST:", parsedRequest);
 
     /*
      * --------------------------------------------
-     * 3. AI INTERPRETER
+     * 3. DECIDE IF AI INTERPRETATION IS NEEDED
      * --------------------------------------------
      *
-     * The AI understands the user's natural
-     * language and returns structured intent.
-     *
-     * If the interpreter is temporarily unavailable,
-     * we fall back to the deterministic parser.
+     * Simple picks requests with a resolved date do not
+     * need another model call.
      */
+    const hasResolvedDate =
+      Boolean(parsedRequest.dateFrom) && Boolean(parsedRequest.dateTo);
+
+    const hasSimplePicksIntent =
+      parsedRequest.type === "picks" &&
+      hasResolvedDate &&
+      Number.isInteger(parsedRequest.count) &&
+      parsedRequest.count >= 1 &&
+      parsedRequest.count <= 20;
 
     let interpretedRequest = null;
 
-    try {
-      interpretedRequest = await interpretPredictionRequest(query, new Date());
+    if (!hasSimplePicksIntent) {
+      try {
+        interpretedRequest = await interpretPredictionRequest(
+          query,
+          new Date()
+        );
 
-      console.log("AGENT AI INTERPRETATION:", interpretedRequest);
-    } catch (interpreterError) {
-      console.error("AGENT AI INTERPRETER FAILED:", interpreterError);
-
-      /*
-       * Do NOT fail the whole prediction agent.
-       *
-       * The existing parser remains our fallback.
-       */
-
-      interpretedRequest = null;
+        console.log("AGENT AI INTERPRETATION:", interpretedRequest);
+      } catch (interpreterError) {
+        console.error("AGENT AI INTERPRETER FAILED:", {
+          status: interpreterError?.status || null,
+          code: interpreterError?.code || null,
+          message: interpreterError?.message,
+        });
+      }
+    } else {
+      console.log(
+        "AGENT AI SKIPPED: deterministic parser resolved a simple picks request."
+      );
     }
 
     /*
      * --------------------------------------------
      * 4. CLARIFICATION
      * --------------------------------------------
-     *
-     * If AI understands that the user's request
-     * is ambiguous, stop here.
-     *
-     * Do NOT call the football API.
-     * Do NOT research fixtures.
-     * Do NOT generate predictions.
      */
-
     if (interpretedRequest?.needsClarification === true) {
       return res
         .status(200)
@@ -666,7 +656,6 @@ export default async function handler(req, res) {
      * 5. BUILD FINAL REQUEST
      * --------------------------------------------
      */
-
     const request = interpretedRequest
       ? applyAiInterpretation(parsedRequest, interpretedRequest)
       : parsedRequest;

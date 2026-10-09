@@ -1,143 +1,228 @@
-import { getMatches, getFixtures } from "./service.js";
-import footballClient from "./client.js";
+import { getFixtures, getMatches } from "./service.js";
 import { normalizeFixture } from "./normalise.js";
 
-function startOfDay(date) {
-  const value = new Date(date);
-  value.setUTCHours(0, 0, 0, 0);
-  return value;
-}
+const FIXTURE_CACHE_TTL = 10 * 60 * 1000;
+const HISTORY_CACHE_TTL = 6 * 60 * 60 * 1000;
+const EMPTY_CACHE_TTL = 60 * 1000;
 
-function endOfDay(date) {
-  const value = new Date(date);
-  value.setUTCHours(23, 59, 59, 999);
-  return value;
-}
+// Keep this list explicit to avoid a /competitions request on every search.
+// These are the competitions previously used by your discovery pipeline.
+const COMPETITIONS = [
+  "PL",
+  "PD",
+  "BL1",
+  "SA",
+  "FL1",
+  "ELC",
+  "DED",
+  "PPL",
+  "BSA",
+];
+
+const fixtureCache = new Map();
+const fixtureRequests = new Map();
+
+const historyCache = new Map();
+const historyRequests = new Map();
 
 function formatDate(date) {
   return date.toISOString().slice(0, 10);
 }
 
-/**
- * Discover competitions exposed by the current API key.
- * No hardcoded league list.
- */
-async function discoverCompetitions() {
-  const response = await footballClient.get("/competitions");
-
-  const competitions = Array.isArray(response.data?.competitions)
-    ? response.data.competitions
-    : [];
-
-  console.log("AVAILABLE COMPETITIONS:", {
-    count: competitions.length,
-    competitions: competitions.map(({ id, name, code, type }) => ({
-      id,
-      name,
-      code,
-      type,
-    })),
-  });
-
-  return competitions.filter((competition) => competition.code);
+function normalizeCompetitionCodes(competitions = []) {
+  return [
+    ...new Set(
+      competitions
+        .filter(Boolean)
+        .map((code) => String(code).trim().toUpperCase())
+    ),
+  ].sort();
 }
 
-/**
- * Discover fixtures across the competitions available to the API key.
+function isRateLimited(error) {
+  return error?.response?.status === 429;
+}
+
+function logApiError(label, error, key) {
+  console.error(`${label} FAILED:`, {
+    key,
+    status: error?.response?.status || null,
+    response: error?.response?.data || null,
+    retryAfter: error?.response?.headers?.["retry-after"] || null,
+    message: error?.message || "Unknown error",
+  });
+}
+
+function getCache(cache, key) {
+  const entry = cache.get(key);
+  if (!entry) return null;
+
+  if (entry.expiresAt > Date.now()) {
+    return { ...entry, stale: false };
+  }
+
+  // Retain expired values for use if the provider is unavailable.
+  return { ...entry, stale: true };
+}
+
+function saveCache(cache, key, value, ttl) {
+  cache.set(key, {
+    value,
+    expiresAt: Date.now() + ttl,
+  });
+}
+
+function deduplicateMatches(matches) {
+  return [
+    ...new Map(
+      matches
+        .filter((match) => match?.id != null)
+        .map((match) => [String(match.id), match])
+    ).values(),
+  ];
+}
+
+function sortByDate(matches) {
+  return matches.sort(
+    (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
+  );
+}
+
+/*
+ * ------------------------------------------------
+ * FIXTURE DISCOVERY
+ * ------------------------------------------------
  */
 
 export async function discoverFixtures({ dateFrom, dateTo } = {}) {
-  const from = dateFrom || new Date().toISOString().slice(0, 10);
+  const from = dateFrom || formatDate(new Date());
   const to = dateTo || from;
+  const key = `${from}:${to}`;
 
-  console.log("DISCOVER FIXTURES:", {
-    dateFrom: from,
-    dateTo: to,
-  });
+  const cached = getCache(fixtureCache, key);
 
-  const competitions = await discoverCompetitions();
-  const allMatches = new Map();
-  const failed = [];
-  let rateLimited = false;
-
-  for (const competition of competitions) {
-    if (rateLimited) break;
-
-    if (!competition.code || !competition.currentSeason?.startDate) {
-      console.log("SKIPPING COMPETITION WITHOUT CODE OR CURRENT SEASON:", {
-        code: competition.code,
-        name: competition.name,
-      });
-      continue;
-    }
-
-    const season = new Date(
-      competition.currentSeason.startDate
-    ).getUTCFullYear();
-
-    try {
-      const response = await getFixtures({
-        league: competition.code,
-        season,
-        dateFrom: from,
-        dateTo: to,
-      });
-
-      const matches = Array.isArray(response?.matches) ? response.matches : [];
-
-      console.log("COMPETITION FIXTURES RESULT:", {
-        code: competition.code,
-        name: competition.name,
-        season,
-        count: matches.length,
-      });
-
-      for (const match of matches) {
-        if (match?.id == null) continue;
-
-        allMatches.set(String(match.id), match);
-      }
-    } catch (error) {
-      const status = error?.response?.status || null;
-
-      const failure = {
-        code: competition.code,
-        status,
-        message: error?.message || "Unknown error",
-      };
-
-      failed.push(failure);
-
-      console.error("COMPETITION FIXTURES FAILED:", failure);
-
-      if (status === 429) {
-        rateLimited = true;
-        break;
-      }
-    }
+  if (cached && !cached.stale) {
+    console.log("FIXTURE CACHE HIT:", {
+      key,
+      count: cached.value.length,
+    });
+    return cached.value;
   }
 
-  const normalized = [...allMatches.values()]
-    .map(normalizeFixture)
-    .filter(Boolean)
-    .sort(
-      (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
-    );
+  if (fixtureRequests.has(key)) {
+    console.log("FIXTURE REQUEST ALREADY IN PROGRESS:", key);
+    return fixtureRequests.get(key);
+  }
 
-  console.log("FIXTURE DISCOVERY SUMMARY:", {
-    requestedDateFrom: from,
-    requestedDateTo: to,
-    availableCompetitions: competitions.length,
-    totalUniqueMatches: normalized.length,
-    rateLimited,
-    failed,
-  });
+  const request = (async () => {
+    const discovered = [];
+    const errors = [];
+    let rateLimited = false;
 
-  return normalized;
+    try {
+      // European domestic seasons normally start in the calendar year
+      // of the season's first match. Pass the season explicitly to avoid
+      // an additional competition lookup for each league.
+      const season = Number(from.slice(0, 4));
+
+      console.log("DISCOVER FIXTURES:", {
+        dateFrom: from,
+        dateTo: to,
+        season,
+        competitions: COMPETITIONS,
+        strategy: "sequential competition-specific requests",
+      });
+
+      // Sequential requests reduce bursts against the provider's rate limit.
+      for (const league of COMPETITIONS) {
+        try {
+          const data = await getFixtures({
+            league,
+            season,
+            dateFrom: from,
+            dateTo: to,
+          });
+
+          const matches = Array.isArray(data?.matches) ? data.matches : [];
+
+          discovered.push(...matches);
+
+          console.log("FIXTURE COMPETITION RESULT:", {
+            league,
+            count: matches.length,
+          });
+        } catch (error) {
+          logApiError("FIXTURE COMPETITION", error, `${key}:${league}`);
+
+          errors.push({
+            league,
+            status: error?.response?.status || null,
+            message: error?.message || "Unknown error",
+          });
+
+          if (isRateLimited(error)) {
+            rateLimited = true;
+            console.warn(
+              "FIXTURE DISCOVERY STOPPED: provider rate limit reached."
+            );
+            break;
+          }
+        }
+      }
+
+      const matches = sortByDate(
+        deduplicateMatches(discovered)
+          .map((match) => normalizeFixture(match))
+          .filter(Boolean)
+      );
+
+      console.log("FIXTURE DISCOVERY SUMMARY:", {
+        dateFrom: from,
+        dateTo: to,
+        rawMatches: discovered.length,
+        normalizedMatches: matches.length,
+        failedCompetitions: errors.length,
+        rateLimited,
+      });
+
+      // Do not overwrite useful cached data with an empty result when
+      // every request failed or the provider throttled the requests.
+      if (matches.length > 0) {
+        saveCache(fixtureCache, key, matches, FIXTURE_CACHE_TTL);
+        return matches;
+      }
+
+      if (cached?.value?.length) {
+        console.warn("USING STALE FIXTURE CACHE:", key);
+        return cached.value;
+      }
+
+      if (rateLimited || errors.length === COMPETITIONS.length) {
+        const error = new Error(
+          "Fixture discovery failed because the football data provider is unavailable or rate-limited."
+        );
+        error.status = rateLimited ? 429 : 502;
+        error.discoveryErrors = errors;
+        throw error;
+      }
+
+      // An empty response from every successful endpoint is cached only
+      // briefly because fixture data can change.
+      saveCache(fixtureCache, key, [], EMPTY_CACHE_TTL);
+      return [];
+    } finally {
+      fixtureRequests.delete(key);
+    }
+  })();
+
+  fixtureRequests.set(key, request);
+  return request;
 }
-/**
- * Retrieve historical finished matches for team research.
- * Historical lookback remains separate from fixture discovery.
+
+/*
+ * ------------------------------------------------
+ * HISTORICAL MATCH DISCOVERY
+ * ------------------------------------------------
  */
 
 export async function discoverHistoricalMatches({
@@ -145,96 +230,96 @@ export async function discoverHistoricalMatches({
   historyDays = 90,
   competitions = [],
 } = {}) {
-  const end = dateTo ? startOfDay(dateTo) : startOfDay(new Date());
+  const end = dateTo ? new Date(`${dateTo}T00:00:00.000Z`) : new Date();
 
-  // dateTo is exclusive in the Football-Data.org API.
-  // Request up to, but not including, the specified date.
-  const dateUntil = formatDate(end);
+  if (Number.isNaN(end.getTime())) {
+    throw new Error(`Invalid historical dateTo: ${dateTo}`);
+  }
 
+  end.setUTCHours(0, 0, 0, 0);
+
+  const until = formatDate(end);
   const start = new Date(end);
   start.setUTCDate(start.getUTCDate() - historyDays);
 
-  const dateFrom = formatDate(start);
+  const from = formatDate(start);
+  const codes = normalizeCompetitionCodes(competitions);
+  const competitionKey = codes.join(",");
+  const key = `${from}:${until}:${competitionKey}`;
 
-  const competitionCodes = [
-    ...new Set(
-      competitions
-        .filter(Boolean)
-        .map((code) => String(code).trim().toUpperCase())
-    ),
-  ];
+  const cached = getCache(historyCache, key);
 
-  console.log("HISTORY REQUEST:", {
-    dateFrom,
-    dateTo: dateUntil,
-    historyDays,
-    competitions: competitionCodes,
-  });
+  if (cached && !cached.stale) {
+    console.log("HISTORY CACHE HIT:", {
+      key,
+      matches: cached.value.length,
+    });
+    return cached.value;
+  }
 
-  const data = await getMatches({
-    dateFrom,
-    dateTo: dateUntil,
-    status: "FINISHED",
-    competitions: competitionCodes.length ? competitionCodes : undefined,
-    limit: 500,
-  });
-  console.log("HISTORY API RAW RESULT:", {
-    resultSet: data?.resultSet,
-    hasMatchesArray: Array.isArray(data?.matches),
-    matchCount: data?.matches?.length,
-    competitions: competitionCodes,
-    sample: data?.matches?.slice(0, 3)?.map((match) => ({
-      id: match.id,
-      status: match.status,
-      competition: match.competition?.code,
-      date: match.utcDate,
-      homeScore: match.score?.fullTime?.home,
-      awayScore: match.score?.fullTime?.away,
-    })),
-  });
+  if (historyRequests.has(key)) {
+    console.log("HISTORY REQUEST ALREADY IN PROGRESS:", key);
+    return historyRequests.get(key);
+  }
 
-  const matches = Array.isArray(data?.matches) ? data.matches : [];
+  const request = (async () => {
+    try {
+      console.log("HISTORY REQUEST:", {
+        dateFrom: from,
+        dateTo: until,
+        historyDays,
+        competitions: codes,
+      });
 
-  console.log("HISTORICAL MATCH API RESPONSE:", {
-    resultSet: data?.resultSet ?? null,
-    matchCount: matches.length,
-    sample: matches.slice(0, 3).map((match) => ({
-      id: match.id,
-      status: match.status,
-      utcDate: match.utcDate,
-      competition: match.competition?.code,
-      homeTeamId: match.homeTeam?.id,
-      awayTeamId: match.awayTeam?.id,
-      homeScore: match.score?.fullTime?.home,
-      awayScore: match.score?.fullTime?.away,
-    })),
-  });
+      const data = await getMatches({
+        dateFrom: from,
+        dateTo: until,
+        status: "FINISHED",
+        competitions: codes.length ? codes : undefined,
+        limit: 500,
+      });
 
-  const uniqueMatches = [
-    ...new Map(
-      matches
-        .filter((match) => match?.id != null)
-        .map((match) => [String(match.id), match])
-    ).values(),
-  ]
-    .filter(
-      (match) =>
-        match.status === "FINISHED" &&
-        Number.isFinite(match.score?.fullTime?.home) &&
-        Number.isFinite(match.score?.fullTime?.away)
-    )
-    .sort(
-      (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
-    );
+      const rawMatches = Array.isArray(data?.matches) ? data.matches : [];
 
-  console.log("HISTORY COMPLETE:", {
-    requestedDays: historyDays,
-    rawMatches: matches.length,
-    uniqueFinishedMatches: uniqueMatches.length,
-    dateFrom,
-    dateTo: dateUntil,
-    competitions: competitionCodes,
-  });
+      const matches = sortByDate(
+        deduplicateMatches(rawMatches).filter(
+          (match) =>
+            match.status === "FINISHED" &&
+            Number.isFinite(match.score?.fullTime?.home) &&
+            Number.isFinite(match.score?.fullTime?.away)
+        )
+      );
 
-  return uniqueMatches;
+      console.log("HISTORICAL MATCH DISCOVERY SUMMARY:", {
+        dateFrom: from,
+        dateTo: until,
+        competitions: codes,
+        rawMatches: rawMatches.length,
+        finishedMatches: matches.length,
+      });
+
+      saveCache(
+        historyCache,
+        key,
+        matches,
+        matches.length ? HISTORY_CACHE_TTL : EMPTY_CACHE_TTL
+      );
+
+      return matches;
+    } catch (error) {
+      logApiError("HISTORICAL MATCH DISCOVERY", error, key);
+
+      if (cached?.value?.length) {
+        console.warn("USING STALE HISTORICAL CACHE:", key);
+        return cached.value;
+      }
+
+      throw error;
+    } finally {
+      historyRequests.delete(key);
+    }
+  })();
+
+  historyRequests.set(key, request);
+  return request;
 }
