@@ -16,12 +16,17 @@ function isFinished(match) {
 function isUpcoming(match) {
   const fixtureTime = getMatchTime(match);
 
-  if (!Number.isFinite(fixtureTime) || fixtureTime <= Date.now()) {
+  if (!Number.isFinite(fixtureTime)) {
     return false;
   }
 
-  return ["SCHEDULED", "TIMED"].includes(
-    String(match.status || "").toUpperCase()
+  /*
+   * Only generate tips for matches that have
+   * not started yet.
+   */
+  return (
+    fixtureTime > Date.now() &&
+    (match.status === "SCHEDULED" || match.status === "TIMED")
   );
 }
 
@@ -50,97 +55,56 @@ export function runPredictions({
 } = {}) {
   const results = [];
 
-  const diagnostics = {
-    receivedFixtures: fixtures.length,
-    upcomingFixtures: 0,
-    skippedNotUpcoming: 0,
-    skippedInsufficientHistory: 0,
-    predictionFailures: 0,
-    successfulPredictions: 0,
-    minHistory,
-    fixtures: [],
-  };
-
   for (const rawFixture of fixtures) {
-    const fixtureName =
-      `${rawFixture.homeTeam?.name || "Unknown"} vs ` +
-      `${rawFixture.awayTeam?.name || "Unknown"}`;
-
+    /*
+     * Important:
+     * The tips system must never generate a prediction
+     * for a finished or already-started fixture.
+     */
     if (!isUpcoming(rawFixture)) {
-      diagnostics.skippedNotUpcoming++;
-
-      diagnostics.fixtures.push({
-        fixture: fixtureName,
-        outcome: "SKIPPED_NOT_UPCOMING",
-        status: rawFixture.status,
-        utcDate: rawFixture.utcDate,
-      });
-
       continue;
     }
 
-    diagnostics.upcomingFixtures++;
-
     const fixture = normalizeFixture(rawFixture);
+
     const fixtureTime = getMatchTime(fixture);
 
     if (!Number.isFinite(fixtureTime)) {
-      diagnostics.skippedNotUpcoming++;
-
-      diagnostics.fixtures.push({
-        fixture: fixtureName,
-        outcome: "SKIPPED_INVALID_DATE",
-        utcDate: fixture.utcDate,
-      });
-
       continue;
     }
 
+    /*
+     * Previous matches for the home team.
+     */
     const homeMatches = getPreviousTeamMatches(
       historicalMatches,
       fixture.homeTeam.id,
       fixtureTime
     );
 
-    if (diagnostics.fixtures.length === 0) {
-      console.log("HISTORY MATCHING DEBUG:", {
-        fixture: {
-          id: fixture.id,
-          homeTeam: fixture.homeTeam,
-          awayTeam: fixture.awayTeam,
-          competition: fixture.competition,
-          utcDate: fixture.utcDate,
-        },
-        historicalMatchSample: historicalMatches[0] ?? null,
-        historicalMatchCount: historicalMatches.length,
-        finishedMatchCount: historicalMatches.filter(isFinished).length,
-      });
-    }
-
+    /*
+     * Previous matches for the away team.
+     */
     const awayMatches = getPreviousTeamMatches(
       historicalMatches,
       fixture.awayTeam.id,
       fixtureTime
     );
 
+    /*
+     * Previous matches from the same competition.
+     */
     const leagueMatches = getPreviousLeagueMatches(
       historicalMatches,
       fixture.competition.id,
       fixtureTime
     );
 
+    /*
+     * Don't predict fixtures where either team
+     * doesn't have enough historical data.
+     */
     if (homeMatches.length < minHistory || awayMatches.length < minHistory) {
-      diagnostics.skippedInsufficientHistory++;
-
-      diagnostics.fixtures.push({
-        fixture: fixtureName,
-        outcome: "SKIPPED_INSUFFICIENT_HISTORY",
-        homeHistory: homeMatches.length,
-        awayHistory: awayMatches.length,
-        requiredHistory: minHistory,
-        competition: fixture.competition?.name,
-      });
-
       continue;
     }
 
@@ -152,57 +116,35 @@ export function runPredictions({
         leagueMatches,
       });
 
-      if (!prediction) {
-        diagnostics.predictionFailures++;
-
-        diagnostics.fixtures.push({
-          fixture: fixtureName,
-          outcome: "EMPTY_PREDICTION",
-        });
-
-        continue;
-      }
-
       results.push({
         fixture: {
           id: fixture.id,
+
           utcDate: fixture.utcDate,
+
           status: fixture.status,
+
           competition: fixture.competition,
+
           homeTeam: fixture.homeTeam,
+
           awayTeam: fixture.awayTeam,
         },
+
         research: {
           homeMatches: homeMatches.length,
+
           awayMatches: awayMatches.length,
+
           leagueMatches: leagueMatches.length,
         },
+
         prediction,
       });
-
-      diagnostics.successfulPredictions++;
-
-      diagnostics.fixtures.push({
-        fixture: fixtureName,
-        outcome: "PREDICTED",
-        homeHistory: homeMatches.length,
-        awayHistory: awayMatches.length,
-        competition: fixture.competition?.name,
-      });
     } catch (error) {
-      diagnostics.predictionFailures++;
-
       console.error(`Prediction failed for fixture ${fixture.id}:`, error);
-
-      diagnostics.fixtures.push({
-        fixture: fixtureName,
-        outcome: "PREDICTION_ERROR",
-        error: error.message,
-      });
     }
   }
-
-  console.log("RUN PREDICTIONS DIAGNOSTICS:", diagnostics);
 
   return results;
 }

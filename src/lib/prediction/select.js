@@ -466,16 +466,6 @@ export function selectPredictions({
     (selection) => selection.probability >= minProbability
   );
 
-  console.log("PREDICTION SELECTION DIAGNOSTICS:", {
-    predictionResults: results.length,
-    marketCandidates: markets.length,
-    eligibleMarkets: eligible.length,
-    requestedLimit: limit,
-    minimumProbability: minProbability,
-    distinctEligibleFixtures: new Set(
-      eligible.map((selection) => selection.fixture?.id).filter(Boolean)
-    ).size,
-  });
   /*
    * If nothing qualifies,
    * return nothing.
@@ -570,20 +560,7 @@ export function selectPredictions({
 
     remaining.splice(bestIndex, 1);
   }
-  console.log("PREDICTION SELECTION RESULT:", {
-    requestedLimit: limit,
-    minimumProbability: minProbability,
-    eligibleMarkets: eligible.length,
-    distinctEligibleFixtures: new Set(
-      eligible.map((selection) => selection.fixture?.id).filter(Boolean)
-    ).size,
-    selectedCount: selected.length,
-    selectedFixtures: selected.map((selection) => ({
-      fixture: `${selection.fixture?.homeTeam?.name} vs ${selection.fixture?.awayTeam?.name}`,
-      market: selection.market,
-      probability: selection.probability,
-    })),
-  });
+
   /*
    * Return final selections ordered
    * by calibrated probability for the

@@ -17,64 +17,10 @@ import { runBacktest } from "../src/lib/backtest/runner.js";
 
 import { buildCalibrationProfile } from "../src/lib/prediction/calibration.js";
 
-const APP_TIMEZONE = "Africa/Lagos";
-
-function getDateTime(date, time, timeZone = APP_TIMEZONE) {
-  if (!date || !time) return NaN;
-
-  const [year, month, day] = date.split("-").map(Number);
-  const [hour, minute, second = 0] = time.split(":").map(Number);
-
-  if (
-    !year ||
-    !month ||
-    !day ||
-    !Number.isFinite(hour) ||
-    !Number.isFinite(minute)
-  ) {
-    return NaN;
-  }
-
-  // Africa/Lagos is UTC+1 and does not observe daylight saving time.
-  if (timeZone === "Africa/Lagos") {
-    return Date.UTC(year, month - 1, day, hour - 1, minute, second);
-  }
-
-  // For other time zones, use the dedicated conversion helper
-  // before extending this function to support them.
-  return Date.UTC(year, month - 1, day, hour, minute, second);
+function getDateTime(date, time) {
+  return new Date(`${date}T${time}:00Z`).getTime();
 }
 
-function getFixtureLocalDate(utcDate) {
-  const date = new Date(utcDate);
-
-  if (!Number.isFinite(date.getTime())) return null;
-
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: APP_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
-}
-
-function getFixtureLocalMinutes(utcDate) {
-  const date = new Date(utcDate);
-
-  if (!Number.isFinite(date.getTime())) return NaN;
-
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: APP_TIMEZONE,
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(date);
-
-  const hour = Number(parts.find((part) => part.type === "hour")?.value);
-  const minute = Number(parts.find((part) => part.type === "minute")?.value);
-
-  return hour * 60 + minute;
-}
 function formatDate(date) {
   return date.toISOString().slice(0, 10);
 }
@@ -100,9 +46,11 @@ function isUpcomingFixture(fixture) {
 
 function expandDiscoveryRange(request) {
   const start = new Date(`${request.dateFrom}T00:00:00Z`);
+
   const end = new Date(`${request.dateTo}T23:59:59Z`);
 
   start.setUTCDate(start.getUTCDate() - 1);
+
   end.setUTCDate(end.getUTCDate() + 6);
 
   return {
@@ -118,35 +66,44 @@ function expandDiscoveryRange(request) {
  */
 
 function matchesTimeWindow(fixture, timeWindow) {
-  if (!timeWindow) return true;
+  if (!timeWindow) {
+    return true;
+  }
+
+  /*
+   * The deterministic parser returns an object:
+   *
+   * {
+   *   start: "18:00",
+   *   end: "23:59"
+   * }
+   *
+   * Protect against malformed values.
+   */
 
   if (typeof timeWindow !== "object" || !timeWindow.start || !timeWindow.end) {
     return true;
   }
 
-  const currentMinutes = getFixtureLocalMinutes(fixture.utcDate);
+  const fixtureDate = new Date(fixture.utcDate);
 
-  if (!Number.isFinite(currentMinutes)) return false;
+  if (Number.isNaN(fixtureDate.getTime())) {
+    return false;
+  }
+
+  const hours = fixtureDate.getUTCHours();
+
+  const minutes = fixtureDate.getUTCMinutes();
+
+  const currentMinutes = hours * 60 + minutes;
 
   const [startHour, startMinute] = timeWindow.start.split(":").map(Number);
+
   const [endHour, endMinute] = timeWindow.end.split(":").map(Number);
 
-  if (
-    !Number.isFinite(startHour) ||
-    !Number.isFinite(startMinute) ||
-    !Number.isFinite(endHour) ||
-    !Number.isFinite(endMinute)
-  ) {
-    return true;
-  }
-
   const startMinutes = startHour * 60 + startMinute;
-  const endMinutes = endHour * 60 + endMinute;
 
-  // Support windows that cross midnight, e.g. 22:00–02:00.
-  if (startMinutes > endMinutes) {
-    return currentMinutes >= startMinutes || currentMinutes <= endMinutes;
-  }
+  const endMinutes = endHour * 60 + endMinute;
 
   return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
 }
@@ -158,13 +115,17 @@ function matchesTimeWindow(fixture, timeWindow) {
  */
 
 function isWithinDateRange(fixture, request) {
-  const fixtureDate = getFixtureLocalDate(fixture.utcDate);
+  const fixtureTime = new Date(fixture.utcDate).getTime();
 
-  if (!fixtureDate || !request.dateFrom || !request.dateTo) {
+  if (!Number.isFinite(fixtureTime)) {
     return false;
   }
 
-  return fixtureDate >= request.dateFrom && fixtureDate <= request.dateTo;
+  const start = getDateTime(request.dateFrom, "00:00");
+
+  const end = getDateTime(request.dateTo, "23:59");
+
+  return fixtureTime >= start && fixtureTime <= end;
 }
 
 /*
@@ -232,7 +193,9 @@ function getNextAvailableFixtures(fixtures, request) {
 
   return fixtures
     .filter((fixture) => {
-      if (!isUpcomingFixture(fixture)) return false;
+      if (!isUpcomingFixture(fixture)) {
+        return false;
+      }
 
       const fixtureTime = new Date(fixture.utcDate).getTime();
 
@@ -343,17 +306,15 @@ function applyAiInterpretation(parsedRequest, interpretedRequest) {
 
   /*
    * League
-   *
-   * Normalize the AI result here. The discovery and
-   * fixture-filtering layers should validate availability.
    */
-  if (interpretedRequest.league === null) {
-    request.league = null;
-  } else if (
-    typeof interpretedRequest.league === "string" &&
-    interpretedRequest.league.trim()
+
+  const validLeagues = ["PL", "PD", "BL1", "SA", "FL1", "CL"];
+
+  if (
+    interpretedRequest.league === null ||
+    validLeagues.includes(interpretedRequest.league)
   ) {
-    request.league = interpretedRequest.league.trim().toUpperCase();
+    request.league = interpretedRequest.league;
   }
 
   /*
@@ -508,57 +469,67 @@ export default async function handler(req, res) {
      * --------------------------------------------
      * 2. DETERMINISTIC PARSER
      * --------------------------------------------
+     *
+     * We keep this.
+     *
+     * It is particularly useful for:
+     *
+     * - date resolution
+     * - time-window resolution
+     * - fallback behavior
+     * - AI failure fallback
+     *
+     * The AI interpreter will then improve the
+     * understanding of the user's actual intent.
      */
+
     const parsedRequest = parsePredictionRequest(query);
 
     console.log("AGENT DETERMINISTIC REQUEST:", parsedRequest);
 
     /*
      * --------------------------------------------
-     * 3. DECIDE IF AI INTERPRETATION IS NEEDED
+     * 3. AI INTERPRETER
      * --------------------------------------------
      *
-     * Simple picks requests with a resolved date do not
-     * need another model call.
+     * The AI understands the user's natural
+     * language and returns structured intent.
+     *
+     * If the interpreter is temporarily unavailable,
+     * we fall back to the deterministic parser.
      */
-    const hasResolvedDate =
-      Boolean(parsedRequest.dateFrom) && Boolean(parsedRequest.dateTo);
-
-    const hasSimplePicksIntent =
-      parsedRequest.type === "picks" &&
-      hasResolvedDate &&
-      Number.isInteger(parsedRequest.count) &&
-      parsedRequest.count >= 1 &&
-      parsedRequest.count <= 20;
 
     let interpretedRequest = null;
 
-    if (!hasSimplePicksIntent) {
-      try {
-        interpretedRequest = await interpretPredictionRequest(
-          query,
-          new Date()
-        );
+    try {
+      interpretedRequest = await interpretPredictionRequest(query, new Date());
 
-        console.log("AGENT AI INTERPRETATION:", interpretedRequest);
-      } catch (interpreterError) {
-        console.error("AGENT AI INTERPRETER FAILED:", {
-          status: interpreterError?.status || null,
-          code: interpreterError?.code || null,
-          message: interpreterError?.message,
-        });
-      }
-    } else {
-      console.log(
-        "AGENT AI SKIPPED: deterministic parser resolved a simple picks request."
-      );
+      console.log("AGENT AI INTERPRETATION:", interpretedRequest);
+    } catch (interpreterError) {
+      console.error("AGENT AI INTERPRETER FAILED:", interpreterError);
+
+      /*
+       * Do NOT fail the whole prediction agent.
+       *
+       * The existing parser remains our fallback.
+       */
+
+      interpretedRequest = null;
     }
 
     /*
      * --------------------------------------------
      * 4. CLARIFICATION
      * --------------------------------------------
+     *
+     * If AI understands that the user's request
+     * is ambiguous, stop here.
+     *
+     * Do NOT call the football API.
+     * Do NOT research fixtures.
+     * Do NOT generate predictions.
      */
+
     if (interpretedRequest?.needsClarification === true) {
       return res
         .status(200)
@@ -570,6 +541,7 @@ export default async function handler(req, res) {
      * 5. BUILD FINAL REQUEST
      * --------------------------------------------
      */
+
     const request = interpretedRequest
       ? applyAiInterpretation(parsedRequest, interpretedRequest)
       : parsedRequest;
@@ -582,40 +554,13 @@ export default async function handler(req, res) {
      * --------------------------------------------
      */
 
-    const discoveryRange = {
-      dateFrom: request.dateFrom,
-      dateTo: request.dateTo,
-    };
+    const discoveryRange = expandDiscoveryRange(request);
 
     console.log("AGENT DISCOVERY RANGE:", discoveryRange);
 
-    let fixtures = [];
-    let discoveryError = null;
-
-    try {
-      fixtures = await discoverFixtures(discoveryRange);
-    } catch (error) {
-      discoveryError = {
-        message: error.message,
-        status: error.response?.status || null,
-        data: error.response?.data || null,
-      };
-
-      console.error("AGENT DISCOVERY FAILED:", discoveryError);
-    }
-
-    console.log("AGENT DISCOVERY RESULT:", {
-      requestedRange: discoveryRange,
-      fixtureCount: fixtures.length,
-      discoveryError,
-      sampleFixtures: fixtures.slice(0, 5).map((fixture) => ({
-        id: fixture.id,
-        date: fixture.utcDate,
-        status: fixture.status,
-        competition: fixture.competition?.name,
-        home: fixture.homeTeam?.name,
-        away: fixture.awayTeam?.name,
-      })),
+    const fixtures = await discoverFixtures({
+      dateFrom: discoveryRange.dateFrom,
+      dateTo: discoveryRange.dateTo,
     });
 
     console.log("AGENT FIXTURES DISCOVERED:", fixtures.length);
@@ -657,11 +602,12 @@ export default async function handler(req, res) {
 
         const firstDate = new Date(firstFixture.utcDate);
 
-        const fallbackDate = getFixtureLocalDate(firstFixture.utcDate);
+        const fallbackDate = formatDate(firstDate);
 
         eligibleFixtures = fallbackFixtures.filter(
-          (fixture) => getFixtureLocalDate(fixture.utcDate) === fallbackDate
+          (fixture) => formatDate(new Date(fixture.utcDate)) === fallbackDate
         );
+
         usedFallback = true;
 
         console.log("AGENT FALLBACK FIXTURES:", {
@@ -730,73 +676,11 @@ export default async function handler(req, res) {
       ? formatDate(new Date(eligibleFixtures[0].utcDate))
       : request.dateFrom;
 
-    const historyCompetitions = [
-      ...new Set(
-        eligibleFixtures
-          .map((fixture) => fixture.competition?.code)
-          .filter(Boolean)
-      ),
-    ];
+    const historicalMatches = await discoverHistoricalMatches({
+      dateTo: historyDate,
 
-    let historicalMatches = [];
-
-    try {
-      historicalMatches = await discoverHistoricalMatches({
-        dateTo: historyDate,
-        historyDays: 60,
-        competitions: historyCompetitions,
-      });
-    } catch (error) {
-      const status = error?.response?.status || error?.status || 503;
-
-      const retryAfterSeconds = Number.isFinite(error?.retryAfterMs)
-        ? Math.ceil(error.retryAfterMs / 1000)
-        : null;
-
-      console.error("AGENT HISTORY UNAVAILABLE:", {
-        status,
-        message: error?.response?.data?.message || error?.message,
-        retryAfterSeconds,
-        eligibleFixtures: eligibleFixtures.length,
-      });
-
-      if (status === 429) {
-        return res.status(429).json({
-          success: false,
-          code: "FOOTBALL_DATA_RATE_LIMITED",
-          error:
-            "The football data provider has temporarily rate-limited requests.",
-          message: retryAfterSeconds
-            ? `Historical match data is temporarily unavailable. Please retry in about ${retryAfterSeconds} seconds.`
-            : "Historical match data is temporarily unavailable. Please try again shortly.",
-          retryAfterSeconds,
-          dataset: {
-            fixtures: fixtures.length,
-            requestedDateFixtures: requestedDateFixtures.length,
-            eligibleFixtures: eligibleFixtures.length,
-            historicalMatches: 0,
-            predictions: 0,
-            markets: 0,
-          },
-        });
-      }
-
-      return res.status(503).json({
-        success: false,
-        code: "HISTORICAL_DATA_UNAVAILABLE",
-        error: "Historical match data could not be retrieved.",
-        message:
-          "Predictions require sufficient historical match data. Please try again later.",
-        dataset: {
-          fixtures: fixtures.length,
-          requestedDateFixtures: requestedDateFixtures.length,
-          eligibleFixtures: eligibleFixtures.length,
-          historicalMatches: 0,
-          predictions: 0,
-          markets: 0,
-        },
-      });
-    }
+      historyDays: 90,
+    });
 
     console.log("AGENT HISTORICAL MATCHES:", historicalMatches.length);
 
@@ -933,24 +817,6 @@ export default async function handler(req, res) {
         fallbackDate: usedFallback
           ? formatDate(new Date(eligibleFixtures[0].utcDate))
           : null,
-
-        // TEMPORARY: diagnose fixture discovery
-        discoveryDebug: {
-          requestedRange: discoveryRange,
-
-          fixtureCount: fixtures.length,
-
-          error: discoveryError,
-
-          sampleFixtures: fixtures.slice(0, 5).map((fixture) => ({
-            id: fixture.id,
-            date: fixture.utcDate,
-            status: fixture.status,
-            competition: fixture.competition?.name,
-            home: fixture.homeTeam?.name,
-            away: fixture.awayTeam?.name,
-          })),
-        },
       },
     });
 
@@ -974,17 +840,17 @@ export default async function handler(req, res) {
 
     return res.status(200).json(response);
   } catch (error) {
-    const status = error?.response?.status || error?.status || 500;
-
     console.error("AGENT REQUEST FAILED:", {
       message: error.message,
-      status,
+
+      status: error.response?.status,
+
       data: error.response?.data,
+
       stack: error.stack,
     });
 
-    return res.status(status).json({
-      success: false,
+    return res.status(error.response?.status || 500).json({
       error:
         error.response?.data?.message ||
         error.response?.data?.error ||
