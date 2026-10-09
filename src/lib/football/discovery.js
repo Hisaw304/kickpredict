@@ -45,154 +45,90 @@ async function discoverCompetitions() {
 /**
  * Discover fixtures across the competitions available to the API key.
  */
+
 export async function discoverFixtures({ dateFrom, dateTo } = {}) {
-  const from = dateFrom ? startOfDay(dateFrom) : startOfDay(new Date());
-
-  const to = dateTo ? endOfDay(dateTo) : endOfDay(from);
-
-  const formattedFrom = formatDate(from);
-  const formattedTo = formatDate(to);
+  const from = dateFrom || new Date().toISOString().slice(0, 10);
+  const to = dateTo || from;
 
   console.log("DISCOVER FIXTURES:", {
-    dateFrom: formattedFrom,
-    dateTo: formattedTo,
+    dateFrom: from,
+    dateTo: to,
   });
 
-  try {
-    const competitions = await discoverCompetitions();
+  const competitions = await discoverCompetitions();
+  const allMatches = new Map();
+  const failed = [];
+  let rateLimited = false;
 
-    if (!competitions.length) {
-      console.warn("NO COMPETITIONS AVAILABLE TO THIS API KEY");
-      return [];
+  for (const competition of competitions) {
+    if (rateLimited) break;
+
+    if (!competition.currentSeason?.startDate) {
+      console.log("SKIPPING COMPETITION WITHOUT CURRENT SEASON:", {
+        code: competition.code,
+        name: competition.name,
+      });
+      continue;
     }
 
-    const results = await Promise.allSettled(
-      competitions.map(async (competition) => {
-        const code = competition.code;
-
-        const response = await getFixtures({
-          league: code,
-          dateFrom: formattedFrom,
-          dateTo: formattedTo,
-        });
-
-        const matches = Array.isArray(response?.matches)
-          ? response.matches
-          : [];
-
-        return {
-          competition,
-          matches,
-        };
-      })
-    );
-
-    const successful = [];
-    const failed = [];
-
-    results.forEach((result, index) => {
-      const competition = competitions[index];
-
-      if (result.status === "fulfilled") {
-        successful.push(result.value);
-
-        console.log("COMPETITION FIXTURES RESULT:", {
-          code: competition.code,
-          name: competition.name,
-          count: result.value.matches.length,
-        });
-      } else {
-        const error = result.reason;
-
-        failed.push({
-          code: competition.code,
-          name: competition.name,
-          message: error?.message || "Unknown error",
-          status: error?.response?.status || null,
-          data: error?.response?.data || null,
-        });
-
-        console.error("COMPETITION FIXTURES FAILED:", {
-          code: competition.code,
-          name: competition.name,
-          message: error?.message,
-          status: error?.response?.status,
-          data: error?.response?.data,
-        });
-      }
-    });
-
-    const uniqueMatches = new Map();
-
-    for (const result of successful) {
-      for (const match of result.matches) {
-        if (match?.id != null) {
-          uniqueMatches.set(String(match.id), match);
-        }
-      }
-    }
-
-    const rawMatches = [...uniqueMatches.values()];
-
-    console.log("FIXTURE DISCOVERY SUMMARY:", {
-      requestedDateFrom: formattedFrom,
-      requestedDateTo: formattedTo,
-      availableCompetitions: competitions.length,
-      successfulCompetitionRequests: successful.length,
-      failedCompetitionRequests: failed.length,
-      failedCompetitions: failed,
-      totalUniqueMatches: rawMatches.length,
-    });
-
-    if (successful.length === 0 && failed.length > 0) {
-      throw new Error(
-        `All competition fixture requests failed: ${failed
-          .map(({ code, status, message }) => `${code}: ${status || message}`)
-          .join("; ")}`
-      );
-    }
-
-    if (!rawMatches.length) {
-      console.warn("NO FIXTURES FOUND FOR REQUESTED DATE:", {
-        dateFrom: formattedFrom,
-        dateTo: formattedTo,
+    try {
+      const response = await getFixtures({
+        league: competition.code,
+        dateFrom: from,
+        dateTo: to,
       });
 
-      return [];
+      const matches = Array.isArray(response?.matches) ? response.matches : [];
+
+      console.log("COMPETITION FIXTURES RESULT:", {
+        code: competition.code,
+        name: competition.name,
+        count: matches.length,
+      });
+
+      for (const match of matches) {
+        if (match?.id != null) {
+          allMatches.set(String(match.id), match);
+        }
+      }
+    } catch (error) {
+      const status = error?.response?.status || null;
+
+      failed.push({
+        code: competition.code,
+        status,
+        message: error?.message || "Unknown error",
+      });
+
+      console.error("COMPETITION FIXTURES FAILED:", {
+        code: competition.code,
+        status,
+        message: error?.message,
+      });
+
+      if (status === 429) {
+        rateLimited = true;
+      }
     }
+  }
 
-    const normalized = rawMatches
-      .map(normalizeFixture)
-      .filter(Boolean)
-      .sort(
-        (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
-      );
-
-    console.log(
-      "DISCOVERED FIXTURES:",
-      normalized.map((fixture) => ({
-        id: fixture.id,
-        date: fixture.utcDate,
-        status: fixture.status,
-        competition: fixture.competition?.name,
-        competitionCode: fixture.competition?.code,
-        home: fixture.homeTeam?.name,
-        away: fixture.awayTeam?.name,
-      }))
+  const normalized = [...allMatches.values()]
+    .map(normalizeFixture)
+    .filter(Boolean)
+    .sort(
+      (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
     );
 
-    return normalized;
-  } catch (error) {
-    console.error("Fixture discovery failed:", {
-      requestedDateFrom: formattedFrom,
-      requestedDateTo: formattedTo,
-      message: error.message,
-      status: error.response?.status || null,
-      data: error.response?.data || null,
-    });
+  console.log("FIXTURE DISCOVERY SUMMARY:", {
+    requestedDateFrom: from,
+    requestedDateTo: to,
+    availableCompetitions: competitions.length,
+    totalUniqueMatches: normalized.length,
+    rateLimited,
+    failed,
+  });
 
-    throw error;
-  }
+  return normalized;
 }
 
 /**
