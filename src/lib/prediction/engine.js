@@ -27,171 +27,153 @@ function calculateExpectedGoals(research) {
   const away = research.away;
   const league = research.league;
 
-  /*
-   * ----------------------------------------
-   * LEAGUE BASELINE
-   * ----------------------------------------
-   */
+  const finiteOr = (value, fallback) =>
+    Number.isFinite(Number(value)) && value !== null && value !== ""
+      ? Number(value)
+      : fallback;
 
-  const leagueHomeGoals = league.averageHomeGoals || 1.4;
+  const clampRate = (value, min = 0.15, max = 3.5) =>
+    Math.min(Math.max(value, min), max);
 
-  const leagueAwayGoals = league.averageAwayGoals || 1.1;
+  const leagueHomeGoals = Math.max(
+    0.5,
+    finiteOr(league?.averageHomeGoals, 1.4)
+  );
 
-  /*
-   * ----------------------------------------
-   * HOME ATTACK
-   * ----------------------------------------
-   */
+  const leagueAwayGoals = Math.max(
+    0.5,
+    finiteOr(league?.averageAwayGoals, 1.1)
+  );
 
-  const homeVenueAttack = home.venue.goals.weightedAverageGoalsFor;
+  function getGoalsStats(team, side) {
+    const venue = team?.venue?.goals ?? {};
+    const overall = team?.overall?.goals ?? {};
 
-  const homeOverallAttack = home.overall.goals.weightedAverageGoalsFor;
+    const venueAttack = Math.max(
+      0,
+      finiteOr(venue.weightedAverageGoalsFor, NaN)
+    );
 
-  /*
-   * Blend venue and overall data.
-   *
-   * If we only have a few home games,
-   * overall form gets more influence.
-   */
+    const overallAttack = Math.max(
+      0,
+      finiteOr(overall.weightedAverageGoalsFor, NaN)
+    );
 
-  const homeVenueMatches = home.venue.goals.matches;
+    const venueDefense = Math.max(
+      0,
+      finiteOr(venue.weightedAverageGoalsAgainst, NaN)
+    );
 
-  const homeVenueWeight = Math.min(homeVenueMatches / 8, 0.65);
+    const overallDefense = Math.max(
+      0,
+      finiteOr(overall.weightedAverageGoalsAgainst, NaN)
+    );
 
-  const homeAttack =
-    homeVenueAttack * homeVenueWeight +
-    homeOverallAttack * (1 - homeVenueWeight);
+    const venueMatches = Math.max(0, finiteOr(venue.matches, 0));
 
-  /*
-   * ----------------------------------------
-   * HOME DEFENCE
-   * ----------------------------------------
-   */
+    const overallMatches = Math.max(0, finiteOr(overall.matches, 0));
 
-  const homeVenueDefense = home.venue.goals.weightedAverageGoalsAgainst;
+    const leagueAttack = side === "home" ? leagueHomeGoals : leagueAwayGoals;
 
-  const homeOverallDefense = home.overall.goals.weightedAverageGoalsAgainst;
+    // Defensive baseline is the typical opponent scoring rate.
+    const leagueDefense = side === "home" ? leagueAwayGoals : leagueHomeGoals;
 
-  const homeDefense =
-    homeVenueDefense * homeVenueWeight +
-    homeOverallDefense * (1 - homeVenueWeight);
+    // Give venue-specific performance influence gradually.
+    const venueWeight = Math.min(venueMatches / 8, 0.65);
 
-  /*
-   * ----------------------------------------
-   * AWAY ATTACK
-   * ----------------------------------------
-   */
+    const blendedAttack =
+      Number.isFinite(venueAttack) && Number.isFinite(overallAttack)
+        ? venueAttack * venueWeight + overallAttack * (1 - venueWeight)
+        : Number.isFinite(overallAttack)
+        ? overallAttack
+        : Number.isFinite(venueAttack)
+        ? venueAttack
+        : leagueAttack;
 
-  const awayVenueAttack = away.venue.goals.weightedAverageGoalsFor;
+    const blendedDefense =
+      Number.isFinite(venueDefense) && Number.isFinite(overallDefense)
+        ? venueDefense * venueWeight + overallDefense * (1 - venueWeight)
+        : Number.isFinite(overallDefense)
+        ? overallDefense
+        : Number.isFinite(venueDefense)
+        ? venueDefense
+        : leagueDefense;
 
-  const awayOverallAttack = away.overall.goals.weightedAverageGoalsFor;
+    /*
+     * Shrink observed rates toward the league baseline.
+     *
+     * Five matches provide some evidence, but not enough
+     * to trust extreme averages without moderation.
+     */
+    const effectiveMatches = Math.max(overallMatches, venueMatches);
+    const reliability = effectiveMatches / (effectiveMatches + 6);
 
-  const awayVenueMatches = away.venue.goals.matches;
+    const attack = leagueAttack + (blendedAttack - leagueAttack) * reliability;
 
-  const awayVenueWeight = Math.min(awayVenueMatches / 8, 0.65);
+    const defense =
+      leagueDefense + (blendedDefense - leagueDefense) * reliability;
 
-  const awayAttack =
-    awayVenueAttack * awayVenueWeight +
-    awayOverallAttack * (1 - awayVenueWeight);
-
-  /*
-   * ----------------------------------------
-   * AWAY DEFENCE
-   * ----------------------------------------
-   */
-
-  const awayVenueDefense = away.venue.goals.weightedAverageGoalsAgainst;
-
-  const awayOverallDefense = away.overall.goals.weightedAverageGoalsAgainst;
-
-  const awayDefense =
-    awayVenueDefense * awayVenueWeight +
-    awayOverallDefense * (1 - awayVenueWeight);
-
-  /*
-   * ----------------------------------------
-   * ATTACK STRENGTH
-   * ----------------------------------------
-   */
-
-  const homeAttackStrength =
-    leagueHomeGoals > 0 ? homeAttack / leagueHomeGoals : 1;
-
-  const awayAttackStrength =
-    leagueAwayGoals > 0 ? awayAttack / leagueAwayGoals : 1;
-
-  /*
-   * ----------------------------------------
-   * DEFENSIVE STRENGTH
-   *
-   * Higher concession rate means
-   * weaker defence.
-   * ----------------------------------------
-   */
-
-  const homeDefenseWeakness =
-    leagueAwayGoals > 0 ? homeDefense / leagueAwayGoals : 1;
-
-  const awayDefenseWeakness =
-    leagueHomeGoals > 0 ? awayDefense / leagueHomeGoals : 1;
-
-  /*
-   * ----------------------------------------
-   * EXPECTED GOALS
-   * ----------------------------------------
-   */
-
-  let homeExpected = leagueHomeGoals * homeAttackStrength * awayDefenseWeakness;
-
-  let awayExpected = leagueAwayGoals * awayAttackStrength * homeDefenseWeakness;
-
-  /*
-   * ----------------------------------------
-   * RECENT FORM ADJUSTMENT
-   *
-   * Keep this deliberately small.
-   * Form should influence the model,
-   * not dominate it.
-   * ----------------------------------------
-   */
-
-  const homeForm = home.overall.form;
-
-  const awayForm = away.overall.form;
-
-  if (homeForm.matches >= 5) {
-    const formFactor = 0.95 + homeForm.winRate * 0.1;
-
-    homeExpected *= formFactor;
+    return {
+      attack: Math.max(0, attack),
+      defense: Math.max(0, defense),
+      form: team?.overall?.form,
+    };
   }
 
-  if (awayForm.matches >= 5) {
-    const formFactor = 0.95 + awayForm.winRate * 0.1;
+  const homeStats = getGoalsStats(home, "home");
+  const awayStats = getGoalsStats(away, "away");
 
-    awayExpected *= formFactor;
+  /*
+   * Expected home goals:
+   * league home scoring rate × home attack strength
+   * × away defensive weakness.
+   */
+  let homeExpected =
+    leagueHomeGoals *
+    (homeStats.attack / leagueHomeGoals) *
+    (awayStats.defense / leagueHomeGoals);
+
+  /*
+   * Expected away goals:
+   * league away scoring rate × away attack strength
+   * × home defensive weakness.
+   */
+  let awayExpected =
+    leagueAwayGoals *
+    (awayStats.attack / leagueAwayGoals) *
+    (homeStats.defense / leagueAwayGoals);
+
+  /*
+   * Small recent-form adjustment.
+   * Form is optional and should not dominate the goal model.
+   */
+  const homeFormMatches = finiteOr(homeStats.form?.matches, 0);
+  const awayFormMatches = finiteOr(awayStats.form?.matches, 0);
+
+  const homeWinRate = Math.min(
+    1,
+    Math.max(0, finiteOr(homeStats.form?.winRate, 0.33))
+  );
+
+  const awayWinRate = Math.min(
+    1,
+    Math.max(0, finiteOr(awayStats.form?.winRate, 0.33))
+  );
+
+  if (homeFormMatches >= 5) {
+    homeExpected *= 0.97 + homeWinRate * 0.06;
   }
 
-  /*
-   * ----------------------------------------
-   * HOME ADVANTAGE
-   * ----------------------------------------
-   */
+  if (awayFormMatches >= 5) {
+    awayExpected *= 0.97 + awayWinRate * 0.06;
+  }
 
-  homeExpected *= 1.05;
-
-  /*
-   * ----------------------------------------
-   * SAFETY LIMITS
-   * ----------------------------------------
-   */
-
-  homeExpected = clamp(homeExpected, 0.15, 4);
-
-  awayExpected = clamp(awayExpected, 0.15, 4);
+  // Modest home advantage.
+  homeExpected *= 1.04;
 
   return {
-    home: homeExpected,
-    away: awayExpected,
+    home: clampRate(homeExpected),
+    away: clampRate(awayExpected),
   };
 }
 /*
