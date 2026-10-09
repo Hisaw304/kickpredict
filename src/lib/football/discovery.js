@@ -85,19 +85,6 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
       }, {}),
     });
 
-    console.log(
-      "FIXTURE DATE SUMMARY:",
-      Object.entries(fixturesByDate).map(([date, fixtures]) => ({
-        date,
-        count: fixtures.length,
-        competitions: [
-          ...new Set(
-            fixtures.map((fixture) => fixture.competitionCode).filter(Boolean)
-          ),
-        ],
-      }))
-    );
-
     if (!matches.length) {
       console.log("NO FIXTURES RETURNED BY GLOBAL ENDPOINT:", {
         dateFrom: formattedFrom,
@@ -135,6 +122,19 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
     }, {});
 
     console.log("FIXTURES BY DATE:", fixturesByDate);
+
+    console.log(
+      "FIXTURE DATE SUMMARY:",
+      Object.entries(fixturesByDate).map(([date, fixtures]) => ({
+        date,
+        count: fixtures.length,
+        competitions: [
+          ...new Set(
+            fixtures.map((fixture) => fixture.competitionCode).filter(Boolean)
+          ),
+        ],
+      }))
+    );
 
     const competitionMap = new Map();
 
