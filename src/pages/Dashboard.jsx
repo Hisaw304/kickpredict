@@ -27,7 +27,9 @@ const Dashboard = () => {
   const [formData, setFormData] = useState({
     match: "",
     league: "",
+    custom_league: "",
     prediction: "",
+    custom_prediction: "",
     confidence: "",
     match_date: "",
     status: "pending",
@@ -171,12 +173,13 @@ const Dashboard = () => {
       [name]: value,
     }));
   };
-
   const resetForm = () => {
     setFormData({
       match: "",
       league: "",
+      custom_league: "",
       prediction: "",
+      custom_prediction: "",
       confidence: "",
       match_date: "",
       status: "pending",
@@ -234,8 +237,17 @@ const Dashboard = () => {
 
       const payload = {
         match: formData.match.trim(),
-        league: formData.league.trim(),
-        prediction: formData.prediction.trim(),
+
+        league:
+          formData.league === "Other"
+            ? formData.custom_league.trim()
+            : formData.league.trim(),
+
+        prediction:
+          formData.prediction === "Other"
+            ? formData.custom_prediction.trim()
+            : formData.prediction.trim(),
+
         confidence: Number(formData.confidence),
         match_date: formData.match_date,
         status: normalizedStatus,
