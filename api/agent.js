@@ -128,9 +128,13 @@ async function getCachedHistoricalMatches({
         matchCount: matches.length,
       });
 
+      // Cache successful, non-empty history for six hours.
+      // Cache empty results briefly so a temporary empty response
+      // does not suppress fresh history requests for six hours.
       historyCache.set(key, {
         matches,
-        expiresAt: Date.now() + HISTORY_CACHE_TTL,
+        expiresAt:
+          Date.now() + (matches.length > 0 ? HISTORY_CACHE_TTL : 60 * 1000),
       });
 
       return matches;
