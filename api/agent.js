@@ -559,7 +559,34 @@ export default async function handler(req, res) {
 
     console.log("AGENT DISCOVERY RANGE:", discoveryRange);
 
-    const fixtures = await discoverFixtures(discoveryRange);
+    let fixtures = [];
+    let discoveryError = null;
+
+    try {
+      fixtures = await discoverFixtures(discoveryRange);
+    } catch (error) {
+      discoveryError = {
+        message: error.message,
+        status: error.response?.status || null,
+        data: error.response?.data || null,
+      };
+
+      console.error("AGENT DISCOVERY FAILED:", discoveryError);
+    }
+
+    console.log("AGENT DISCOVERY RESULT:", {
+      requestedRange: discoveryRange,
+      fixtureCount: fixtures.length,
+      discoveryError,
+      sampleFixtures: fixtures.slice(0, 5).map((fixture) => ({
+        id: fixture.id,
+        date: fixture.utcDate,
+        status: fixture.status,
+        competition: fixture.competition?.name,
+        home: fixture.homeTeam?.name,
+        away: fixture.awayTeam?.name,
+      })),
+    });
 
     console.log("AGENT FIXTURES DISCOVERED:", fixtures.length);
 
@@ -815,6 +842,24 @@ export default async function handler(req, res) {
         fallbackDate: usedFallback
           ? formatDate(new Date(eligibleFixtures[0].utcDate))
           : null,
+
+        // TEMPORARY: diagnose fixture discovery
+        discoveryDebug: {
+          requestedRange: discoveryRange,
+
+          fixtureCount: fixtures.length,
+
+          error: discoveryError,
+
+          sampleFixtures: fixtures.slice(0, 5).map((fixture) => ({
+            id: fixture.id,
+            date: fixture.utcDate,
+            status: fixture.status,
+            competition: fixture.competition?.name,
+            home: fixture.homeTeam?.name,
+            away: fixture.awayTeam?.name,
+          })),
+        },
       },
     });
 
