@@ -70,8 +70,33 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
     console.log("GLOBAL MATCH RESPONSE:", {
       filters: globalData?.filters,
       resultSet: globalData?.resultSet,
-      count: matches.length,
+      returnedMatches: matches.length,
+      competitions: [
+        ...new Map(
+          matches
+            .filter((match) => match.competition?.code)
+            .map((match) => [match.competition.code, match.competition.name])
+        ),
+      ].map(([code, name]) => ({ code, name })),
+      statuses: matches.reduce((acc, match) => {
+        const status = match.status || "UNKNOWN";
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {}),
     });
+
+    console.log(
+      "FIXTURE DATE SUMMARY:",
+      Object.entries(fixturesByDate).map(([date, fixtures]) => ({
+        date,
+        count: fixtures.length,
+        competitions: [
+          ...new Set(
+            fixtures.map((fixture) => fixture.competitionCode).filter(Boolean)
+          ),
+        ],
+      }))
+    );
 
     if (!matches.length) {
       console.log("NO FIXTURES RETURNED BY GLOBAL ENDPOINT:", {
