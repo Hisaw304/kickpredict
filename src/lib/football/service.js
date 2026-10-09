@@ -52,30 +52,31 @@ export async function getMatches({
   return response.data;
 }
 
-export async function getFixtures({ dateFrom, dateTo, league } = {}) {
+export async function getFixtures({
+  dateFrom,
+  dateTo,
+  league,
+  season: requestedSeason,
+} = {}) {
   if (!league) {
     throw new Error("League is required");
   }
 
-  const competition = await getCompetition(league);
+  let season = requestedSeason;
 
-  const seasonStart = competition?.currentSeason?.startDate;
+  if (!season) {
+    const competition = await getCompetition(league);
+    const seasonStart = competition?.currentSeason?.startDate;
 
-  const season = seasonStart
-    ? new Date(seasonStart).getUTCFullYear()
-    : new Date().getUTCFullYear();
-
-  const params = {
-    season,
-  };
-
-  if (dateFrom) {
-    params.dateFrom = dateFrom;
+    season = seasonStart
+      ? new Date(seasonStart).getUTCFullYear()
+      : new Date().getUTCFullYear();
   }
 
-  if (dateTo) {
-    params.dateTo = dateTo;
-  }
+  const params = { season };
+
+  if (dateFrom) params.dateFrom = dateFrom;
+  if (dateTo) params.dateTo = dateTo;
 
   const response = await footballClient.get(`/competitions/${league}/matches`, {
     params,

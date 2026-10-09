@@ -63,17 +63,22 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   for (const competition of competitions) {
     if (rateLimited) break;
 
-    if (!competition.currentSeason?.startDate) {
-      console.log("SKIPPING COMPETITION WITHOUT CURRENT SEASON:", {
+    if (!competition.code || !competition.currentSeason?.startDate) {
+      console.log("SKIPPING COMPETITION WITHOUT CODE OR CURRENT SEASON:", {
         code: competition.code,
         name: competition.name,
       });
       continue;
     }
 
+    const season = new Date(
+      competition.currentSeason.startDate
+    ).getUTCFullYear();
+
     try {
       const response = await getFixtures({
         league: competition.code,
+        season,
         dateFrom: from,
         dateTo: to,
       });
@@ -83,31 +88,31 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
       console.log("COMPETITION FIXTURES RESULT:", {
         code: competition.code,
         name: competition.name,
+        season,
         count: matches.length,
       });
 
       for (const match of matches) {
-        if (match?.id != null) {
-          allMatches.set(String(match.id), match);
-        }
+        if (match?.id == null) continue;
+
+        allMatches.set(String(match.id), match);
       }
     } catch (error) {
       const status = error?.response?.status || null;
 
-      failed.push({
+      const failure = {
         code: competition.code,
         status,
         message: error?.message || "Unknown error",
-      });
+      };
 
-      console.error("COMPETITION FIXTURES FAILED:", {
-        code: competition.code,
-        status,
-        message: error?.message,
-      });
+      failed.push(failure);
+
+      console.error("COMPETITION FIXTURES FAILED:", failure);
 
       if (status === 429) {
         rateLimited = true;
+        break;
       }
     }
   }
@@ -130,7 +135,6 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
 
   return normalized;
 }
-
 /**
  * Retrieve historical finished matches for team research.
  * Historical lookback remains separate from fixture discovery.

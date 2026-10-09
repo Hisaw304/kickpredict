@@ -17,10 +17,64 @@ import { runBacktest } from "../src/lib/backtest/runner.js";
 
 import { buildCalibrationProfile } from "../src/lib/prediction/calibration.js";
 
-function getDateTime(date, time) {
-  return new Date(`${date}T${time}:00Z`).getTime();
+const APP_TIMEZONE = "Africa/Lagos";
+
+function getDateTime(date, time, timeZone = APP_TIMEZONE) {
+  if (!date || !time) return NaN;
+
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute, second = 0] = time.split(":").map(Number);
+
+  if (
+    !year ||
+    !month ||
+    !day ||
+    !Number.isFinite(hour) ||
+    !Number.isFinite(minute)
+  ) {
+    return NaN;
+  }
+
+  // Africa/Lagos is UTC+1 and does not observe daylight saving time.
+  if (timeZone === "Africa/Lagos") {
+    return Date.UTC(year, month - 1, day, hour - 1, minute, second);
+  }
+
+  // For other time zones, use the dedicated conversion helper
+  // before extending this function to support them.
+  return Date.UTC(year, month - 1, day, hour, minute, second);
 }
 
+function getFixtureLocalDate(utcDate) {
+  const date = new Date(utcDate);
+
+  if (!Number.isFinite(date.getTime())) return null;
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function getFixtureLocalMinutes(utcDate) {
+  const date = new Date(utcDate);
+
+  if (!Number.isFinite(date.getTime())) return NaN;
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: APP_TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  const hour = Number(parts.find((part) => part.type === "hour")?.value);
+  const minute = Number(parts.find((part) => part.type === "minute")?.value);
+
+  return hour * 60 + minute;
+}
 function formatDate(date) {
   return date.toISOString().slice(0, 10);
 }
@@ -64,44 +118,35 @@ function expandDiscoveryRange(request) {
  */
 
 function matchesTimeWindow(fixture, timeWindow) {
-  if (!timeWindow) {
-    return true;
-  }
-
-  /*
-   * The deterministic parser returns an object:
-   *
-   * {
-   *   start: "18:00",
-   *   end: "23:59"
-   * }
-   *
-   * Protect against malformed values.
-   */
+  if (!timeWindow) return true;
 
   if (typeof timeWindow !== "object" || !timeWindow.start || !timeWindow.end) {
     return true;
   }
 
-  const fixtureDate = new Date(fixture.utcDate);
+  const currentMinutes = getFixtureLocalMinutes(fixture.utcDate);
 
-  if (Number.isNaN(fixtureDate.getTime())) {
-    return false;
-  }
-
-  const hours = fixtureDate.getUTCHours();
-
-  const minutes = fixtureDate.getUTCMinutes();
-
-  const currentMinutes = hours * 60 + minutes;
+  if (!Number.isFinite(currentMinutes)) return false;
 
   const [startHour, startMinute] = timeWindow.start.split(":").map(Number);
-
   const [endHour, endMinute] = timeWindow.end.split(":").map(Number);
 
-  const startMinutes = startHour * 60 + startMinute;
+  if (
+    !Number.isFinite(startHour) ||
+    !Number.isFinite(startMinute) ||
+    !Number.isFinite(endHour) ||
+    !Number.isFinite(endMinute)
+  ) {
+    return true;
+  }
 
+  const startMinutes = startHour * 60 + startMinute;
   const endMinutes = endHour * 60 + endMinute;
+
+  // Support windows that cross midnight, e.g. 22:00–02:00.
+  if (startMinutes > endMinutes) {
+    return currentMinutes >= startMinutes || currentMinutes <= endMinutes;
+  }
 
   return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
 }
@@ -113,17 +158,13 @@ function matchesTimeWindow(fixture, timeWindow) {
  */
 
 function isWithinDateRange(fixture, request) {
-  const fixtureTime = new Date(fixture.utcDate).getTime();
+  const fixtureDate = getFixtureLocalDate(fixture.utcDate);
 
-  if (!Number.isFinite(fixtureTime)) {
+  if (!fixtureDate || !request.dateFrom || !request.dateTo) {
     return false;
   }
 
-  const start = getDateTime(request.dateFrom, "00:00");
-
-  const end = getDateTime(request.dateTo, "23:59");
-
-  return fixtureTime >= start && fixtureTime <= end;
+  return fixtureDate >= request.dateFrom && fixtureDate <= request.dateTo;
 }
 
 /*
@@ -191,9 +232,7 @@ function getNextAvailableFixtures(fixtures, request) {
 
   return fixtures
     .filter((fixture) => {
-      if (!isUpcomingFixture(fixture)) {
-        return false;
-      }
+      if (!isUpcomingFixture(fixture)) return false;
 
       const fixtureTime = new Date(fixture.utcDate).getTime();
 
@@ -304,15 +343,17 @@ function applyAiInterpretation(parsedRequest, interpretedRequest) {
 
   /*
    * League
+   *
+   * Normalize the AI result here. The discovery and
+   * fixture-filtering layers should validate availability.
    */
-
-  const validLeagues = ["PL", "PD", "BL1", "SA", "FL1", "CL"];
-
-  if (
-    interpretedRequest.league === null ||
-    validLeagues.includes(interpretedRequest.league)
+  if (interpretedRequest.league === null) {
+    request.league = null;
+  } else if (
+    typeof interpretedRequest.league === "string" &&
+    interpretedRequest.league.trim()
   ) {
-    request.league = interpretedRequest.league;
+    request.league = interpretedRequest.league.trim().toUpperCase();
   }
 
   /*
@@ -589,25 +630,6 @@ export default async function handler(req, res) {
     });
 
     console.log("AGENT FIXTURES DISCOVERED:", fixtures.length);
-
-    return res.status(200).json({
-      success: true,
-      debug: true,
-      discoveryDebug: {
-        requestedRange: discoveryRange,
-        fixtureCount: fixtures.length,
-        error: discoveryError,
-        sampleFixtures: fixtures.slice(0, 10).map((fixture) => ({
-          id: fixture.id,
-          date: fixture.utcDate,
-          status: fixture.status,
-          competition: fixture.competition?.name,
-          competitionCode: fixture.competition?.code,
-          home: fixture.homeTeam?.name,
-          away: fixture.awayTeam?.name,
-        })),
-      },
-    });
 
     /*
      * --------------------------------------------
