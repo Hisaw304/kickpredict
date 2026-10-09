@@ -178,6 +178,20 @@ export async function discoverHistoricalMatches({
     competitions: competitionCodes.length ? competitionCodes : undefined,
     limit: 500,
   });
+  console.log("HISTORY API RAW RESULT:", {
+    resultSet: data?.resultSet,
+    hasMatchesArray: Array.isArray(data?.matches),
+    matchCount: data?.matches?.length,
+    competitions: competitionCodes,
+    sample: data?.matches?.slice(0, 3)?.map((match) => ({
+      id: match.id,
+      status: match.status,
+      competition: match.competition?.code,
+      date: match.utcDate,
+      homeScore: match.score?.fullTime?.home,
+      awayScore: match.score?.fullTime?.away,
+    })),
+  });
 
   const matches = Array.isArray(data?.matches) ? data.matches : [];
 
