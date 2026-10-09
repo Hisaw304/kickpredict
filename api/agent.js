@@ -590,6 +590,25 @@ export default async function handler(req, res) {
 
     console.log("AGENT FIXTURES DISCOVERED:", fixtures.length);
 
+    return res.status(200).json({
+      success: true,
+      debug: true,
+      discoveryDebug: {
+        requestedRange: discoveryRange,
+        fixtureCount: fixtures.length,
+        error: discoveryError,
+        sampleFixtures: fixtures.slice(0, 10).map((fixture) => ({
+          id: fixture.id,
+          date: fixture.utcDate,
+          status: fixture.status,
+          competition: fixture.competition?.name,
+          competitionCode: fixture.competition?.code,
+          home: fixture.homeTeam?.name,
+          away: fixture.awayTeam?.name,
+        })),
+      },
+    });
+
     /*
      * --------------------------------------------
      * 7. CHECK REQUESTED DATE
