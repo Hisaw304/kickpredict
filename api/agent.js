@@ -46,11 +46,9 @@ function isUpcomingFixture(fixture) {
 
 function expandDiscoveryRange(request) {
   const start = new Date(`${request.dateFrom}T00:00:00Z`);
-
   const end = new Date(`${request.dateTo}T23:59:59Z`);
 
   start.setUTCDate(start.getUTCDate() - 1);
-
   end.setUTCDate(end.getUTCDate() + 6);
 
   return {
@@ -554,14 +552,14 @@ export default async function handler(req, res) {
      * --------------------------------------------
      */
 
-    const discoveryRange = expandDiscoveryRange(request);
+    const discoveryRange = {
+      dateFrom: request.dateFrom,
+      dateTo: request.dateTo,
+    };
 
     console.log("AGENT DISCOVERY RANGE:", discoveryRange);
 
-    const fixtures = await discoverFixtures({
-      dateFrom: discoveryRange.dateFrom,
-      dateTo: discoveryRange.dateTo,
-    });
+    const fixtures = await discoverFixtures(discoveryRange);
 
     console.log("AGENT FIXTURES DISCOVERED:", fixtures.length);
 
