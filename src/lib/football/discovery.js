@@ -139,6 +139,7 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
  * Retrieve historical finished matches for team research.
  * Historical lookback remains separate from fixture discovery.
  */
+
 export async function discoverHistoricalMatches({
   dateTo,
   historyDays = 90,
@@ -148,72 +149,47 @@ export async function discoverHistoricalMatches({
   const start = new Date(end);
   start.setUTCDate(start.getUTCDate() - historyDays);
 
-  const allMatches = [];
-  let chunkStart = new Date(start);
+  const dateFrom = formatDate(start);
+  const dateUntil = formatDate(end);
 
-  while (chunkStart < end) {
-    const chunkEnd = new Date(chunkStart);
-    chunkEnd.setUTCDate(chunkEnd.getUTCDate() + 9);
+  console.log("HISTORY REQUEST:", {
+    dateFrom,
+    dateTo: dateUntil,
+    historyDays,
+  });
 
-    if (chunkEnd > end) {
-      chunkEnd.setTime(end.getTime());
-    }
+  const data = await getMatches({
+    dateFrom,
+    dateTo: dateUntil,
+    status: "FINISHED",
+    limit: 500,
+  });
 
-    const formattedFrom = formatDate(chunkStart);
-    const formattedTo = formatDate(chunkEnd);
-
-    console.log("HISTORY CHUNK:", {
-      dateFrom: formattedFrom,
-      dateTo: formattedTo,
-    });
-
-    try {
-      const data = await getMatches({
-        dateFrom: formattedFrom,
-        dateTo: formattedTo,
-        status: "FINISHED",
-        limit: 500,
-      });
-
-      const matches = Array.isArray(data?.matches) ? data.matches : [];
-
-      console.log("HISTORY CHUNK RESPONSE:", {
-        dateFrom: formattedFrom,
-        dateTo: formattedTo,
-        count: matches.length,
-      });
-
-      allMatches.push(...matches);
-    } catch (error) {
-      console.error("HISTORY CHUNK FAILED:", {
-        dateFrom: formattedFrom,
-        dateTo: formattedTo,
-        message: error.message,
-        status: error.response?.status || null,
-        data: error.response?.data || null,
-      });
-
-      if (error.response?.status === 429) {
-        throw error;
-      }
-    }
-
-    chunkStart = new Date(chunkEnd);
-    chunkStart.setUTCDate(chunkStart.getUTCDate() + 1);
-  }
+  const matches = Array.isArray(data?.matches) ? data.matches : [];
 
   const uniqueMatches = Array.from(
-    new Map(allMatches.map((match) => [String(match.id), match])).values()
-  );
-
-  uniqueMatches.sort(
-    (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
-  );
+    new Map(
+      matches
+        .filter((match) => match?.id != null)
+        .map((match) => [String(match.id), match])
+    ).values()
+  )
+    .filter(
+      (match) =>
+        match.status === "FINISHED" &&
+        Number.isFinite(match.score?.fullTime?.home) &&
+        Number.isFinite(match.score?.fullTime?.away)
+    )
+    .sort(
+      (a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
+    );
 
   console.log("HISTORY COMPLETE:", {
     requestedDays: historyDays,
-    rawMatches: allMatches.length,
-    uniqueMatches: uniqueMatches.length,
+    rawMatches: matches.length,
+    uniqueFinishedMatches: uniqueMatches.length,
+    dateFrom,
+    dateTo: dateUntil,
   });
 
   return uniqueMatches;

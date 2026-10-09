@@ -25,20 +25,22 @@ const LEAGUE_ALIASES = {
 };
 
 function extractCount(text) {
-  const directNumber = text.match(
-    /\b(?:give me|find|get|show me|show|top|pick|select|need)\s+(\d{1,2})\b/i
-  );
+  const normalized = String(text || "")
+    .toLowerCase()
+    .trim();
 
-  if (directNumber) {
-    return Number(directNumber[1]);
-  }
+  const patterns = [
+    /\b(?:give\s+me|give|find|get|show\s+me|show|select|need|pick)\s+(\d{1,2})(?=\s|$)/i,
+    /\btop\s+(\d{1,2})\b/i,
+    /\b(\d{1,2})\s+(?:(?:safe|strong|best|high-confidence|high confidence)\s+)*(?:football\s+)?(?:picks?|predictions?|selections?|tips?|bets?)\b/i,
+  ];
 
-  const nounNumber = text.match(
-    /\b(\d{1,2})\s+(?:picks?|predictions?|selections?|tips?|bets?)\b/i
-  );
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
 
-  if (nounNumber) {
-    return Number(nounNumber[1]);
+    if (match) {
+      return Number(match[1]);
+    }
   }
 
   return 5;

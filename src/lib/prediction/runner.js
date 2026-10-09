@@ -16,11 +16,12 @@ function isFinished(match) {
 function isUpcoming(match) {
   const fixtureTime = getMatchTime(match);
 
-  if (!Number.isFinite(fixtureTime)) return false;
+  if (!Number.isFinite(fixtureTime) || fixtureTime <= Date.now()) {
+    return false;
+  }
 
-  return (
-    fixtureTime > Date.now() &&
-    (match.status === "SCHEDULED" || match.status === "TIMED")
+  return ["SCHEDULED", "TIMED"].includes(
+    String(match.status || "").toUpperCase()
   );
 }
 
