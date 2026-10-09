@@ -79,6 +79,71 @@ function formatDate(date) {
   return date.toISOString().slice(0, 10);
 }
 
+const HISTORY_CACHE_TTL = 6 * 60 * 60 * 1000;
+
+const historyCache = new Map();
+const historyRequests = new Map();
+
+async function getCachedHistoricalMatches({ dateTo, historyDays = 90 }) {
+  const key = `${dateTo}:${historyDays}`;
+  const now = Date.now();
+
+  const cached = historyCache.get(key);
+
+  // Return fresh cached history without calling the football API.
+  if (cached && cached.expiresAt > now) {
+    console.log("HISTORY CACHE HIT:", key);
+    return cached.matches;
+  }
+
+  // Reuse an existing request rather than duplicate API calls.
+  if (historyRequests.has(key)) {
+    console.log("HISTORY REQUEST ALREADY IN PROGRESS:", key);
+    return historyRequests.get(key);
+  }
+
+  const request = (async () => {
+    try {
+      console.log("HISTORY CACHE MISS:", key);
+
+      const matches = await discoverHistoricalMatches({
+        dateTo,
+        historyDays,
+      });
+
+      historyCache.set(key, {
+        matches,
+        expiresAt: Date.now() + HISTORY_CACHE_TTL,
+      });
+
+      return matches;
+    } catch (error) {
+      const status = error?.response?.status;
+
+      console.error("HISTORICAL MATCH DISCOVERY FAILED:", {
+        status: status || null,
+        message: error?.message,
+      });
+
+      // If the provider is rate-limiting us, use stale cached data
+      // rather than failing the entire prediction request.
+      if (cached?.matches) {
+        console.warn("USING STALE HISTORICAL MATCH CACHE:", key);
+        return cached.matches;
+      }
+
+      // Do not repeatedly retry a failing provider within this request.
+      throw error;
+    } finally {
+      historyRequests.delete(key);
+    }
+  })();
+
+  historyRequests.set(key, request);
+
+  return request;
+}
+
 function isUpcomingFixture(fixture) {
   const fixtureTime = new Date(fixture.utcDate).getTime();
 
@@ -668,12 +733,11 @@ export default async function handler(req, res) {
 
         const firstDate = new Date(firstFixture.utcDate);
 
-        const fallbackDate = formatDate(firstDate);
+        const fallbackDate = getFixtureLocalDate(firstFixture.utcDate);
 
         eligibleFixtures = fallbackFixtures.filter(
-          (fixture) => formatDate(new Date(fixture.utcDate)) === fallbackDate
+          (fixture) => getFixtureLocalDate(fixture.utcDate) === fallbackDate
         );
-
         usedFallback = true;
 
         console.log("AGENT FALLBACK FIXTURES:", {
@@ -742,11 +806,19 @@ export default async function handler(req, res) {
       ? formatDate(new Date(eligibleFixtures[0].utcDate))
       : request.dateFrom;
 
-    const historicalMatches = await discoverHistoricalMatches({
-      dateTo: historyDate,
+    let historicalMatches = [];
 
-      historyDays: 90,
-    });
+    try {
+      historicalMatches = await getCachedHistoricalMatches({
+        dateTo: historyDate,
+        historyDays: 90,
+      });
+    } catch (error) {
+      console.error("AGENT CONTINUING WITHOUT HISTORICAL MATCHES:", {
+        status: error?.response?.status || null,
+        message: error?.message,
+      });
+    }
 
     console.log("AGENT HISTORICAL MATCHES:", historicalMatches.length);
 
