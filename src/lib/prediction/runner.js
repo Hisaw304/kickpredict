@@ -102,6 +102,21 @@ export function runPredictions({
       fixtureTime
     );
 
+    if (diagnostics.fixtures.length === 0) {
+      console.log("HISTORY MATCHING DEBUG:", {
+        fixture: {
+          id: fixture.id,
+          homeTeam: fixture.homeTeam,
+          awayTeam: fixture.awayTeam,
+          competition: fixture.competition,
+          utcDate: fixture.utcDate,
+        },
+        historicalMatchSample: historicalMatches[0] ?? null,
+        historicalMatchCount: historicalMatches.length,
+        finishedMatchCount: historicalMatches.filter(isFinished).length,
+      });
+    }
+
     const awayMatches = getPreviousTeamMatches(
       historicalMatches,
       fixture.awayTeam.id,

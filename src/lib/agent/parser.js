@@ -30,7 +30,7 @@ function extractCount(text) {
     .trim();
 
   const patterns = [
-    /\b(?:give\s+me|give|find|get|show\s+me|show|select|need|pick)\s+(\d{1,2})(?=\s|$)/i,
+    /\b(?:give\s+me|give|find|get|show\s+me|show|select|need|pick)\s+(\d{1,2})\b/i,
     /\btop\s+(\d{1,2})\b/i,
     /\b(\d{1,2})\s+(?:(?:safe|strong|best|high-confidence|high confidence)\s+)*(?:football\s+)?(?:picks?|predictions?|selections?|tips?|bets?)\b/i,
   ];
@@ -39,7 +39,11 @@ function extractCount(text) {
     const match = normalized.match(pattern);
 
     if (match) {
-      return Number(match[1]);
+      const count = Number(match[1]);
+
+      if (Number.isInteger(count) && count >= 1) {
+        return count;
+      }
     }
   }
 
@@ -215,7 +219,15 @@ export function parsePredictionRequest(query, now) {
 
   const text = normalizeQuery(query);
 
-  const count = Math.min(Math.max(extractCount(text), 1), 20);
+  const countMatch = text.match(
+    /\b(?:give\s+me|give|find|get|show\s+me|show|select|need|pick)\s+(\d{1,2})\b|\btop\s+(\d{1,2})\b|\b(\d{1,2})\s+(?:football\s+)?(?:picks?|predictions?|selections?|tips?|bets?)\b/i
+  );
+
+  const requestedCount = countMatch
+    ? Number(countMatch[1] || countMatch[2] || countMatch[3])
+    : 5;
+
+  const count = Math.min(Math.max(requestedCount, 1), 20);
 
   const confidence = extractConfidence(text);
 

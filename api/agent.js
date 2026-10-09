@@ -79,92 +79,6 @@ function formatDate(date) {
   return date.toISOString().slice(0, 10);
 }
 
-const HISTORY_CACHE_TTL = 6 * 60 * 60 * 1000;
-
-const historyCache = new Map();
-const historyRequests = new Map();
-
-async function getCachedHistoricalMatches({
-  dateTo,
-  historyDays = 90,
-  competitions = [],
-}) {
-  const competitionKey = [...new Set(competitions)]
-    .filter(Boolean)
-    .sort()
-    .join(",");
-
-  const key = `${dateTo}:${historyDays}:${competitionKey}`;
-  const now = Date.now();
-
-  const cached = historyCache.get(key);
-
-  // Return fresh cached history without calling the football API.
-  if (cached && cached.expiresAt > now) {
-    console.log("HISTORY CACHE HIT:", key);
-    return cached.matches;
-  }
-
-  // Reuse an existing request rather than duplicate API calls.
-  if (historyRequests.has(key)) {
-    console.log("HISTORY REQUEST ALREADY IN PROGRESS:", key);
-    return historyRequests.get(key);
-  }
-
-  const request = (async () => {
-    try {
-      console.log("HISTORY CACHE MISS:", key);
-
-      const matches = await discoverHistoricalMatches({
-        dateTo,
-        historyDays,
-        competitions: competitionKey ? competitionKey.split(",") : [],
-      });
-
-      console.log("HISTORY FETCH RESULT:", {
-        dateTo,
-        historyDays,
-        competitions: competitionKey,
-        matchCount: matches.length,
-      });
-
-      // Cache successful, non-empty history for six hours.
-      // Cache empty results briefly so a temporary empty response
-      // does not suppress fresh history requests for six hours.
-      historyCache.set(key, {
-        matches,
-        expiresAt:
-          Date.now() + (matches.length > 0 ? HISTORY_CACHE_TTL : 60 * 1000),
-      });
-
-      return matches;
-    } catch (error) {
-      const status = error?.response?.status || null;
-
-      console.error("HISTORICAL MATCH DISCOVERY FAILED:", {
-        key,
-        status,
-        message: error?.message,
-        response: error?.response?.data || null,
-      });
-
-      // Use stale cached data if available.
-      if (cached?.matches) {
-        console.warn("USING STALE HISTORICAL MATCH CACHE:", key);
-        return cached.matches;
-      }
-
-      throw error;
-    } finally {
-      historyRequests.delete(key);
-    }
-  })();
-
-  historyRequests.set(key, request);
-
-  return request;
-}
-
 function isUpcomingFixture(fixture) {
   const fixtureTime = new Date(fixture.utcDate).getTime();
 
@@ -816,26 +730,71 @@ export default async function handler(req, res) {
       ? formatDate(new Date(eligibleFixtures[0].utcDate))
       : request.dateFrom;
 
+    const historyCompetitions = [
+      ...new Set(
+        eligibleFixtures
+          .map((fixture) => fixture.competition?.code)
+          .filter(Boolean)
+      ),
+    ];
+
     let historicalMatches = [];
 
     try {
-      const historyCompetitions = [
-        ...new Set(
-          eligibleFixtures
-            .map((fixture) => fixture.competition?.code)
-            .filter(Boolean)
-        ),
-      ];
-
-      historicalMatches = await getCachedHistoricalMatches({
+      historicalMatches = await discoverHistoricalMatches({
         dateTo: historyDate,
-        historyDays: 90,
+        historyDays: 60,
         competitions: historyCompetitions,
       });
     } catch (error) {
-      console.error("AGENT CONTINUING WITHOUT HISTORICAL MATCHES:", {
-        status: error?.response?.status || null,
-        message: error?.message,
+      const status = error?.response?.status || error?.status || 503;
+
+      const retryAfterSeconds = Number.isFinite(error?.retryAfterMs)
+        ? Math.ceil(error.retryAfterMs / 1000)
+        : null;
+
+      console.error("AGENT HISTORY UNAVAILABLE:", {
+        status,
+        message: error?.response?.data?.message || error?.message,
+        retryAfterSeconds,
+        eligibleFixtures: eligibleFixtures.length,
+      });
+
+      if (status === 429) {
+        return res.status(429).json({
+          success: false,
+          code: "FOOTBALL_DATA_RATE_LIMITED",
+          error:
+            "The football data provider has temporarily rate-limited requests.",
+          message: retryAfterSeconds
+            ? `Historical match data is temporarily unavailable. Please retry in about ${retryAfterSeconds} seconds.`
+            : "Historical match data is temporarily unavailable. Please try again shortly.",
+          retryAfterSeconds,
+          dataset: {
+            fixtures: fixtures.length,
+            requestedDateFixtures: requestedDateFixtures.length,
+            eligibleFixtures: eligibleFixtures.length,
+            historicalMatches: 0,
+            predictions: 0,
+            markets: 0,
+          },
+        });
+      }
+
+      return res.status(503).json({
+        success: false,
+        code: "HISTORICAL_DATA_UNAVAILABLE",
+        error: "Historical match data could not be retrieved.",
+        message:
+          "Predictions require sufficient historical match data. Please try again later.",
+        dataset: {
+          fixtures: fixtures.length,
+          requestedDateFixtures: requestedDateFixtures.length,
+          eligibleFixtures: eligibleFixtures.length,
+          historicalMatches: 0,
+          predictions: 0,
+          markets: 0,
+        },
       });
     }
 
@@ -1015,17 +974,17 @@ export default async function handler(req, res) {
 
     return res.status(200).json(response);
   } catch (error) {
+    const status = error?.response?.status || error?.status || 500;
+
     console.error("AGENT REQUEST FAILED:", {
       message: error.message,
-
-      status: error.response?.status,
-
+      status,
       data: error.response?.data,
-
       stack: error.stack,
     });
 
-    return res.status(error.response?.status || 500).json({
+    return res.status(status).json({
+      success: false,
       error:
         error.response?.data?.message ||
         error.response?.data?.error ||
