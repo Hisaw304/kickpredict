@@ -205,14 +205,69 @@ const Dashboard = () => {
   const handleEdit = (prediction) => {
     setEditingPrediction(prediction);
 
+    const standardLeagues = [
+      "Premier League",
+      "La Liga",
+      "Serie A",
+      "Serie B",
+      "Bundesliga",
+      "2. Bundesliga",
+      "Belgian Pro League",
+      "Ligue 1",
+      "Ligue 2",
+      "Romanian SuperLiga",
+      "Switzerland SuperLeague",
+      "Denmark Superliga",
+      "Champions League",
+      "Europa League",
+      "Conference League",
+      "Eredivisie",
+      "Primeira Liga",
+      "Championship",
+    ];
+
+    const standardPredictions = [
+      "Home or Over 2.5 Goals",
+      "Away or Over 2.5 Goals",
+      "Draw or Over 2.5 Goals",
+      "Over 1.5 Goals",
+      "Over 2.5 Goals",
+      "Over 6.5 Corners",
+      "Over 7.5 Corners",
+      "Over 8.5 Corners",
+      "Away 1up Goals",
+      "Home 1up Goals",
+      "Away 2up Goals",
+      "Home 2up Goals",
+      "Both Teams To Score",
+      "Home Win",
+      "Draw",
+      "Away Win",
+      "Home or Draw",
+      "Home or Away",
+      "Draw or Away",
+    ];
+
+    const savedLeague = prediction.league || "";
+    const savedPrediction = prediction.prediction || "";
+
+    const isCustomLeague = !standardLeagues.includes(savedLeague);
+    const isCustomPrediction = !standardPredictions.includes(savedPrediction);
+
     setFormData({
       match: prediction.match || "",
-      league: prediction.league || "",
-      prediction: prediction.prediction || "",
+
+      league: isCustomLeague ? "Other" : savedLeague,
+      custom_league: isCustomLeague ? savedLeague : "",
+
+      prediction: isCustomPrediction ? "Other" : savedPrediction,
+      custom_prediction: isCustomPrediction ? savedPrediction : "",
+
       confidence:
         prediction.confidence !== null && prediction.confidence !== undefined
           ? String(prediction.confidence)
           : "",
+
       match_date: prediction.match_date || "",
       status: normalizeStatus(prediction.status) || "pending",
       result: prediction.result || "",
