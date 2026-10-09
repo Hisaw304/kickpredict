@@ -45,7 +45,6 @@ async function discoverCompetitions() {
 
 export async function discoverFixtures({ dateFrom, dateTo } = {}) {
   const from = dateFrom ? startOfDay(dateFrom) : startOfDay(new Date());
-
   const to = dateTo ? endOfDay(dateTo) : endOfDay(from);
 
   const formattedFrom = formatDate(from);
@@ -67,10 +66,12 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
       ? globalData.matches
       : [];
 
-    console.log("GLOBAL MATCH RESPONSE:", {
-      filters: globalData?.filters,
-      resultSet: globalData?.resultSet,
+    const summary = {
+      dateFrom: formattedFrom,
+      dateTo: formattedTo,
       returnedMatches: matches.length,
+      resultSet: globalData?.resultSet || null,
+      filters: globalData?.filters || null,
       competitions: [
         ...new Map(
           matches
@@ -83,14 +84,21 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
         acc[status] = (acc[status] || 0) + 1;
         return acc;
       }, {}),
-    });
+      sampleMatches: matches.slice(0, 5).map((match) => ({
+        id: match.id,
+        utcDate: match.utcDate,
+        status: match.status,
+        competition: match.competition?.name,
+        competitionCode: match.competition?.code,
+        home: match.homeTeam?.name,
+        away: match.awayTeam?.name,
+      })),
+    };
+
+    console.log("DISCOVERY DEBUG:", summary);
 
     if (!matches.length) {
-      console.log("NO FIXTURES RETURNED BY GLOBAL ENDPOINT:", {
-        dateFrom: formattedFrom,
-        dateTo: formattedTo,
-      });
-
+      console.warn("NO FIXTURES RETURNED BY GLOBAL ENDPOINT:", summary);
       return [];
     }
 
@@ -102,12 +110,9 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
 
     const fixturesByDate = normalized.reduce((acc, fixture) => {
       const date = fixture.utcDate?.slice(0, 10);
-
       if (!date) return acc;
 
-      if (!acc[date]) {
-        acc[date] = [];
-      }
+      if (!acc[date]) acc[date] = [];
 
       acc[date].push({
         id: fixture.id,
@@ -116,52 +121,46 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
         competition: fixture.competition?.name,
         competitionCode: fixture.competition?.code,
         utcDate: fixture.utcDate,
+        status: fixture.status,
       });
 
       return acc;
     }, {});
 
-    console.log("FIXTURES BY DATE:", fixturesByDate);
-
     console.log(
       "FIXTURE DATE SUMMARY:",
-      Object.entries(fixturesByDate).map(([date, fixtures]) => ({
+      Object.entries(fixturesByDate).map(([date, dateFixtures]) => ({
         date,
-        count: fixtures.length,
+        count: dateFixtures.length,
         competitions: [
           ...new Set(
-            fixtures.map((fixture) => fixture.competitionCode).filter(Boolean)
+            dateFixtures
+              .map((fixture) => fixture.competitionCode)
+              .filter(Boolean)
           ),
         ],
       }))
     );
 
-    const competitionMap = new Map();
-
-    for (const fixture of normalized) {
-      const code = fixture.competition?.code;
-
-      if (!code) {
-        continue;
-      }
-
-      competitionMap.set(code, fixture.competition?.name || code);
-    }
-
     console.log("DISCOVERED FIXTURES:", {
       count: normalized.length,
-
-      competitions: Array.from(competitionMap.entries()).map(
-        ([code, name]) => ({
-          code,
-          name,
-        })
-      ),
+      competitions: [
+        ...new Map(
+          normalized
+            .filter((fixture) => fixture.competition?.code)
+            .map((fixture) => [
+              fixture.competition.code,
+              fixture.competition.name,
+            ])
+        ),
+      ].map(([code, name]) => ({ code, name })),
     });
 
     return normalized;
   } catch (error) {
     console.error("Global fixture discovery failed:", {
+      requestedDateFrom: formattedFrom,
+      requestedDateTo: formattedTo,
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
