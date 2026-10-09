@@ -143,37 +143,66 @@ export async function discoverFixtures({ dateFrom, dateTo } = {}) {
 export async function discoverHistoricalMatches({
   dateTo,
   historyDays = 90,
+  competitions = [],
 } = {}) {
-  const end = dateTo ? endOfDay(dateTo) : endOfDay(new Date());
+  const end = dateTo ? startOfDay(dateTo) : startOfDay(new Date());
+
+  // dateTo is exclusive in the Football-Data.org API.
+  // Request up to, but not including, the specified date.
+  const dateUntil = formatDate(end);
 
   const start = new Date(end);
   start.setUTCDate(start.getUTCDate() - historyDays);
 
   const dateFrom = formatDate(start);
-  const dateUntil = formatDate(end);
+
+  const competitionCodes = [
+    ...new Set(
+      competitions
+        .filter(Boolean)
+        .map((code) => String(code).trim().toUpperCase())
+    ),
+  ];
 
   console.log("HISTORY REQUEST:", {
     dateFrom,
     dateTo: dateUntil,
     historyDays,
+    competitions: competitionCodes,
   });
 
   const data = await getMatches({
     dateFrom,
     dateTo: dateUntil,
     status: "FINISHED",
+    competitions: competitionCodes.length ? competitionCodes : undefined,
     limit: 500,
   });
 
   const matches = Array.isArray(data?.matches) ? data.matches : [];
 
-  const uniqueMatches = Array.from(
-    new Map(
+  console.log("HISTORICAL MATCH API RESPONSE:", {
+    resultSet: data?.resultSet ?? null,
+    matchCount: matches.length,
+    sample: matches.slice(0, 3).map((match) => ({
+      id: match.id,
+      status: match.status,
+      utcDate: match.utcDate,
+      competition: match.competition?.code,
+      homeTeamId: match.homeTeam?.id,
+      awayTeamId: match.awayTeam?.id,
+      homeScore: match.score?.fullTime?.home,
+      awayScore: match.score?.fullTime?.away,
+    })),
+  });
+
+  const uniqueMatches = [
+    ...new Map(
       matches
         .filter((match) => match?.id != null)
         .map((match) => [String(match.id), match])
-    ).values()
-  )
+    ).values(),
+  ]
     .filter(
       (match) =>
         match.status === "FINISHED" &&
@@ -190,6 +219,7 @@ export async function discoverHistoricalMatches({
     uniqueFinishedMatches: uniqueMatches.length,
     dateFrom,
     dateTo: dateUntil,
+    competitions: competitionCodes,
   });
 
   return uniqueMatches;

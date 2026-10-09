@@ -84,8 +84,17 @@ const HISTORY_CACHE_TTL = 6 * 60 * 60 * 1000;
 const historyCache = new Map();
 const historyRequests = new Map();
 
-async function getCachedHistoricalMatches({ dateTo, historyDays = 90 }) {
-  const key = `${dateTo}:${historyDays}`;
+async function getCachedHistoricalMatches({
+  dateTo,
+  historyDays = 90,
+  competitions = [],
+}) {
+  const competitionKey = [...new Set(competitions)]
+    .filter(Boolean)
+    .sort()
+    .join(",");
+
+  const key = `${dateTo}:${historyDays}:${competitionKey}`;
   const now = Date.now();
 
   const cached = historyCache.get(key);
@@ -109,6 +118,14 @@ async function getCachedHistoricalMatches({ dateTo, historyDays = 90 }) {
       const matches = await discoverHistoricalMatches({
         dateTo,
         historyDays,
+        competitions: competitionKey ? competitionKey.split(",") : [],
+      });
+
+      console.log("HISTORY FETCH RESULT:", {
+        dateTo,
+        historyDays,
+        competitions: competitionKey,
+        matchCount: matches.length,
       });
 
       historyCache.set(key, {
@@ -118,21 +135,21 @@ async function getCachedHistoricalMatches({ dateTo, historyDays = 90 }) {
 
       return matches;
     } catch (error) {
-      const status = error?.response?.status;
+      const status = error?.response?.status || null;
 
       console.error("HISTORICAL MATCH DISCOVERY FAILED:", {
-        status: status || null,
+        key,
+        status,
         message: error?.message,
+        response: error?.response?.data || null,
       });
 
-      // If the provider is rate-limiting us, use stale cached data
-      // rather than failing the entire prediction request.
+      // Use stale cached data if available.
       if (cached?.matches) {
         console.warn("USING STALE HISTORICAL MATCH CACHE:", key);
         return cached.matches;
       }
 
-      // Do not repeatedly retry a failing provider within this request.
       throw error;
     } finally {
       historyRequests.delete(key);
@@ -809,9 +826,18 @@ export default async function handler(req, res) {
     let historicalMatches = [];
 
     try {
+      const historyCompetitions = [
+        ...new Set(
+          eligibleFixtures
+            .map((fixture) => fixture.competition?.code)
+            .filter(Boolean)
+        ),
+      ];
+
       historicalMatches = await getCachedHistoricalMatches({
         dateTo: historyDate,
         historyDays: 90,
+        competitions: historyCompetitions,
       });
     } catch (error) {
       console.error("AGENT CONTINUING WITHOUT HISTORICAL MATCHES:", {
