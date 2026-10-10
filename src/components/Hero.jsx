@@ -110,20 +110,15 @@ export default function Hero() {
 
   /* Duplicate messages so the ticker loops seamlessly */
 
-  const tickerPicks = topPicks.length > 0 ? [...topPicks, ...topPicks] : [];
+  const telegramPick = {
+    id: "telegram",
+    match: "Join KickPredict",
+    league: "Telegram",
+    prediction: "@kickprediction",
+    confidence: null,
+  };
 
-  const tickerMessages =
-    tickerPicks.length > 0
-      ? tickerPicks
-      : [
-          {
-            id: "telegram",
-            match: "Join KickPredict",
-            league: "Telegram",
-            prediction: "@kickprediction",
-            confidence: null,
-          },
-        ];
+  const tickerMessages = [...topPicks, telegramPick, ...topPicks, telegramPick];
 
   return (
     <section className="kp-hero">
@@ -132,33 +127,36 @@ export default function Hero() {
       ========================================= */}
 
       <div className="kp-hero-ticker">
-        {tickerPicks.length > 0 ? (
-          <div className="kp-ticker-track">
-            {tickerPicks.map((pick, index) => (
-              <div className="kp-ticker-item" key={`${pick.id}-${index}`}>
-                <span className="kp-ticker-status">Today</span>
+        <div className="kp-ticker-track">
+          {tickerMessages.map((pick, index) => (
+            <div className="kp-ticker-item" key={`${pick.id}-${index}`}>
+              {pick.confidence !== null ? (
+                <>
+                  <span className="kp-ticker-status">Today Top Pick</span>
+                  <span className="kp-ticker-match">{pick.match}</span>
+                  <span className="kp-ticker-prediction">
+                    {pick.prediction}
+                  </span>
+                  <span className="kp-ticker-confidence">
+                    {pick.confidence}%
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="kp-ticker-telegram-icon">
+                    <Send size={12} />
+                  </span>
+                  <span className="kp-ticker-telegram">
+                    Join KickPredict on Telegram
+                  </span>
+                  <span className="kp-ticker-handle">@kickprediction</span>
+                </>
+              )}
 
-                <span className="kp-ticker-match">{pick.match}</span>
-
-                <span className="kp-ticker-prediction">{pick.prediction}</span>
-
-                <span className="kp-ticker-confidence">{pick.confidence}%</span>
-
-                <span className="kp-ticker-divider" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="kp-ticker-item">
-            <span className="kp-ticker-telegram-icon">
-              <Send size={12} />
-            </span>
-            <span className="kp-ticker-telegram">
-              Join KickPredict on Telegram
-            </span>
-            <span className="kp-ticker-handle">@kickprediction</span>
-          </div>
-        )}
+              <span className="kp-ticker-divider" />
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="kp-hero-con">
