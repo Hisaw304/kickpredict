@@ -131,53 +131,32 @@ export default function Hero() {
           TOP LIVE TICKER
       ========================================= */}
 
-      {/* =========================================
-    TOP LIVE TICKER — INFINITE LOOP
-========================================= */}
-
       <div className="kp-hero-ticker">
         {tickerPicks.length > 0 ? (
           <div className="kp-ticker-track">
-            {[0, 1].map((group) => (
-              <div
-                className="kp-ticker-group"
-                key={group}
-                aria-hidden={group === 1}
-              >
-                {tickerPicks.map((pick, index) => (
-                  <div
-                    className="kp-ticker-item"
-                    key={`${group}-${pick.id || index}`}
-                  >
-                    <span className="kp-ticker-status">Today</span>
+            {tickerPicks.map((pick, index) => (
+              <div className="kp-ticker-item" key={`${pick.id}-${index}`}>
+                <span className="kp-ticker-status">Today</span>
 
-                    <span className="kp-ticker-match">{pick.match}</span>
+                <span className="kp-ticker-match">{pick.match}</span>
 
-                    <span className="kp-ticker-prediction">
-                      {pick.prediction}
-                    </span>
+                <span className="kp-ticker-prediction">{pick.prediction}</span>
 
-                    <span className="kp-ticker-confidence">
-                      {pick.confidence}%
-                    </span>
+                <span className="kp-ticker-confidence">{pick.confidence}%</span>
 
-                    <span className="kp-ticker-divider" />
-                  </div>
-                ))}
+                <span className="kp-ticker-divider" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="kp-ticker-empty">
-            <Send size={13} />
-            <span>Follow KickPredict on Telegram</span>
-            <a
-              href="https://t.me/kickprediction"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              @kickprediction
-            </a>
+          <div className="kp-ticker-item">
+            <span className="kp-ticker-telegram-icon">
+              <Send size={12} />
+            </span>
+            <span className="kp-ticker-telegram">
+              Join KickPredict on Telegram
+            </span>
+            <span className="kp-ticker-handle">@kickprediction</span>
           </div>
         )}
       </div>
