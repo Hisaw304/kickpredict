@@ -4,31 +4,106 @@ import { FaTelegramPlane } from "react-icons/fa";
 
 export default function Predictions() {
   const [predictions, setPredictions] = useState([]);
+  const [todayPredictions, setTodayPredictions] = useState([]);
+  const [agentPredictions, setAgentPredictions] = useState([]);
+  const [activeTab, setActiveTab] = useState("today");
 
   useEffect(() => {
-    fetchPredictions();
+    fetchAllPredictions();
   }, []);
 
-  async function fetchPredictions() {
+  async function fetchAllPredictions() {
     const today = new Date().toISOString().split("T")[0];
 
-    const { data, error } = await supabase
-      .from("predictions")
-      .select("*")
-      .eq("match_date", today)
-      .order("created_at", { ascending: true });
+    const [todayResult, agentResult] = await Promise.all([
+      supabase
+        .from("predictions")
+        .select("*")
+        .eq("match_date", today)
+        .order("created_at", { ascending: true }),
 
-    if (error) {
-      console.error(error);
-    } else {
-      setPredictions(data);
+      supabase
+        .from("agent_predictions")
+        .select("*")
+        .eq("match_date", today)
+        .order("created_at", { ascending: true }),
+    ]);
+
+    if (todayResult.error) {
+      console.error("Error fetching today's predictions:", todayResult.error);
     }
+
+    if (agentResult.error) {
+      console.error("Error fetching agent predictions:", agentResult.error);
+    }
+
+    const todayData = todayResult.data || [];
+    const agentData = agentResult.data || [];
+
+    setTodayPredictions(todayData);
+    setAgentPredictions(agentData);
+
+    const selectedPredictions = activeTab === "today" ? todayData : agentData;
+
+    setPredictions(selectedPredictions);
   }
+
+  function handleTabChange(tab) {
+    setActiveTab(tab);
+
+    setPredictions(tab === "today" ? todayPredictions : agentPredictions);
+  }
+
+  const hasAnyPredictions =
+    todayPredictions.length > 0 || agentPredictions.length > 0;
 
   return (
     <section className="football-pred-section">
       <div className="football-pred-container">
-        <h2 className="football-pred-heading">Today's Football Predictions</h2>
+        {/* PREDICTION TABS — ONLY SHOW WHEN PREDICTIONS EXIST */}
+        {hasAnyPredictions && (
+          <div className="football-pred-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "today"}
+              className={`football-pred-tab ${
+                activeTab === "today" ? "is-active" : ""
+              }`}
+              onClick={() => handleTabChange("today")}
+            >
+              Today's Predictions
+              {todayPredictions.length > 0 && (
+                <span className="football-pred-tab-count">
+                  {todayPredictions.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "agent"}
+              className={`football-pred-tab ${
+                activeTab === "agent" ? "is-active" : ""
+              }`}
+              onClick={() => handleTabChange("agent")}
+            >
+              Agent Predictions
+              {agentPredictions.length > 0 && (
+                <span className="football-pred-tab-count">
+                  {agentPredictions.length}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
+
+        <h2 className="football-pred-heading">
+          {activeTab === "today"
+            ? "Today's Football Predictions"
+            : "Agent Football Predictions"}
+        </h2>
 
         {predictions.length === 0 ? (
           <div className="football-pred-empty-state">

@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Agent from "./pages/Agent";
+import AgentEdit from "./pages/AgentEdit";
 
 const App = () => {
   const location = useLocation();
@@ -34,6 +35,7 @@ const App = () => {
           <Route path="/predictions" element={<Predictions />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/agent" element={<Agent />} />
+          <Route path="/agent-edit" element={<AgentEdit />} />
 
           {/* ADMIN LOGIN */}
           <Route path="/login" element={<Login />} />
