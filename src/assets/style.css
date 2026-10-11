@@ -1116,9 +1116,9 @@ body {
     height: 42px;
   }
 
-  .kp-ticker-track {
+  /* .kp-ticker-track {
     animation-duration: 27s;
-  }
+  } */
 
   .kp-ticker-item {
     height: 42px;
@@ -1561,7 +1561,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .kp-ticker-track,
   .kp-chat-messages {
-    animation: none;
+    /* animation: none; */
   }
 
   .kp-phone,
