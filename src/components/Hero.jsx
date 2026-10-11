@@ -55,15 +55,29 @@ export default function Hero() {
       })
       .order("created_at", {
         ascending: true,
-      })
-      .limit(8);
+      });
 
     if (error) {
       console.error("Error fetching predictions:", error);
       return;
     }
 
-    setTopPicks(data || []);
+    const predictions = data || [];
+
+    if (predictions.length === 0) {
+      setTopPicks([]);
+      return;
+    }
+
+    // Get the highest confidence percentage.
+    const highestConfidence = Number(predictions[0].confidence);
+
+    // Keep only picks matching that percentage.
+    const highestConfidencePicks = predictions.filter(
+      (pick) => Number(pick.confidence) === highestConfidence
+    );
+
+    setTopPicks(highestConfidencePicks);
   }
 
   /* =========================================
