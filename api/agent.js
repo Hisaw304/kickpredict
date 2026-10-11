@@ -840,22 +840,27 @@ export default async function handler(req, res) {
 
     return res.status(200).json(response);
   } catch (error) {
+    const status = error.response?.status || 500;
+
     console.error("AGENT REQUEST FAILED:", {
       message: error.message,
-
-      status: error.response?.status,
-
-      data: error.response?.data,
-
-      stack: error.stack,
+      status,
     });
 
-    return res.status(error.response?.status || 500).json({
-      error:
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        "Failed to generate prediction agent response.",
+    let message =
+      "Unable to generate picks right now. Please try again shortly.";
+
+    if (status === 429) {
+      message =
+        "Our prediction service is temporarily busy. Please try again shortly.";
+    } else if (status === 503 || status === 502) {
+      message =
+        "Our prediction service is temporarily unavailable. Please try again later.";
+    }
+
+    return res.status(status).json({
+      success: false,
+      error: message,
     });
   }
 }
