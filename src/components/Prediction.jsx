@@ -104,9 +104,7 @@ export default function Predictions() {
         )}
 
         <h2 className="football-pred-heading">
-          {activeTab === "today"
-            ? "Today's Football Predictions"
-            : "Agent Today's Football Predictions"}
+          {activeTab === "today" ? "Matchday Picks" : "Agent Predictions"}
         </h2>
 
         {predictions.length === 0 ? (
@@ -114,56 +112,77 @@ export default function Predictions() {
             <div className="football-pred-empty-intro">
               <span className="football-pred-empty-label">
                 <span className="football-pred-empty-pointer">↓</span>
-                Predictions appear here when available
+                {activeTab === "today"
+                  ? "Matchday picks appear here when available"
+                  : "Agent picks appear here when available"}
                 <span className="football-pred-empty-pointer">↓</span>
               </span>
 
-              <h3>We don't publish predictions just to fill the board.</h3>
+              <h3>
+                {activeTab === "today"
+                  ? "We don't publish matchday picks just to fill the board."
+                  : "Our prediction agent takes a data-driven approach to every pick."}
+              </h3>
 
               <p>
-                We take time to analyze fixtures, team form, trends, and match
-                data before selecting the strongest opportunities. The goal is
-                to keep every prediction selective, data-driven, and meaningful.
+                {activeTab === "today"
+                  ? "We analyze fixtures, team form, trends, and match data before selecting opportunities. Every pick is chosen to keep our predictions selective, data-driven, and meaningful."
+                  : "The agent evaluates available match data, team performance, and statistical signals before producing predictions. Agent picks appear here whenever they are available."}
               </p>
             </div>
 
             <div className="football-pred-process">
               <div className="football-pred-process-item">
                 <span>01</span>
-
                 <div>
-                  <h4>We Analyze</h4>
-                  <p>Team form, recent results, trends, and key match data.</p>
+                  <h4>
+                    {activeTab === "today" ? "We Analyze" : "Data Analysis"}
+                  </h4>
+                  <p>
+                    {activeTab === "today"
+                      ? "Team form, recent results, trends, and key match data."
+                      : "The agent evaluates fixture data, team form, and relevant statistics."}
+                  </p>
                 </div>
               </div>
 
               <div className="football-pred-process-item">
                 <span>02</span>
-
                 <div>
-                  <h4>We Filter</h4>
+                  <h4>
+                    {activeTab === "today"
+                      ? "We Filter"
+                      : "Statistical Filtering"}
+                  </h4>
                   <p>
-                    We focus on fixtures with stronger statistical signals and
-                    higher-confidence setups.
+                    {activeTab === "today"
+                      ? "We focus on fixtures with stronger statistical signals and higher-confidence setups."
+                      : "Available matches are assessed for meaningful statistical signals before picks are generated."}
                   </p>
                 </div>
               </div>
 
               <div className="football-pred-process-item">
                 <span>03</span>
-
                 <div>
-                  <h4>We Publish</h4>
+                  <h4>
+                    {activeTab === "today" ? "We Publish" : "Agent Picks"}
+                  </h4>
                   <p>
-                    Only selected predictions make it onto KickPredict when the
-                    analysis meets our standards.
+                    {activeTab === "today"
+                      ? "Only selected predictions make it onto KickPredict when the analysis meets our standards."
+                      : "Generated agent predictions appear here when they are ready to view."}
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="football-pred-empty-footer">
-              <strong>Next predictions are coming soon.</strong>
+              <strong>
+                {activeTab === "today"
+                  ? "More matchday picks are coming soon."
+                  : "More agent predictions are coming soon."}
+              </strong>
               <span>Follow KickPredict on Telegram for the latest picks.</span>
             </div>
           </div>

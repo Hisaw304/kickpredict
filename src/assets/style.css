@@ -8523,7 +8523,7 @@ body {
 @media (max-width: 560px) {
   .football-pred-tabs {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
     gap: 6px;
     padding: 5px;
