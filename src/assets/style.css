@@ -465,11 +465,15 @@ body {
   }
 }
 
-/* =========================================================
-   TOP INFINITE TICKER
-========================================================= */
-
-.kp-hero-ticker {
+/* ========================================================= HERO ========================================================= */
+.kp-hero {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--kp-bg-soft);
+}
+/* ========================================================= TOP INFINITE TICKER ========================================================= */
+kp-hero-ticker {
   position: fixed;
   top: 69px;
   left: 0;
@@ -490,7 +494,7 @@ body {
   width: max-content;
   flex-shrink: 0;
   will-change: transform;
-  animation: kpTickerInfinite 50s linear infinite;
+  animation: kpTickerInfinite 70s linear infinite;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
 }
@@ -510,10 +514,56 @@ body {
   font-weight: 500;
 }
 
-/* =========================================================
-   TICKER ANIMATION
-========================================================= */
-
+.kp-ticker-status {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.13);
+  color: var(--kp-primary);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.kp-ticker-match {
+  color: #ffffff;
+  font-weight: 600;
+}
+.kp-ticker-prediction {
+  color: rgba(255, 255, 255, 0.55);
+}
+.kp-ticker-confidence {
+  color: var(--kp-primary);
+  font-weight: 700;
+}
+.kp-ticker-divider {
+  width: 4px;
+  height: 4px;
+  flex-shrink: 0;
+  margin-left: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+} /* ========================================================= TELEGRAM TICKER ========================================================= */
+.kp-ticker-telegram-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.14);
+  color: var(--kp-primary);
+}
+.kp-ticker-telegram {
+  color: #ffffff;
+  font-weight: 600;
+}
+.kp-ticker-handle {
+  color: var(--kp-primary);
+  font-weight: 700;
+} /* ========================================================= TICKER ANIMATION ========================================================= */
 @keyframes kpTickerInfinite {
   from {
     transform: translate3d(0, 0, 0);
@@ -522,8 +572,7 @@ body {
   to {
     transform: translate3d(-50%, 0, 0);
   }
-}
-/*========================================================= HERO CONTAINER ========================================================= */
+} /* ========================================================= HERO CONTAINER ========================================================= */
 .kp-hero-con {
   position: relative;
   z-index: 2;
