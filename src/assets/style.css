@@ -473,7 +473,8 @@ body {
   background: var(--kp-bg-soft);
 }
 /* ========================================================= TOP INFINITE TICKER ========================================================= */
-kp-hero-ticker {
+
+.kp-hero-ticker {
   position: fixed;
   top: 69px;
   left: 0;
@@ -487,7 +488,6 @@ kp-hero-ticker {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   white-space: nowrap;
 }
-
 .kp-ticker-track {
   display: flex;
   align-items: center;
@@ -495,14 +495,10 @@ kp-hero-ticker {
   flex-shrink: 0;
   will-change: transform;
   animation: kpTickerInfinite 70s linear infinite;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
 }
-
 .kp-hero-ticker:hover .kp-ticker-track {
   animation-play-state: paused;
 }
-
 .kp-ticker-item {
   display: inline-flex;
   align-items: center;
@@ -513,7 +509,6 @@ kp-hero-ticker {
   font-size: 12px;
   font-weight: 500;
 }
-
 .kp-ticker-status {
   display: inline-flex;
   align-items: center;
@@ -568,7 +563,6 @@ kp-hero-ticker {
   from {
     transform: translate3d(0, 0, 0);
   }
-
   to {
     transform: translate3d(-50%, 0, 0);
   }
@@ -961,12 +955,13 @@ kp-hero-ticker {
   background: var(--kp-primary);
   color: var(--kp-primary-black);
 } /* ========================================================= PHONE INFINITE CHAT ========================================================= */
-@keyframes kpChatInfinite {
+@keyframes kpTickerInfinite {
   from {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
+
   to {
-    transform: translateY(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 } /* ========================================================= TELEGRAM COMMUNITY LABEL ========================================================= */
 .kp-telegram-label {
@@ -1567,7 +1562,7 @@ kp-hero-ticker {
 @media (prefers-reduced-motion: reduce) {
   .kp-ticker-track,
   .kp-chat-messages {
-    /* animation: none; */
+    animation: none;
   }
 
   .kp-phone,
