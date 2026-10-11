@@ -66,6 +66,7 @@ const INITIAL_FORM = {
   confidence: "",
   match_date: "",
   status: "pending",
+  result: "",
 };
 
 export default function AgentEdit() {
@@ -196,6 +197,7 @@ export default function AgentEdit() {
           : "",
       match_date: prediction.match_date || "",
       status: normalizeStatus(prediction.status),
+      result: prediction.result || "",
     });
 
     setError("");
@@ -255,6 +257,7 @@ export default function AgentEdit() {
         confidence,
         match_date: formData.match_date,
         status: normalizeStatus(formData.status),
+        result: formData.result.trim(),
       };
 
       const { data, error: updateError } = await supabase
@@ -348,6 +351,11 @@ export default function AgentEdit() {
             <div>
               <span>Confidence</span>
               <strong>{prediction.confidence}%</strong>
+            </div>
+
+            <div>
+              <span>Result</span>
+              <strong>{prediction.result || "Not settled"}</strong>
             </div>
           </div>
         </div>
@@ -660,6 +668,18 @@ export default function AgentEdit() {
                     <option value="lose">Lose</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="kp-form-group">
+                <label htmlFor="agent-result">Result</label>
+                <input
+                  id="agent-result"
+                  type="text"
+                  name="result"
+                  placeholder="e.g. Won 2–1, Over 2.5 goals, or Lost"
+                  value={formData.result}
+                  onChange={handleChange}
+                />
               </div>
 
               {error && showModal && (
