@@ -494,7 +494,7 @@ body {
   width: max-content;
   flex-shrink: 0;
   will-change: transform;
-  animation: kpTickerInfinite 70s linear infinite;
+  animation: kpTickerInfinite 40s linear infinite;
 }
 .kp-hero-ticker:hover .kp-ticker-track {
   animation-play-state: paused;
