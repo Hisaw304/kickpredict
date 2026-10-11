@@ -34,8 +34,6 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/predictions" element={<Predictions />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/agent" element={<Agent />} />
-          <Route path="/agent-edit" element={<AgentEdit />} />
 
           {/* ADMIN LOGIN */}
           <Route path="/login" element={<Login />} />
@@ -43,6 +41,8 @@ const App = () => {
           {/* PROTECTED ADMIN AREA */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/agent" element={<Agent />} />
+            <Route path="/agent-edit" element={<AgentEdit />} />
           </Route>
         </Routes>
       </main>

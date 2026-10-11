@@ -43,9 +43,13 @@ export default function Predictions() {
     setTodayPredictions(todayData);
     setAgentPredictions(agentData);
 
-    const selectedPredictions = activeTab === "today" ? todayData : agentData;
+    // Automatically switch only when one source has no predictions.
+    // If both have predictions, keep the normal default: Today's Predictions.
+    const nextTab =
+      todayData.length === 0 && agentData.length > 0 ? "agent" : "today";
 
-    setPredictions(selectedPredictions);
+    setActiveTab(nextTab);
+    setPredictions(nextTab === "agent" ? agentData : todayData);
   }
 
   function handleTabChange(tab) {
@@ -72,7 +76,7 @@ export default function Predictions() {
               }`}
               onClick={() => handleTabChange("today")}
             >
-              Today's Predictions
+              Matchday Picks
               {todayPredictions.length > 0 && (
                 <span className="football-pred-tab-count">
                   {todayPredictions.length}
@@ -102,7 +106,7 @@ export default function Predictions() {
         <h2 className="football-pred-heading">
           {activeTab === "today"
             ? "Today's Football Predictions"
-            : "Agent Football Predictions"}
+            : "Agent Today's Football Predictions"}
         </h2>
 
         {predictions.length === 0 ? (
