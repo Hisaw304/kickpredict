@@ -73,6 +73,7 @@ export default function AgentEdit() {
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("active");
   const [deletingId, setDeletingId] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -139,9 +140,26 @@ export default function AgentEdit() {
     [predictions]
   );
 
+  const activePredictions = useMemo(
+    () =>
+      predictions.filter((item) => normalizeStatus(item.status) === "pending"),
+    [predictions]
+  );
+
+  const historyPredictions = useMemo(
+    () =>
+      predictions.filter((item) =>
+        ["win", "lose"].includes(normalizeStatus(item.status))
+      ),
+    [predictions]
+  );
+
+  const displayedPredictions =
+    activeTab === "active" ? activePredictions : historyPredictions;
+
   const groupedPredictions = useMemo(
     () =>
-      predictions.reduce((groups, prediction) => {
+      displayedPredictions.reduce((groups, prediction) => {
         const date = prediction.match_date || "unknown";
 
         if (!groups[date]) groups[date] = [];
@@ -149,7 +167,7 @@ export default function AgentEdit() {
         groups[date].push(prediction);
         return groups;
       }, {}),
-    [predictions]
+    [displayedPredictions]
   );
 
   function formatDate(date) {
@@ -473,6 +491,26 @@ export default function AgentEdit() {
           </div>
         )}
 
+        <div className="kp-dashboard-tabs">
+          <button
+            type="button"
+            className={activeTab === "active" ? "active" : ""}
+            onClick={() => setActiveTab("active")}
+          >
+            Active Predictions
+            <span>{pendingCount}</span>
+          </button>
+
+          <button
+            type="button"
+            className={activeTab === "history" ? "active" : ""}
+            onClick={() => setActiveTab("history")}
+          >
+            History
+            <span>{historyPredictions.length}</span>
+          </button>
+        </div>
+
         {notice && (
           <p className="kp-agent-notice" role="status">
             {notice}
@@ -490,7 +528,17 @@ export default function AgentEdit() {
               <div>
                 <Bot size={25} />
               </div>
-              <h3>No agent predictions yet</h3>
+              <h3>
+                {activeTab === "active"
+                  ? "No active predictions"
+                  : "No prediction history yet"}
+              </h3>
+
+              <p>
+                {activeTab === "active"
+                  ? "New predictions with a pending status will appear here."
+                  : "Predictions marked as won or lost will appear here."}
+              </p>
               <p>
                 Generate picks on the Agent page. They will appear here when
                 they have been saved to the agent predictions table.
