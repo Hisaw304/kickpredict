@@ -1,3 +1,22 @@
+/**
+ * KICKPREDICT — CALIBRATION API
+ *
+ * PURPOSE:
+ * Provides an API entry point for prediction-calibration functionality.
+ *
+ * ARCHITECTURE ROLE:
+ * Connects calibration requests to the corresponding analysis or
+ * calibration logic.
+ *
+ * TRACE THIS FILE TO UNDERSTAND:
+ * - Which predictions and historical results it reads.
+ * - How calibration is calculated or applied.
+ * - Whether its output changes live predictions or is used for analysis only.
+ *
+ * NOTE:
+ * Confirm the implementation before documenting the exact behavior.
+ */
+
 import { discoverHistoricalMatches } from "../src/lib/football/discovery.js";
 import { runBacktest } from "../src/lib/backtest/runner.js";
 import { buildCalibrationProfile } from "../src/lib/prediction/calibration.js";

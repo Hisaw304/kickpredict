@@ -1,3 +1,21 @@
+/**
+ * KICKPREDICT — TEAM MATCH HISTORY API
+ *
+ * PURPOSE:
+ * Provides match information associated with a requested team.
+ *
+ * ARCHITECTURE ROLE:
+ * Exposes team-related football data through a server-side endpoint.
+ *
+ * TRACE THIS FILE TO UNDERSTAND:
+ * - Which team identifiers and query parameters it accepts.
+ * - Which football service it calls.
+ * - Whether it normalizes, filters, or limits the returned matches.
+ *
+ * NOTE:
+ * Confirm the implementation before relying on assumptions about its output.
+ */
+
 import { getTeamMatches } from "../src/lib/football/service.js";
 
 export default async function handler(req, res) {

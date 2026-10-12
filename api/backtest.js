@@ -1,3 +1,23 @@
+/**
+ * KICKPREDICT — BACKTEST API
+ *
+ * PURPOSE:
+ * Provides an API entry point for backtesting-related functionality.
+ *
+ * ARCHITECTURE ROLE:
+ * Connects backtest requests to the corresponding prediction or evaluation
+ * logic.
+ *
+ * TRACE THIS FILE TO UNDERSTAND:
+ * - Which historical data it uses.
+ * - How predictions and actual results are compared.
+ * - Which metrics are calculated.
+ * - Whether the endpoint calls shared prediction modules or separate logic.
+ *
+ * NOTE:
+ * Confirm the implementation before documenting the exact methodology.
+ */
+
 import { discoverHistoricalMatches } from "../src/lib/football/discovery.js";
 
 import { runBacktest } from "../src/lib/backtest/runner.js";

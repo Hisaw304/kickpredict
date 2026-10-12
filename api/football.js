@@ -1,3 +1,25 @@
+/**
+ * KICKPREDICT — COMPETITION STANDINGS API
+ *
+ * PURPOSE:
+ * Retrieves league standings from Football-Data.org.
+ *
+ * FLOW:
+ * 1. Requires a league query parameter.
+ * 2. Validates the league against this endpoint's allowlist.
+ * 3. Checks the Football-Data.org API key.
+ * 4. Requests standings for the selected competition.
+ * 5. Returns the provider's response as JSON.
+ *
+ * DEPENDENCIES:
+ * - axios
+ * - Football-Data.org API
+ *
+ * IMPORTANT:
+ * This endpoint retrieves standings, not the global prediction feed.
+ * Its league validation is local to this endpoint.
+ */
+
 import axios from "axios";
 
 export default async function handler(req, res) {

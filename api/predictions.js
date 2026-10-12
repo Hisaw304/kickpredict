@@ -1,3 +1,29 @@
+/**
+ * KICKPREDICT — SINGLE FIXTURE PREDICTION API
+ *
+ * PURPOSE:
+ * Generates a prediction for one specified fixture.
+ *
+ * FLOW:
+ * 1. Accepts a league code and fixtureId.
+ * 2. Validates the request and API configuration.
+ * 3. Retrieves the requested league's fixtures.
+ * 4. Finds the fixture matching fixtureId.
+ * 5. Normalizes the selected fixture.
+ * 6. Fetches the home and away teams' match histories.
+ * 7. Calls the prediction engine with the fixture and available histories.
+ * 8. Returns the fixture and calculated prediction as JSON.
+ *
+ * DEPENDENCIES:
+ * - src/lib/football/service.js
+ * - src/lib/football/normalise.js
+ * - src/lib/prediction/engine.js
+ *
+ * IMPORTANT:
+ * This endpoint predicts a specific fixture.
+ * It is separate from the date-based global tips pipeline in api/tips.js.
+ */
+
 import { getFixtures, getTeamMatches } from "../src/lib/football/service.js";
 import { normalizeFixture } from "../src/lib/football/normalise.js";
 import { predictFixture } from "../src/lib/prediction/engine.js";

@@ -1,3 +1,23 @@
+/**
+ * KICKPREDICT — TELEGRAM API
+ *
+ * PURPOSE:
+ * Server-side entry point for Telegram-related integration.
+ *
+ * ARCHITECTURE ROLE:
+ * Connects Telegram requests or webhook events to the KickPredict backend.
+ *
+ * TRACE THIS FILE TO UNDERSTAND:
+ * - How incoming Telegram updates are authenticated and processed.
+ * - How messages are routed to agent or prediction functionality.
+ * - Which shared services are reused.
+ * - How replies and errors are handled.
+ *
+ * NOTE:
+ * Confirm the actual webhook and request-handling flow before documenting
+ * more specific behavior.
+ */
+
 import { sendTelegramMessage } from "../src/lib/telegram/bot.js";
 import {
   formatPredictionResponse,

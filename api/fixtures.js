@@ -1,3 +1,27 @@
+/**
+ * KICKPREDICT — FIXTURES API
+ *
+ * PURPOSE:
+ * Provides football fixtures for a requested competition and/or date range.
+ *
+ * FLOW:
+ * 1. Accepts GET requests with league, dateFrom, and dateTo query parameters.
+ * 2. Validates the requested league against the endpoint's allowed league codes.
+ * 3. Checks that FOOTBALL_API_KEY is configured.
+ * 4. Calls the shared football service to retrieve fixtures.
+ * 5. Normalizes the returned fixtures into KickPredict's expected format.
+ * 6. Returns the fixtures and their count as JSON.
+ *
+ * DEPENDENCIES:
+ * - src/lib/football/service.js
+ * - src/lib/football/normalise.js
+ *
+ * IMPORTANT:
+ * The league allowlist in this file applies to this endpoint.
+ * It does not automatically define which competitions other endpoints
+ * or the global tips engine can discover.
+ */
+
 import { getFixtures } from "../src/lib/football/service.js";
 import { normalizeFixture } from "../src/lib/football/normalise.js";
 

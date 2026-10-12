@@ -1,3 +1,32 @@
+/**
+ * KICKPREDICT — GLOBAL TIPS API
+ *
+ * PURPOSE:
+ * Discovers upcoming fixtures across the competitions returned by the
+ * football discovery service, generates predictions, and selects tips.
+ *
+ * FLOW:
+ * 1. Reads the requested date range and prediction-selection parameters.
+ * 2. Discovers fixtures for that date range.
+ * 3. Filters for future fixtures with SCHEDULED or TIMED status.
+ * 4. Retrieves a shared historical dataset.
+ * 5. Runs the prediction pipeline for qualifying upcoming fixtures.
+ * 6. Selects tips according to the probability threshold and result limit.
+ * 7. Returns the request parameters, dataset information, and selected picks.
+ *
+ * DEPENDENCIES:
+ * - src/lib/football/discovery.js
+ * - src/lib/prediction/runner.js
+ * - src/lib/prediction/select.js
+ *
+ * IMPORTANT:
+ * This endpoint does not use the same explicit six-league allowlist shown
+ * in api/fixtures.js and api/predictions.js.
+ *
+ * The actual competition coverage depends on the discovery implementation
+ * and any filtering performed by downstream prediction and selection code.
+ */
+
 import {
   discoverFixtures,
   discoverHistoricalMatches,

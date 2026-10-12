@@ -1,5 +1,16 @@
 import footballClient from "./client.js";
 
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const responseCache = new Map();
+const pendingRequests = new Map();
+
+function buildCacheKey(params) {
+  return JSON.stringify(
+    Object.fromEntries(
+      Object.entries(params).sort(([a], [b]) => a.localeCompare(b))
+    )
+  );
+}
 export async function getCompetition(league) {
   if (!league) {
     throw new Error("League is required");
@@ -23,17 +34,9 @@ export async function getMatches({
 } = {}) {
   const params = {};
 
-  if (dateFrom) {
-    params.dateFrom = dateFrom;
-  }
-
-  if (dateTo) {
-    params.dateTo = dateTo;
-  }
-
-  if (status) {
-    params.status = status;
-  }
+  if (dateFrom) params.dateFrom = dateFrom;
+  if (dateTo) params.dateTo = dateTo;
+  if (status) params.status = status;
 
   if (competitions) {
     params.competitions = Array.isArray(competitions)
@@ -41,15 +44,47 @@ export async function getMatches({
       : competitions;
   }
 
-  if (limit) {
-    params.limit = limit;
+  if (limit) params.limit = limit;
+
+  const key = buildCacheKey(params);
+  const now = Date.now();
+  const cached = responseCache.get(key);
+
+  if (cached && cached.expiresAt > now) {
+    console.log("FOOTBALL CACHE HIT:", { dateFrom, dateTo, status });
+    return cached.data;
   }
 
-  const response = await footballClient.get("/matches", {
-    params,
-  });
+  if (cached) responseCache.delete(key);
 
-  return response.data;
+  if (pendingRequests.has(key)) {
+    console.log("FOOTBALL REQUEST DEDUPLICATED:", { dateFrom, dateTo, status });
+    return pendingRequests.get(key);
+  }
+
+  const request = footballClient
+    .get("/matches", { params })
+    .then(({ data }) => {
+      responseCache.set(key, {
+        data,
+        expiresAt: Date.now() + CACHE_TTL_MS,
+      });
+
+      // Keep the in-memory cache bounded.
+      if (responseCache.size > 200) {
+        const oldestKey = responseCache.keys().next().value;
+        if (oldestKey !== undefined) responseCache.delete(oldestKey);
+      }
+
+      return data;
+    })
+    .finally(() => {
+      pendingRequests.delete(key);
+    });
+
+  pendingRequests.set(key, request);
+
+  return request;
 }
 
 export async function getFixtures({ dateFrom, dateTo, league } = {}) {

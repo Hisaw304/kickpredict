@@ -1,3 +1,21 @@
+/**
+ * KICKPREDICT — COMPETITION API
+ *
+ * PURPOSE:
+ * Provides competition-related information through a server-side endpoint.
+ *
+ * ARCHITECTURE ROLE:
+ * Acts as an API boundary between the frontend and competition data.
+ *
+ * TRACE THIS FILE TO UNDERSTAND:
+ * - Whether it retrieves, lists, or filters competitions.
+ * - Which provider or internal service it uses.
+ * - Whether its competition list is static or provider-generated.
+ *
+ * NOTE:
+ * Its precise role must be confirmed from the implementation.
+ */
+
 import footballClient from "../src/lib/football/client.js";
 
 export default async function handler(req, res) {
