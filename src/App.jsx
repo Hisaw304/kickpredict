@@ -21,7 +21,9 @@ const App = () => {
   // Admin/auth pages should not have the public Navbar or Footer
   const isAdminPage =
     location.pathname === "/login" ||
-    location.pathname.startsWith("/dashboard");
+    location.pathname.startsWith("/dashboard") ||
+    location.pathname.startsWith("/agent") ||
+    location.pathname.startsWith("/agent-edit");
 
   return (
     <div className="min-h-screen flex flex-col">
