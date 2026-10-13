@@ -64,20 +64,20 @@ function isUpcomingFixture(fixture) {
  * ------------------------------------------------
  */
 
-// function expandDiscoveryRange(request) {
-//   const start = new Date(`${request.dateFrom}T00:00:00Z`);
+function expandDiscoveryRange(request) {
+  const start = new Date(`${request.dateFrom}T00:00:00Z`);
 
-//   const end = new Date(`${request.dateTo}T23:59:59Z`);
+  const end = new Date(`${request.dateTo}T23:59:59Z`);
 
-//   start.setUTCDate(start.getUTCDate() - 1);
+  start.setUTCDate(start.getUTCDate() - 1);
 
-//   end.setUTCDate(end.getUTCDate() + 6);
+  end.setUTCDate(end.getUTCDate() + 6);
 
-//   return {
-//     dateFrom: formatDate(start),
-//     dateTo: formatDate(end),
-//   };
-// }
+  return {
+    dateFrom: formatDate(start),
+    dateTo: formatDate(end),
+  };
+}
 
 /*
  * ------------------------------------------------
@@ -574,13 +574,13 @@ export default async function handler(req, res) {
      * --------------------------------------------
      */
 
-    // const discoveryRange = expandDiscoveryRange(request);
+    const discoveryRange = expandDiscoveryRange(request);
 
-    // console.log("AGENT DISCOVERY RANGE:", discoveryRange);
+    console.log("AGENT DISCOVERY RANGE:", discoveryRange);
 
     const fixtures = await discoverFixtures({
-      dateFrom: request.dateFrom,
-      dateTo: request.dateTo,
+      dateFrom: discoveryRange.dateFrom,
+      dateTo: discoveryRange.dateTo,
     });
 
     console.log("AGENT FIXTURES DISCOVERED:", fixtures.length);

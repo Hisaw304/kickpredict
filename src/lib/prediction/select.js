@@ -1,33 +1,3 @@
-/**
- * KICKPREDICT — PREDICTION SELECTION ENGINE
- *
- * PURPOSE:
- * Converts generated fixture predictions into a ranked list of final tips.
- *
- * FLOW:
- * 1. Receives predictions produced by the prediction runner.
- * 2. Flattens each fixture's available markets into individual selections.
- * 3. Applies probability calibration to each market.
- * 4. Calculates confidence and a quality score using probability,
- *    research strength, market weights, and calibration evidence.
- * 5. Removes selections below the minimum probability threshold.
- * 6. Ranks eligible selections while penalizing correlated or repetitive
- *    market types and selections from the same competition.
- * 7. Allows only one selected prediction per fixture.
- * 8. Returns the final selections ordered by calibrated probability.
- *
- * IMPORTANT:
- * - The default minimum probability is 65.
- * - The default selection limit is 5.
- * - The quality score affects selection order, but the returned list is
- *   ultimately sorted by calibrated probability.
- * - A competition receives a small selection penalty; it is not excluded.
- * - This file does not discover fixtures or restrict the available leagues.
- *
- * DEPENDENCIES:
- * - ./calibration.js
- */
-
 import { calibrateProbability } from "./calibration.js";
 
 const MIN_PROBABILITY = 65;
