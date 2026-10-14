@@ -119,7 +119,7 @@ function ResearchMatchList({ title, matches = [] }) {
 
 export default function PickCard({ pick }) {
   const [expanded, setExpanded] = useState(false);
-
+  const [showHistoricalMatches, setShowHistoricalMatches] = useState(false);
   const probability = Number(pick.probability) || 0;
   const probabilityClass = getProbabilityClass(probability);
   const kickoff = formatKickoff(pick.kickoff);
@@ -283,28 +283,44 @@ export default function PickCard({ pick }) {
           </div>
 
           <div className="kp-research-section">
-            <div className="kp-research-section-heading">
-              <div>
-                <span>HISTORICAL EVIDENCE</span>
-                <strong>Matches behind this prediction</strong>
+            <button
+              type="button"
+              className="kp-research-toggle"
+              onClick={() => setShowHistoricalMatches((current) => !current)}
+              aria-expanded={showHistoricalMatches}
+            >
+              <div className="kp-research-section-heading">
+                <div>
+                  <span>HISTORICAL EVIDENCE</span>
+                  <strong>Matches behind this prediction</strong>
+                </div>
+
+                <span className="kp-research-total">
+                  {(pick.research?.home?.length || 0) +
+                    (pick.research?.away?.length || 0)}{" "}
+                  records
+                </span>
               </div>
 
-              <span className="kp-research-total">
-                {(pick.research?.home?.length || 0) +
-                  (pick.research?.away?.length || 0)}{" "}
-                records
-              </span>
-            </div>
+              <ChevronDown
+                size={18}
+                className={showHistoricalMatches ? "is-open" : ""}
+              />
+            </button>
 
-            <ResearchMatchList
-              title={`${pick.homeTeam} — recent matches`}
-              matches={pick.research?.home || []}
-            />
+            {showHistoricalMatches && (
+              <div className="kp-research-details">
+                <ResearchMatchList
+                  title={`${pick.homeTeam} — recent matches`}
+                  matches={pick.research?.home || []}
+                />
 
-            <ResearchMatchList
-              title={`${pick.awayTeam} — recent matches`}
-              matches={pick.research?.away || []}
-            />
+                <ResearchMatchList
+                  title={`${pick.awayTeam} — recent matches`}
+                  matches={pick.research?.away || []}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
