@@ -133,10 +133,36 @@ export function runPredictions({
 
         research: {
           homeMatches: homeMatches.length,
-
           awayMatches: awayMatches.length,
-
           leagueMatches: leagueMatches.length,
+
+          home: homeMatches.slice(0, 10).map((match) => ({
+            id: match.id,
+            date: match.utcDate,
+            homeTeam: match.homeTeam?.name,
+            awayTeam: match.awayTeam?.name,
+            homeScore: match.score?.fullTime?.home ?? null,
+            awayScore: match.score?.fullTime?.away ?? null,
+            venue:
+              String(match.homeTeam?.id) === String(fixture.homeTeam.id)
+                ? "home"
+                : "away",
+            competition: match.competition?.name ?? null,
+          })),
+
+          away: awayMatches.slice(0, 10).map((match) => ({
+            id: match.id,
+            date: match.utcDate,
+            homeTeam: match.homeTeam?.name,
+            awayTeam: match.awayTeam?.name,
+            homeScore: match.score?.fullTime?.home ?? null,
+            awayScore: match.score?.fullTime?.away ?? null,
+            venue:
+              String(match.homeTeam?.id) === String(fixture.awayTeam.id)
+                ? "home"
+                : "away",
+            competition: match.competition?.name ?? null,
+          })),
         },
 
         prediction,

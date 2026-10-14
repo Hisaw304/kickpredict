@@ -8240,6 +8240,152 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.kp-research-section {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--kp-border, #e5e7eb);
+}
+
+.kp-research-section-heading,
+.kp-research-team-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kp-research-section-heading {
+  margin-bottom: 20px;
+}
+
+.kp-research-section-heading > div,
+.kp-research-team-heading {
+  min-width: 0;
+}
+
+.kp-research-section-heading > div {
+  display: grid;
+  gap: 5px;
+}
+
+.kp-research-section-heading > div > span {
+  color: var(--kp-muted, #73776c);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.kp-research-section-heading strong {
+  font-size: 14px;
+}
+
+.kp-research-total,
+.kp-research-team-heading > span {
+  color: var(--kp-muted, #73776c);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.kp-research-team + .kp-research-team {
+  margin-top: 22px;
+}
+
+.kp-research-team-heading {
+  margin-bottom: 10px;
+}
+
+.kp-research-team-heading > strong {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.kp-research-matches {
+  display: grid;
+  gap: 8px;
+}
+
+.kp-research-match {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--kp-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--kp-research-bg, #fafafa);
+}
+
+.kp-research-match-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: var(--kp-muted, #73776c);
+  font-size: 11px;
+}
+
+.kp-research-venue {
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: var(--kp-venue-bg, #eef2ee);
+  color: var(--kp-text, #25291f);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.kp-research-match-teams {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.kp-research-match-teams > span {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.kp-research-match-teams > span:last-child {
+  text-align: right;
+}
+
+.kp-research-match-teams > strong {
+  font-size: 13px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.kp-research-competition {
+  margin-top: 8px;
+  color: var(--kp-muted, #73776c);
+  font-size: 10px;
+}
+
+.kp-research-empty {
+  color: var(--kp-muted, #73776c);
+  font-size: 12px;
+}
+
+@media (max-width: 480px) {
+  .kp-research-match {
+    padding: 10px;
+  }
+
+  .kp-research-match-teams {
+    gap: 6px;
+  }
+
+  .kp-research-match-teams > span {
+    font-size: 11px;
+  }
+
+  .kp-research-match-teams > strong {
+    font-size: 12px;
+  }
+}
+
 /* =========================================
    LOADING
 ========================================= */

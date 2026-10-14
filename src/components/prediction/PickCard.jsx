@@ -53,6 +53,70 @@ function formatMarketLabel(label) {
     .toUpperCase();
 }
 
+function formatResearchDate(date) {
+  if (!date) return "Date unavailable";
+
+  const value = new Date(date);
+
+  if (Number.isNaN(value.getTime())) return "Date unavailable";
+
+  return value.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function ResearchMatchList({ title, matches = [] }) {
+  return (
+    <div className="kp-research-team">
+      <div className="kp-research-team-heading">
+        <strong>{title}</strong>
+        <span>{matches.length} matches</span>
+      </div>
+
+      {matches.length ? (
+        <div className="kp-research-matches">
+          {matches.map((match, index) => (
+            <div
+              className="kp-research-match"
+              key={match.id ?? `${match.date}-${index}`}
+            >
+              <div className="kp-research-match-top">
+                <span>{formatResearchDate(match.date)}</span>
+
+                <span className="kp-research-venue">
+                  {match.venue === "home" ? "Home" : "Away"}
+                </span>
+              </div>
+
+              <div className="kp-research-match-teams">
+                <span>{match.homeTeam || "Unknown team"}</span>
+
+                <strong>
+                  {match.homeScore ?? "—"} : {match.awayScore ?? "—"}
+                </strong>
+
+                <span>{match.awayTeam || "Unknown team"}</span>
+              </div>
+
+              {match.competition && (
+                <div className="kp-research-competition">
+                  {match.competition}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="kp-research-empty">
+          No historical match details available.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function PickCard({ pick }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -216,6 +280,31 @@ export default function PickCard({ pick }) {
               <span>League research</span>
               <strong>{pick.research?.leagueMatches || 0} matches</strong>
             </div>
+          </div>
+
+          <div className="kp-research-section">
+            <div className="kp-research-section-heading">
+              <div>
+                <span>HISTORICAL EVIDENCE</span>
+                <strong>Matches behind this prediction</strong>
+              </div>
+
+              <span className="kp-research-total">
+                {(pick.research?.home?.length || 0) +
+                  (pick.research?.away?.length || 0)}{" "}
+                records
+              </span>
+            </div>
+
+            <ResearchMatchList
+              title={`${pick.homeTeam} — recent matches`}
+              matches={pick.research?.home || []}
+            />
+
+            <ResearchMatchList
+              title={`${pick.awayTeam} — recent matches`}
+              matches={pick.research?.away || []}
+            />
           </div>
         </div>
       )}
