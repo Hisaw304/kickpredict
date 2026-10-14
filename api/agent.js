@@ -309,7 +309,7 @@ function applyAiInterpretation(parsedRequest, interpretedRequest) {
   if (
     Number.isInteger(interpretedRequest.count) &&
     interpretedRequest.count >= 1 &&
-    interpretedRequest.count <= 20
+    interpretedRequest.count <= 30
   ) {
     request.count = interpretedRequest.count;
   }
